@@ -1,8 +1,16 @@
 import { Facebook, Linkedin, Twitter, Mail, Phone } from "lucide-react";
 
+const navItems = [
+    {name: "Features", href: "#features"},
+    {name: "How It Works", href: "#how-it-works"},
+    {name: "Real Chats", href: "#real-chats"},
+    {name: "Pricing", href: "#pricing"},
+    {name: "Contact", href: "#contact"},
+    {name: "FAQ", href: "#faq"},
+];
 export default function Footer() {
     return (
-        <footer className="bg-card border-t border-border py-14 px-6">
+        <footer className="py-8 px-6 border border-gray-900/50 bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm  ">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
 
                 {/* Brand */}
@@ -18,12 +26,17 @@ export default function Footer() {
                 <div>
                     <h4 className="text-lg font-semibold mb-3 text-foreground">Quick Links</h4>
                     <ul className="space-y-2 text-muted-foreground">
-                        <li><a href="#features" className="hover:text-primary transition">Features</a></li>
-                        <li><a href="#how-it-works" className="hover:text-primary transition">How It Works</a></li>
-                        <li><a href="#ai" className="hover:text-primary transition">AI Capabilities</a></li>
-                        <li><a href="#pricing" className="hover:text-primary transition">Pricing</a></li>
-                        <li><a href="#faq" className="hover:text-primary transition">FAQs</a></li>
+                        {navItems.map((item, index) => (
+                            <li key={index}>
+                                <a href={item.href} className="text-sm font-medium text-neutral-200/80 hover:text-white relative after:absolute
+                                after:bottom-0 py-1 after:left-0 after:h-[1px] after:w-0 after:bg-gradient-to-r after:from-cyan-500
+                                after:to-blue-500 after:transition-all after:duration-300 hover:after:w-full">
+                                    {item.name}
+                                </a>
+                            </li>
+                        ))}
                     </ul>
+
                 </div>
 
                 {/* Contact */}

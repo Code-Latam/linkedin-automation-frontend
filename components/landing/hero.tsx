@@ -1,83 +1,91 @@
 "use client";
 
-import { ArrowRight, Sparkles, CalendarCheck } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import {ArrowRight, Users, TrendingUp} from "lucide-react";
+import { Calendar } from "lucide-react";
+import React from "react";
+
 
 export default function Hero() {
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-    useEffect(() => {
-        const handleMouseMove = (e: { clientX: any; clientY: any; }) => {
-            setMousePosition({ x: e.clientX, y: e.clientY });
-        };
-        window.addEventListener("mousemove", handleMouseMove);
-        return () => window.removeEventListener("mousemove", handleMouseMove);
-    }, []);
 
     return (
         <section
             id="hero"
             className="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-24 overflow-hidden"
         >
+            <div className="max-w-6xl mx-auto text-center relative z-10">
 
-            <div className="max-w-5xl mx-auto text-center relative z-10">
                 {/* Content */}
-                <div className="space-y-8 animate-fadeIn">
-                    {/* Badge */}
-                    {/*<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-sm">
-                        <Sparkles className="w-4 h-4 text-cyan-400" />
-                        <span className="text-sm font-medium text-cyan-300">AI-Powered Outreach Platform</span>
-                    </div>*/}
-
+                <div className="space-y-9 animate-fadeIn">
                     {/* Headline */}
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight mt-8 text-white">
-                        Transform Your LinkedIn Outreach with AI Agents
+                    <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-[1.05] tracking-tight mt-19">
+                        Turn LinkedIn Connections
+                        <br />
+                        Into Booked Meetings
+
+                        {/*<span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 bg-clip-text text-transparent mt-2">
+                            Into Booked Meetings
+                        </span>*/}
                     </h1>
 
                     {/* Subheadline */}
-                    <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                        Generate qualified leads, automate personalized messages, and close deals faster.
-                        Let AI handle the outreach while you focus on closing.
+                    <p className="text-lg md:text-xl lg:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                        While you sleep, your next meetings are being made. Astro Lab automates LinkedIn outreach,
+                        personalizes messages, and schedules meetings all on autopilot.
                     </p>
 
+                    {/* Feature highlights */}
+                    <div className="flex flex-wrap items-center justify-center gap-8 pt-4">
+                        <div className="flex items-center gap-2 text-gray-300">
+                            <div className="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                                <Users className="w-5 h-5 text-cyan-400" />
+                            </div>
+                            <span className="text-sm md:text-base">Auto LinkedIn outreach</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-300">
+                            <div className="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                                <Calendar className="w-5 h-5 text-cyan-400" />
+                            </div>
+                            <span className="text-sm md:text-base">Smart meeting booking</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-300">
+                            <div className="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                                <TrendingUp className="w-5 h-5 text-cyan-400" />
+                            </div>
+                            <span className="text-sm md:text-base">3x more meetings</span>
+                        </div>
+                    </div>
+
                     {/* CTA Buttons */}
-                    <div className="flex flex-wrap items-center justify-center gap-4 pt-6">
-                        <Link
-                            href="/login"
+                    <div className="flex flex-wrap items-center justify-center gap-4 pt-8">
+                        <button
                             className="group relative px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 hover:scale-105"
                         >
                             <span className="relative flex items-center gap-2">
                                 Start Free Trial
                                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                             </span>
-                        </Link>
+                        </button>
 
                         <a
                             href="#demo"
-                            className="group px-8 py-4 border border-cyan-500/30 text-cyan-300 font-semibold rounded-xl hover:bg-cyan-500/10 backdrop-blur-sm transition-all duration-300 flex items-center gap-2"
+                            className="group px-8 py-4 border-2 border-cyan-500/30 text-cyan-300 font-semibold rounded-xl hover:bg-cyan-500/10 hover:border-cyan-500/50 backdrop-blur-sm transition-all duration-300 flex items-center gap-2"
                         >
-                            Book a Call
-                            <CalendarCheck className="w-5 h-5 text-cyan-400 transition-transform group-hover:translate-x-1" />
+                            Watch Demo
+                            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-cyan-500/20 group-hover:bg-cyan-500/30 transition-colors">
+                                <div className="w-0 h-0 border-l-8 border-l-cyan-400 border-t-4 border-t-transparent border-b-4 border-b-transparent ml-1" />
+                            </div>
                         </a>
                     </div>
-
-                    {/* Social Proof */}
 
                 </div>
             </div>
 
-            {/* Gradient orbs */}
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-
             {/* Scroll indicator */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 animate-bounce ">
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
                 <div className="w-6 h-10 border-2 border-cyan-500/30 rounded-full flex justify-center pt-2">
                     <div className="w-1.5 h-3 bg-cyan-400 rounded-full animate-pulse" />
                 </div>
             </div>
-
         </section>
     );
 }

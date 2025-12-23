@@ -64,7 +64,7 @@ export default function AuthPage() {
     // Redirect if authenticated
     useEffect(() => {
         if (isAuthenticated) {
-            router.push('/dashboard'); // Change to your dashboard route
+            router.push('/onboarding'); // Change to your dashboard route
         }
     }, [isAuthenticated, router]);
 
@@ -196,7 +196,9 @@ export default function AuthPage() {
                                         <input
                                             id="email"
                                             type="email"
-                                            {...currentForm.register('email')}
+                                            {...(
+                                                isSignUp ? signupForm.register('email') : loginForm.register('email')
+                                            )}
                                             placeholder="name@company.com"
                                             className="w-full px-2 py-2 bg-gray-900/50 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
                                         />
@@ -226,7 +228,9 @@ export default function AuthPage() {
                                             <input
                                                 id="password"
                                                 type={showPassword ? 'text' : 'password'}
-                                                {...currentForm.register('password')}
+                                                {...(
+                                                    isSignUp ? signupForm.register('password') : loginForm.register('password')
+                                                )}
                                                 placeholder="••••••••"
                                                 className="w-full px-2 py-2 bg-gray-900/50 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
                                             />
