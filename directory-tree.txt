@@ -1,0 +1,102 @@
+linkedin-automation-frontend/
+├── app/
+│   ├── dashboard/
+│   │   ├── leads/
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── linkedin/
+│   │   ├── failure/
+│   │   │   └── page.tsx
+│   │   ├── success/
+│   │       └── page.tsx
+│   ├── login/
+│   │   └── page.tsx
+│   ├── onboarding/
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── dashboard/
+│   │   ├── lead/
+│   │   │   ├── columns.tsx
+│   │   │   └── datatable.tsx
+│   │   ├── agentactivity.tsx
+│   │   ├── performancechart.tsx
+│   │   ├── recentconversations.tsx
+│   │   ├── sidebar.tsx
+│   │   └── topbar.tsx
+│   ├── dialogs/
+│   │   └── onboarding_dialog.tsx
+│   ├── landing/
+│   │   ├── aicapabilities.tsx
+│   │   ├── contact.tsx
+│   │   ├── faqs.tsx
+│   │   ├── features.tsx
+│   │   ├── footer.tsx
+│   │   ├── hero.tsx
+│   │   ├── howitworks.tsx
+│   │   ├── navbar.tsx
+│   │   └── pricing.tsx
+│   ├── onboarding/
+│   │   ├── agent-preferences-step.tsx
+│   │   ├── configure-agent-step.tsx
+│   │   ├── linkedin-auth-step.tsx
+│   │   ├── main-goal-step.tsx
+│   │   └── review-leads-step.tsx
+│   ├── providers/
+│   │   ├── storeProvider.tsx
+│   │   └── themeProvider.tsx
+│   ├── ui/
+│       ├── alert.tsx
+│       ├── avatar.tsx
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── chart.tsx
+│       ├── checkbox.tsx
+│       ├── dialog.tsx
+│       ├── dropdown-menu.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── progress.tsx
+│       ├── scroll-area.tsx
+│       ├── select.tsx
+│       ├── separator.tsx
+│       ├── sheet.tsx
+│       ├── sidebar.tsx
+│       ├── skeleton.tsx
+│       ├── switch.tsx
+│       ├── table.tsx
+│       ├── textarea.tsx
+│       └── tooltip.tsx
+├── hooks/
+│   └── use-mobile.ts
+├── lib/
+│   ├── axios.ts
+│   ├── constants.ts
+│   ├── onboardingsteps.ts
+│   └── utils.ts
+├── public/
+│   ├── icons/
+│   ├── images/
+├── store/
+│   ├── slices/
+│   │   ├── authSlice.ts
+│   │   └── linkedInSlice.ts
+│   ├── hooks.ts
+│   └── index.ts
+├── styles/
+│   └── globals.css
+├── types/
+│   └── lead.ts
+├── README.md
+├── components.json
+├── directory-tree.txt
+├── eslint.config.mjs
+├── next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+└── tsconfig.json
