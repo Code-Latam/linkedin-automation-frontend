@@ -1,23 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
+import { howItWorksText } from '@/lib/text/howitworks';
 
-const STEPS = [
-    {
-        id: 1,
-        title: "Configure your agent to align with your outreach objectives",
-        image: "/images/how-it-works/step-1-configure.png",
-    },
-    {
-        id: 2,
-        title: "Connect your LinkedIn account with our platform",
-        image: "/images/how-it-works/step-2-connect.png",
-    },
-    {
-        id: 3,
-        title: "Add leads to your pipeline and wait for the conversions to start",
-        image: "/images/how-it-works/step-3-leads.png",
-    },
-];
 
 export default function HowItWorks() {
     const [activeStep, setActiveStep] = useState(0);
@@ -39,7 +23,7 @@ export default function HowItWorks() {
             const scrollingUp = e.deltaY < 0
 
             if (scrollingUp && activeStep === 0) return
-            if (scrollingDown && activeStep === STEPS.length - 1) return
+            if (scrollingDown && activeStep === howItWorksText.steps.length - 1) return
 
             e.preventDefault()
             if (isScrollingRef.current) return
@@ -49,7 +33,7 @@ export default function HowItWorks() {
                 isScrollingRef.current = false
             }, 800)
 
-            if (scrollingDown && activeStep < STEPS.length - 1) {
+            if (scrollingDown && activeStep < howItWorksText.steps.length - 1) {
                 setActiveStep((prev) => prev + 1)
             } else if (scrollingUp && activeStep > 0) {
                 setActiveStep((prev) => prev - 1)
@@ -73,14 +57,14 @@ export default function HowItWorks() {
                 {/* Header */}
                 <div className="mb-16">
                     <h2 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-semibold text-white">
-                        How it Works
+                        {howItWorksText.header.title}
                     </h2>
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
                     {/* Left Side - All Titles Shown */}
                     <div className="lg:w-1/2 space-y-8">
-                        {STEPS.map((step, index) => (
+                        {howItWorksText.steps.map((step, index) => (
                             <div
                                 key={step.id}
                                 style={{
@@ -147,7 +131,7 @@ export default function HowItWorks() {
                                     d="M19 14l-7 7m0 0l-7-7m7 7V3"
                                 />
                             </svg>
-                            <span>Scroll to navigate steps</span>
+                            <span>{howItWorksText.scrollIndicator}</span>
                         </div>
                     </div>
 
@@ -164,27 +148,12 @@ export default function HowItWorks() {
                                 className="absolute inset-0"
                             >
                                 <img
-                                    src={STEPS[activeStep].image}
-                                    alt={STEPS[activeStep].title}
+                                    src={howItWorksText.steps[activeStep].image}
+                                    alt={howItWorksText.steps[activeStep].title}
                                     className="w-full h-full object-contain p-4"
                                 />
                             </div>
 
-                            {/* Progress Indicator */}
-                            {/*<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                                {STEPS.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setActiveStep(index)}
-                                        className="h-2 rounded-full transition-all duration-300"
-                                        style={{
-                                            width: activeStep === index ? '32px' : '8px',
-                                            backgroundColor: activeStep === index ? 'rgb(251, 146, 60)' : 'rgba(255, 255, 255, 0.3)',
-                                        }}
-                                        aria-label={`Go to step ${index + 1}`}
-                                    />
-                                ))}
-                            </div>*/}
                         </div>
                     </div>
                 </div>
