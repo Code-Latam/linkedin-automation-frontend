@@ -1,6 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import { Sparkles, Send } from 'lucide-react';
+import { contactText } from '@/lib/text/contact';
+import {contactConfig } from '@/lib/constants';
 
 export default function Contact() {
     const [formData, setFormData] = useState({
@@ -26,9 +28,9 @@ export default function Contact() {
         setResult("Sending....");
 
         const formDataToSend = new FormData(event.currentTarget);
-        formDataToSend.append("access_key", "3ab1f1f8-1424-44e0-89d4-ecfb998621a8");
+        formDataToSend.append("access_key", contactConfig.web3formsAccessKey);
 
-        const response = await fetch("https://api.web3forms.com/submit", {
+        const response = await fetch(contactConfig.apiEndpoint, {
             method: "POST",
             body: formDataToSend
         });
@@ -57,12 +59,12 @@ export default function Contact() {
                 {/* Header */}
                 <div className="text-center mb-16">
                     <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground">
-                        Get in touch!
+                        {contactText.header.title}
                     </h2>
                     <p className="mt-4 text-base sm:text-lg text-muted-foreground">
-                        We&#39;d love to show you how AI can supercharge your LinkedIn outreach.
+                        {contactText.header.subtitle}
                         <br />
-                        Leave us a message, and we&#39;ll get back to you ASAP!
+                        {contactText.header.callToAction}
                     </p>
                 </div>
 
@@ -85,7 +87,7 @@ export default function Contact() {
                                         name="firstName"
                                         value={formData.firstName}
                                         onChange={handleChange}
-                                        placeholder="Ariel"
+                                        placeholder="Daniel"
                                         className="w-full px-4 py-3 bg-black/60 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
                                     />
                                 </div>
@@ -120,7 +122,7 @@ export default function Contact() {
                                         name="email"
                                         value={formData.email}
                                         onChange={handleChange}
-                                        placeholder="hello@sellinger.ai"
+                                        placeholder="hello@gmail.com"
                                         className="w-full px-4 py-3 bg-black/60 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
                                     />
                                 </div>
@@ -153,7 +155,7 @@ export default function Contact() {
                                         name="message"
                                         value={formData.message}
                                         onChange={handleChange}
-                                        placeholder="Hi team Sellenger, I'm reaching out for..."
+                                        placeholder="Hi AstroLab Meeting Team, I would like to..."
                                         rows={5}
                                         className="w-full px-4 py-3 bg-black/60 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 resize-none"
                                     />

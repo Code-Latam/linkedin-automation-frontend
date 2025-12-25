@@ -1,24 +1,17 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 import { Check, Sparkles } from 'lucide-react';
+import { pricingText } from '@/lib/text/pricing';
 
 const BASE_PRICE_PER_AGENT = 212; // Original price
 const DISCOUNTED_PRICE_PER_AGENT = 106; // 50% off price
 const YEARLY_DISCOUNT = 0.17; // 17% discount for yearly
 const MIN_AGENTS = 1;
 const MAX_AGENTS = 50;
-const PROMO_END_DATE = "November 30th";
-
-const FEATURES = [
-    { label: "Unlimited invites", included: true },
-    { label: "Unlimited messages", included: true },
-    { label: "Unlimited leads", included: true },
-    { label: "1 agent = 1 account", included: true },
-];
 
 export default function Pricing() {
     const [billingPeriod, setBillingPeriod] = useState("monthly");
-    const [numAgents, setNumAgents] = useState(15);
+    const [numAgents, setNumAgents] = useState(1);
     const [isSliding, setIsSliding] = useState(false);
 
     const pricing = useMemo(() => {
@@ -50,10 +43,10 @@ export default function Pricing() {
                 {/* Header */}
                 <div className="text-center mb-12">
                     <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-semibold text-white flex items-center justify-center gap-2">
-                        Pricing Plans
+                        {pricingText.header.title}
                     </h2>
                     <p className="mt-4 text-base sm:text-lg text-gray-400">
-                        Choose the perfect plan to supercharge your LinkedIn outreach.
+                        {pricingText.header.subtitle}
                     </p>
                 </div>
                 {/* Glassmorphic Card */}
@@ -99,7 +92,7 @@ export default function Pricing() {
                     <div className="mb-2">
                         <div className="mb-4 flex items-center justify-between">
                             <label className="text-lg font-semibold text-white">
-                                Number of Agents
+                                {pricingText.slider.label}
                             </label>
                             <div
                                 className="rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 px-6 py-3 border border-cyan-500/30 shadow-lg shadow-cyan-500/10"
@@ -142,7 +135,7 @@ export default function Pricing() {
                     <div className="mb-6 space-y-4">
                         {/* Price per Agent */}
                         <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-gray-800">
-                            <span className="text-base text-gray-400">Price per agent</span>
+                            <span className="text-base text-gray-400">{pricingText.pricing.pricePerAgent}</span>
                             <div className="flex items-baseline gap-3">
                                 <span className="text-lg text-gray-600 line-through">
                                     ${pricing.originalPricePerAgent}
@@ -155,14 +148,18 @@ export default function Pricing() {
                                     }}
                                 >
                                     ${pricing.pricePerAgent}
-                                    <span className="text-lg text-gray-400 font-normal">/mo</span>
+                                    <span className="text-lg text-gray-400 font-normal">{
+                                        pricingText.pricing.perMonth
+                                    }</span>
                                 </span>
                             </div>
                         </div>
 
                         {/* Total Price */}
                         <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/30">
-                            <span className="text-base text-gray-300 font-medium">Total price</span>
+                            <span className="text-base text-gray-300 font-medium">{
+                                pricingText.pricing.totalPrice
+                            }</span>
                             <div className="flex items-baseline gap-3">
                                 <span className="text-lg text-gray-600 line-through">
                                     ${pricing.originalTotalPrice.toLocaleString()}
@@ -175,7 +172,9 @@ export default function Pricing() {
                                     }}
                                 >
                                     ${pricing.totalPrice.toLocaleString()}
-                                    <span className="text-lg text-gray-400 font-normal">/mo</span>
+                                    <span className="text-lg text-gray-400 font-normal">{
+                                        pricingText.pricing.perMonth
+                                    }</span>
                                 </span>
                             </div>
                         </div>
@@ -183,7 +182,7 @@ export default function Pricing() {
 
                     {/* Features */}
                     <div className="mb-6 grid grid-cols-2 gap-2">
-                        {FEATURES.map((feature, index) => (
+                        {pricingText.features.map((feature, index) => (
                             <div
                                 key={feature.label}
                                 className="flex items-center gap-2 p-2.5 rounded-lg bg-white/5 border border-gray-800/50 hover:border-cyan-500/30 transition-colors duration-300"
@@ -201,20 +200,16 @@ export default function Pricing() {
 
                     {/* Disclaimer */}
                     <p className="mb-8 text-xs text-gray-500 italic text-center">
-                        *With respect to LinkedIn account limits
+                        {pricingText.disclaimer}
                     </p>
 
                     {/* CTA Button */}
                     <button
                         className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white text-lg font-semibold py-3 rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98]"
                     >
-                        Start 14-Days Free Trial
+                        {pricingText.cta.button}
                     </button>
 
-                    {/* Bottom Note */}
-                    <p className="mt-4 text-center text-sm text-gray-400">
-                        No Credit Card Required • <span className="text-cyan-400 font-semibold">50% OFF Lifetime</span>
-                    </p>
                 </div>
             </div>
 
