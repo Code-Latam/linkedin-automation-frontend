@@ -4,7 +4,6 @@
 import {useState} from "react";
 import {Menu, X} from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { navbarText } from '@/lib/text/navbar';
 
 
@@ -35,7 +34,7 @@ export default function Navbar() {
                     {/* Logo / Brand */}
                     <Link href="/" className="flex items-center gap-2">
 
-                        <Image src="/logo/logo.jpeg" alt={navbarText.brand.logoAlt}
+                        <img src="/logo/logo.jpeg" alt={navbarText.brand.logoAlt}
                                className="rounded-full"
                                width={52} height={52}/>
                     </Link>
@@ -56,8 +55,11 @@ export default function Navbar() {
                     {/* Right actions */}
                     <div className="hidden md:flex items-center gap-3">
 
-                        <Link
-                            href="/login"
+                        <button
+                            //href="/login"
+                            onClick={() => {
+                                alert("You can't subscribe at this moment. Please send us an email or fill in the form to get early access!");
+                            }}
                             className="
                             inline-flex items-center justify-center
                             rounded-[5px]
@@ -67,7 +69,7 @@ export default function Navbar() {
                             shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_16px_28px_rgba(0,0,0,0.85)]
                             hover:bg-neutral-900
                             transition-colors">{navbarText.cta.login}
-                        </Link>
+                        </button>
                     </div>
 
                     {/* Mobile menu toggle */}
@@ -97,13 +99,16 @@ export default function Navbar() {
                                     {item.name}
                                 </Link>
                             ))}
-                            <Link
-                                href="/login"
+                            <button
+                                //href="/login"
+                                onClick={() => {
+                                    alert("You can't subscribe at this moment. Please send us an email or fill in the form to get early access!");
+                                }}
                                 className="px-5 py-3 text-sm font-semibold text-white bg-white/5 hover:bg-white/10 rounded-b-3xl"
-                                onClick={() => setOpen(false)}
+                                //onClick={() => setOpen(false)}
                             >
                                 Log In
-                            </Link>
+                            </button>
                         </nav>
                     </div>
                 </div>

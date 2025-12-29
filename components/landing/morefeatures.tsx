@@ -28,12 +28,14 @@ export function MoreFeatures() {
                             <CalendarCheck className="h-3.5 w-3.5" />
                             <span>{moreFeaturesText.header.sidebarBadge}</span>
                         </div>
-                        <Button
-                            size="lg"
-                            className="rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+                        <a
+                            href={moreFeaturesText.header.meetingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 hover:scale-105 flex items-center gap-2 px-5 py-3"
                         >
                             {moreFeaturesText.header.ctaText}
-                        </Button>
+                        </a>
                         <p className="text-xs text-gray-500">
                             {moreFeaturesText.header.calloutTime} {moreFeaturesText.header.calloutDescription}
                         </p>
