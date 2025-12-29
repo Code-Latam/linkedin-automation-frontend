@@ -15,6 +15,7 @@ export const moreFeaturesText = {
         subtitle: "Your all-in-one AI companion for smarter, faster LinkedIn growth from first touch to booked meeting.",
         sidebarBadge: "Avg. users book meetings in week one",
         ctaText: "Book a discovery call",
+        meetingLink: "https://calendly.com/steven-apiastrolab",
         calloutTime: "20–30 minutes",
         calloutDescription: "Live walkthrough of your LinkedIn workflow"
     },

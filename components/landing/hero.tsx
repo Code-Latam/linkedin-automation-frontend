@@ -61,6 +61,12 @@ export default function Hero() {
                     {/* CTA Buttons */}
                     <div className="flex flex-wrap items-center justify-center gap-4 pt-8">
                         <button
+                            //show alert when clicked
+                            onClick={
+                                () => {
+                                    alert("You can't subscribe at this moment. Please send us an email or fill in the form to get early access!");
+                                }
+                            }
                             className="group relative px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 hover:scale-105"
                         >
                             <span className="relative flex items-center gap-2">
@@ -70,7 +76,9 @@ export default function Hero() {
                         </button>
 
                         <a
-                            href="#demo"
+                            href="https://www.youtube.com/watch?v=dzj0WsScSyg"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="group px-8 py-4 border-2 border-cyan-500/30 text-cyan-300 font-semibold rounded-xl hover:bg-cyan-500/10 hover:border-cyan-500/50 backdrop-blur-sm transition-all duration-300 flex items-center gap-2"
                         >
                             {heroText.cta.secondary}

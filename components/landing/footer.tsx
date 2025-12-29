@@ -46,15 +46,19 @@ export default function Footer() {
                     <ul className="space-y-3 text-muted-foreground">
                         <li className="flex items-center gap-3">
                             <Mail className="w-5 h-5 text-primary" />
-                            <span>{
-                                footerText.sections.contact.email
-                            }</span>
+                            <a
+                                href={`mailto:${footerText.sections.contact.email}`}
+                                className="hover:underline"
+                            >{footerText.sections.contact.email}</a>
                         </li>
                         <li className="flex items-center gap-3">
                             <Phone className="w-5 h-5 text-primary" />
-                            <span>{
+                            <a
+                                href={`tel:${footerText.sections.contact.phone}`}
+                                className="hover:underline"
+                            >{
                                 footerText.sections.contact.phone
-                            }</span>
+                            }</a>
                         </li>
                     </ul>
                 </div>
@@ -67,10 +71,12 @@ export default function Footer() {
                     <div className="flex items-center gap-4">
                         <a href={
                             footerText.sections.social.links.find(link => link.platform === "linkedin")?.href || "#"
-                        } className="p-2 rounded-full border border-border hover:bg-primary hover:text-primary-foreground transition">
+                        }
+                        target="_blank" rel="noopener noreferrer"
+                           className="p-2 rounded-full border border-border hover:bg-primary hover:text-primary-foreground transition">
                             <Linkedin className="w-5 h-5" />
                         </a>
-                        <a href={
+                       {/* <a href={
                             footerText.sections.social.links.find(link => link.platform === "twitter")?.href || "#"
                         } className="p-2 rounded-full border border-border hover:bg-primary hover:text-primary-foreground transition">
                             <Twitter className="w-5 h-5" />
@@ -79,7 +85,7 @@ export default function Footer() {
                             footerText.sections.social.links.find(link => link.platform === "facebook")?.href || "#"
                         } className="p-2 rounded-full border border-border hover:bg-primary hover:text-primary-foreground transition">
                             <Facebook className="w-5 h-5" />
-                        </a>
+                        </a>*/}
                     </div>
                 </div>
             </div>

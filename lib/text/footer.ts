@@ -9,7 +9,7 @@ export const footerText = {
             items: [
                 { name: "Features", href: "#features" },
                 { name: "How It Works", href: "#how-it-works" },
-                { name: "Real Chats", href: "#real-chats" },
+                {name: 'More Features', href: '#more-features' },
                 { name: "Pricing", href: "#pricing" },
                 { name: "Contact", href: "#contact" },
                 { name: "FAQ", href: "#faq" }
@@ -18,14 +18,14 @@ export const footerText = {
         contact: {
             title: "Contact",
             email: "info@meetingmaker.tech",
-            phone: "+123 456 7890"
+            phone: "+1 307 3945087"
         },
         social: {
             title: "Follow Us",
             links: [
-                { platform: "linkedin", href: "#", label: "LinkedIn" },
-                { platform: "twitter", href: "#", label: "Twitter" },
-                { platform: "facebook", href: "#", label: "Facebook" }
+                { platform: "linkedin", href: "https://www.linkedin.com/showcase/astrolab-meeting-maker", label: "LinkedIn" },
+                /*{ platform: "twitter", href: "#", label: "Twitter" },
+                { platform: "facebook", href: "#", label: "Facebook" }*/
             ]
         }
     },
