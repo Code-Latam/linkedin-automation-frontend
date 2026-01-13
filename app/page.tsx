@@ -7,6 +7,10 @@ import FAQ from "@/components/landing/faqs";
 import Footer from "@/components/landing/footer";
 import {MoreFeatures} from "@/components/landing/morefeatures";
 import HowItWorks from "@/components/landing/howitworks";
+import type {Metadata} from "next";
+import {pagesMetaData} from "@/lib/metadata";
+
+export const metadata:Metadata = pagesMetaData.home;
 
 export default function Home() {
   return (

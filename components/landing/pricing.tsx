@@ -3,9 +3,9 @@ import React, { useState, useMemo } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import { pricingText } from '@/lib/text/pricing';
 
-const BASE_PRICE_PER_AGENT = 212; // Original price
-const DISCOUNTED_PRICE_PER_AGENT = 106; // 50% off price
-const YEARLY_DISCOUNT = 0.17; // 17% discount for yearly
+const BASE_PRICE_PER_AGENT = 150; // Original price
+//const DISCOUNTED_PRICE_PER_AGENT = 106; // 50% off price
+//const YEARLY_DISCOUNT = 0.17; // 17% discount for yearly
 const MIN_AGENTS = 1;
 const MAX_AGENTS = 50;
 
@@ -15,23 +15,17 @@ export default function Pricing() {
     const [isSliding, setIsSliding] = useState(false);
 
     const pricing = useMemo(() => {
-        let pricePerAgent = DISCOUNTED_PRICE_PER_AGENT;
-        let originalPricePerAgent = BASE_PRICE_PER_AGENT;
 
-        // Apply yearly discount
+        let totalPrice;
         if (billingPeriod === "yearly") {
-            pricePerAgent = Math.round(pricePerAgent * (1 - YEARLY_DISCOUNT));
-            originalPricePerAgent = Math.round(originalPricePerAgent * (1 - YEARLY_DISCOUNT));
+            totalPrice = BASE_PRICE_PER_AGENT * numAgents * 12 ;
         }
-
-        const totalPrice = pricePerAgent * numAgents;
-        const originalTotalPrice = originalPricePerAgent * numAgents;
-
+        else {
+            totalPrice = BASE_PRICE_PER_AGENT * numAgents;
+        }
         return {
-            pricePerAgent,
-            originalPricePerAgent,
-            totalPrice,
-            originalTotalPrice,
+            pricePerAgent: BASE_PRICE_PER_AGENT,
+            totalPrice
         };
     }, [billingPeriod, numAgents]);
 
@@ -81,9 +75,6 @@ export default function Pricing() {
                                 }}
                             >
                                 Yearly
-                                <span className="rounded-full bg-cyan-500/20 px-2 py-0.5 text-xs font-bold text-cyan-400">
-                                    -17%
-                                </span>
                             </button>
                         </div>
                     </div>
@@ -120,8 +111,8 @@ export default function Pricing() {
                                 onTouchStart={() => setIsSliding(true)}
                                 onTouchEnd={() => setIsSliding(false)}
                                 className="slider-custom w-full"
-                               /* style={{'--slider-percentage': `${sliderPercentage}%`,
-                                }}*/
+                                style={{['--slider-percentage' as any]: `${sliderPercentage}%`,
+                                }}
                             />
                             {/* Slider Labels */}
                             <div className="mt-2 flex justify-between text-xs text-gray-500">
@@ -137,9 +128,9 @@ export default function Pricing() {
                         <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-gray-800">
                             <span className="text-base text-gray-400">{pricingText.pricing.pricePerAgent}</span>
                             <div className="flex items-baseline gap-3">
-                                <span className="text-lg text-gray-600 line-through">
+                                {/*<span className="text-lg text-gray-600 line-through">
                                     ${pricing.originalPricePerAgent}
-                                </span>
+                                </span>*/}
                                 <span
                                     key={`per-${pricing.pricePerAgent}-${billingPeriod}`}
                                     className="text-2xl font-bold text-white"
@@ -161,9 +152,9 @@ export default function Pricing() {
                                 pricingText.pricing.totalPrice
                             }</span>
                             <div className="flex items-baseline gap-3">
-                                <span className="text-lg text-gray-600 line-through">
+                                {/*<span className="text-lg text-gray-600 line-through">
                                     ${pricing.originalTotalPrice.toLocaleString()}
-                                </span>
+                                </span>*/}
                                 <span
                                     key={`total-${pricing.totalPrice}-${billingPeriod}-${numAgents}`}
                                     className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
