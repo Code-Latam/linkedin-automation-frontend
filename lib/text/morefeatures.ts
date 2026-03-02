@@ -24,19 +24,19 @@ export const moreFeaturesText = {
     },
     features: [
         {
-            id: "lead-magnet-posts",
+            id: "CRM-Integration",
             icon: Magnet,
-            title: "Lead Magnet Posts",
+            title: "CRM Integration",
             description:
-                "Craft and schedule monitored posts with lead magnets to attract new inbound leads.",
+                "At any moment in the funnel, send your prospect with one click to Hubspot or Zoho",
             badge: "Top of Funnel",
         },
         {
-            id: "lead-import-search",
+            id: "lead-search",
             icon: Upload,
-            title: "Lead Import & Search",
+            title: "Lead Search",
             description:
-                "Upload CSVs or pull new prospects via LinkedIn filters in seconds.",
+                "Use linkedIn search to select all your prospects and send them to the meeting maker.",
             badge: "Prospecting",
         },
         {
@@ -44,7 +44,7 @@ export const moreFeaturesText = {
             icon: Lightbulb,
             title: "AI Learning & Optimization",
             description:
-                "Learns your tone and experience, adapting each message for credibility and impact.",
+                "Learns your tone and experience, adapting each message for credibility and impact. Uses our database to optimize best outreach strategy given your industry",
             badge: "AI Engine",
         },
         {
@@ -66,7 +66,7 @@ export const moreFeaturesText = {
         {
             id: "inclusion-exclusion-rules",
             icon: Filter,
-            title: "Inclusion / Exclusion Rules",
+            title: "Dos / Dont's",
             description:
                 "Bulk-add leads, then auto-filter anyone who doesn’t fit your ICP criteria.",
             badge: "ICP Guardrails",
@@ -76,7 +76,7 @@ export const moreFeaturesText = {
             icon: LineChart,
             title: "Lead Journey Analytics",
             description:
-                "See every prospect’s status and engagement across the entire outreach lifecycle.",
+                "Track how many leads you’ve added, connection requests sent, acceptance rates, active conversations, reply rates, and meetings booked - all in one place.",
             badge: "Analytics",
         },
         {

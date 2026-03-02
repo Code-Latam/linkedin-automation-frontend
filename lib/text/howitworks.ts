@@ -6,7 +6,7 @@ export const howItWorksText = {
     steps: [
         {
             id: 1,
-            title: "Configure your agent to align with your outreach objectives",
+            title: "You install the our chrome extension and configure your agent to align with your outreach objectives",
             image: "/images/how-it-works/step-1-configure.png"
         },
         {
@@ -16,7 +16,7 @@ export const howItWorksText = {
         },
         {
             id: 3,
-            title: "Add leads to your pipeline and wait for the conversions to start",
+            title: "\without ever having to leave LinkedIn add leads to your pipeline and wait for the conversions to start",
             image: "/images/how-it-works/step-3-leads.png"
         }
     ]

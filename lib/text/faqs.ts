@@ -6,7 +6,7 @@ export const faqsText = {
     items: [
         {
             question: "How can I sign up?",
-            answer: "You can sign up directly from the link above. Once submitted, your application will be automatically approved and you can start promoting right away.\n\nPlease note: HeyReach reserves the right to remove affiliates at its sole discretion if necessary."
+            answer: "You can sign up directly from the link above. Once submitted, your application will be automatically approved and you can start promoting right away.\n\nPlease note: Saasential LLC reserves the right to remove affiliates at its sole discretion if necessary."
         },
         {
             question: "How many LinkedIn connections will one agent add daily?",

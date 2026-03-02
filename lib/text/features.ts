@@ -8,42 +8,42 @@ export const featuresText = {
         {
             slug: "autonomous-outreach",
             title: "Autonomous Outreach",
-            description: "Once a lead enters your pipeline, the AI manages every conversation end-to-end from first message to meeting booked.",
+            description: "Select leads directly on LinkedIn and send them to Meeting Maker. From there, the AI handles outreach and books meetings automatically..",
             image: "/images/features/autonomous-outreach.png",
 
         },
         {
             slug: "communicates-better-than-human",
             title: "Communicates better than a human",
-            description: "The SDR agent reads the conversation, understands subtle signals, identifies pain points, and responds naturally - just like a human SDR would. It never gets angry and never loses patience.",
+            description: "The SDR agent reads every conversation, understands subtle signals, identifies pain points, and responds naturally—just like a human SDR would. It continuously optimizes its strategy based on your historical performance data, improving results over time. It never gets angry and never loses patience",
             image: "/images/features/human-like-communicator.png",
 
         },
         {
             slug: "deep-lead-research",
             title: "Deep Lead Research",
-            description: "The agent gathers company info, external data, and LinkedIn profile insights to personalize every outreach message.",
+            description: "The agent combines company data, external insights, and LinkedIn signals to personalize every message—continuously optimized using proven high-performing outreach patterns.",
             image: "/images/features/deep-lead-research.png",
 
         },
         {
-            slug: "multi-purpose-agents",
-            title: "Multi-Purpose Agents",
-            description: "Our AI pivots topics naturally, reads prospect cues, and never over-pushes building genuine connections.",
+            slug: "Integration with your CRM",
+            title: "Integration with your CRM",
+            description: "Send your selectd leads with one click to hubspot or Zoho without ever leaving LinkedIn.",
             image: "/images/features/multi-purpose-agents.png",
 
         },
         {
-            slug: "intent-signals-monitoring",
-            title: "Intent Signals Monitoring",
-            description: "Detects engaged prospects across your network, flags warm leads instantly, and auto-adds them to your pipeline.",
+            slug: "Turbo boost LinkedIn",
+            title: "Turbo Boost LinkedIn",
+            description: "Use LinkedIn or Sales Navigator to generate a precise list of ideal prospects. Send the entire list to Meeting Maker in one click, and launch automated, AI-driven outreach instantly",
             image: "/images/features/intent-signals-monitoring.png",
 
         },
         {
             slug: "frictionless-scalability",
             title: "Frictionless Scalability",
-            description: "Scale to thousands of simultaneous prospect conversations across multiple accounts while eliminating the cost of expanding your SDR team.",
+            description: "Scale to thousands of simultaneous prospect conversations across multiple accounts while eliminating the cost of expanding your SDR team. Follow results on your dashboard",
             image: "/images/features/frictionless-scalability.png",
         }
     ]
