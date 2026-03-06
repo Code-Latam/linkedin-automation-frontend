@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import { pricingText } from '@/lib/text/pricing';
+import Link from "next/link";
 
 const BASE_PRICE_PER_AGENT = 150; // Original price
 //const DISCOUNTED_PRICE_PER_AGENT = 106; // 50% off price
@@ -195,14 +196,12 @@ export default function Pricing() {
                     </p>
 
                     {/* CTA Button */}
-                    <button
-                        onClick={() => {
-                            alert("You can't subscribe at this moment. Please send us an email or fill in the form to get early access!");
-                        }}
-                        className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white text-lg font-semibold py-3 rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                    <Link
+                    href="/onboarding"
+                    className="w-full inline-flex items-center justify-center bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white text-lg font-semibold py-3 rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98]"
                     >
-                        {pricingText.cta.button}
-                    </button>
+                    {pricingText.cta.button}
+                    </Link>
 
                 </div>
             </div>

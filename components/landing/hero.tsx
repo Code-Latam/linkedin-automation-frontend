@@ -4,6 +4,7 @@ import {ArrowRight, Users, TrendingUp} from "lucide-react";
 import { Calendar } from "lucide-react";
 import React from "react";
 import { heroText } from '@/lib/text/hero';
+import Link from "next/link";
 
 
 export default function Hero() {
@@ -60,20 +61,15 @@ export default function Hero() {
 
                     {/* CTA Buttons */}
                     <div className="flex flex-wrap items-center justify-center gap-4 pt-8">
-                        <button
-                            //show alert when clicked
-                            onClick={
-                                () => {
-                                    alert("You can't subscribe at this moment. Please send us an email or fill in the form to get early access!");
-                                }
-                            }
+                        <Link
+                            href="/onboarding"
                             className="group relative px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 hover:scale-105"
-                        >
+                            >
                             <span className="relative flex items-center gap-2">
                                 {heroText.cta.primary}
                                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                             </span>
-                        </button>
+                            </Link>
 
                         <a
                             href="https://www.youtube.com/watch?v=dzj0WsScSyg"

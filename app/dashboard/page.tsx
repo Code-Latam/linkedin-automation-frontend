@@ -6,16 +6,15 @@ import { useRouter } from "next/navigation";
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  console.log("in dashboard page");
 
   useEffect(() => {
-    // Only run in the browser
-    if (typeof window === "undefined") return;
-
+    console.log("in use effect");
     const token = localStorage.getItem("token");
 
     if (!token) {
-      router.push("/onboarding"); // Redirect to login if no token
+      router.push("/login");
       return;
     }
 
@@ -31,9 +30,8 @@ export default function DashboardPage() {
       .then((data) => setUser(data))
       .catch(() => {
         localStorage.removeItem("token");
-        router.push("/onboarding");
-      })
-      .finally(() => setCheckingAuth(false));
+        router.push("/login");
+      });
   }, [router]);
 
   const handleLogout = () => {
@@ -41,8 +39,7 @@ export default function DashboardPage() {
     router.push("/");
   };
 
-  // Wait for auth check before rendering
-  if (checkingAuth) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
         Loading dashboard...
@@ -50,12 +47,13 @@ export default function DashboardPage() {
     );
   }
 
-  if (!user) return null; // Should never happen now
-
   return (
     <div className="min-h-screen px-6 pt-24 pb-24">
       <div className="max-w-4xl mx-auto space-y-8">
-        <h1 className="text-4xl font-bold text-white">Dashboard</h1>
+
+        <h1 className="text-4xl font-bold text-white">
+          Dashboard
+        </h1>
 
         {/* Account Card */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
@@ -64,15 +62,9 @@ export default function DashboardPage() {
           </h2>
 
           <div className="space-y-2 text-gray-300">
-            <p>
-              <strong>Email:</strong> {user.user.email}
-            </p>
-            <p>
-              <strong>Company:</strong> {user.client?.name}
-            </p>
-            <p>
-              <strong>Plan:</strong> {user.client?.plan}
-            </p>
+            <p><strong>Email:</strong> {user.user.email}</p>
+            <p><strong>Company:</strong> {user.client?.name}</p>
+            <p><strong>Plan:</strong> {user.client?.plan}</p>
 
             {/* Upgrade to Pro button */}
             {user.client?.plan === "free" && (
@@ -121,9 +113,8 @@ export default function DashboardPage() {
 
                   const result = await res.json();
                   if (result.success) {
-                    alert(
-                      "Subscription canceled. You will keep access until the period ends."
-                    );
+                    alert("Subscription canceled. You have been reverted to the free version.");
+                    window.location.reload();
                   } else {
                     alert("Failed to cancel subscription.");
                   }
@@ -160,6 +151,7 @@ export default function DashboardPage() {
         >
           Log Out
         </button>
+
       </div>
     </div>
   );

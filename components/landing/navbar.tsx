@@ -53,24 +53,22 @@ export default function Navbar() {
                     </nav>
 
                     {/* Right actions */}
-                    <div className="hidden md:flex items-center gap-3">
-
-                        <button
-                            //href="/login"
-                            onClick={() => {
-                                alert("You can't subscribe at this moment. Please send us an email or fill in the form to get early access!");
-                            }}
-                            className="
-                            inline-flex items-center justify-center
-                            rounded-[5px]
-                            bg-black
-                            text-white text-sm font-semibold
-                            px-7 py-2.5
-                            shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_16px_28px_rgba(0,0,0,0.85)]
-                            hover:bg-neutral-900
-                            transition-colors">{navbarText.cta.login}
-                        </button>
-                    </div>
+                  <div className="hidden md:flex items-center gap-3">
+                    <Link
+                        href="/dashboard"
+                        className="
+                        inline-flex items-center justify-center
+                        rounded-[5px]
+                        bg-black
+                        text-white text-sm font-semibold
+                        px-7 py-2.5
+                        shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_16px_28px_rgba(0,0,0,0.85)]
+                        hover:bg-neutral-900
+                        transition-colors"
+                    >
+                        {navbarText.cta.login}
+                    </Link>
+                   </div>
 
                     {/* Mobile menu toggle */}
                     <button
@@ -99,16 +97,13 @@ export default function Navbar() {
                                     {item.name}
                                 </Link>
                             ))}
-                            <button
-                                //href="/login"
-                                onClick={() => {
-                                    alert("You can't subscribe at this moment. Please send us an email or fill in the form to get early access!");
-                                }}
-                                className="px-5 py-3 text-sm font-semibold text-white bg-white/5 hover:bg-white/10 rounded-b-3xl"
-                                //onClick={() => setOpen(false)}
+                            <Link
+                            href="/dashboard"
+                            className="px-5 py-3 text-sm font-semibold text-white bg-white/5 hover:bg-white/10 rounded-b-3xl"
+                            onClick={() => setOpen(false)}
                             >
-                                Log In
-                            </button>
+                            {navbarText.cta.login}
+                            </Link>
                         </nav>
                     </div>
                 </div>
