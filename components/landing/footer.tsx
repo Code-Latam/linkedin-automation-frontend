@@ -91,9 +91,28 @@ export default function Footer() {
             </div>
 
             {/* Bottom */}
-            <div className="text-center text-muted-foreground text-sm mt-12 border-t border-border pt-6">
-                <p>© {new Date().getFullYear()} {footerText.copyright.text}</p>
-            </div>
+            {/* Bottom */}
+<div className="text-center text-muted-foreground text-sm mt-12 border-t border-border pt-6 space-y-2">
+    <p>© {new Date().getFullYear()} {footerText.copyright.text}</p>
+
+    <div className="flex justify-center gap-4">
+        <a
+            href="/privacy"
+            className="hover:underline text-neutral-200/80 hover:text-white"
+        >
+            Privacy Policy
+        </a>
+
+        <span>|</span>
+
+        <a
+            href="/terms"
+            className="hover:underline text-neutral-200/80 hover:text-white"
+        >
+            Terms of Service
+        </a>
+    </div>
+</div>
         </footer>
     );
 }
