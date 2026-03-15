@@ -1,32 +1,37 @@
 export const pricingText = {
     header: {
-        title: "Pricing Plans",
-        subtitle: "Choose the perfect plan to supercharge your LinkedIn outreach."
+        title: "Simple, Transparent Pricing",
+        subtitle: "One account. Unlimited potential. Choose the plan that fits your needs."
     },
-    billingPeriod: {
-        monthly: "Monthly",
-        yearly: "Yearly",
-        yearlyDiscount: "-17%"
+    features: {
+        pro: [
+            "1 LinkedIn account",
+            "Unlimited leads",
+            "250 connection requests / month - linkedIn limits apply",
+            "500 messages / month- linkedIn limits apply" ,
+            "Deep lead research with company insights",
+            "Email support",
+            "Advanced analytics dashboard"
+        ],
+        premium: [
+            "1 LinkedIn account",
+            "Unlimited leads",
+            "Unlimited connection requests",
+            "Unlimited messages - linkedIn limits apply",
+            "Deep lead research with company insights",
+            "AI-powered lead selection",
+            "Priority support",
+            "Advanced analytics dashboard"
+        ]
     },
-    slider: {
-        label: "Number of Agents",
-        minLabel: "agent",
-        maxLabel: "agents"
-    },
-    pricing: {
-        pricePerAgent: "Price per agent",
-        totalPrice: "Total price",
-        perMonth: "/mo"
-    },
-    features: [
-        { label: "Unlimited invites", included: true },
-        { label: "Unlimited messages", included: true },
-        { label: "Unlimited leads", included: true },
-        { label: "1 agent = 1 account", included: true }
+    sharedFeatures: [
+        "No contracts, cancel anytime",
+        "Secure and private",
+        "Regular feature updates"
     ],
-    disclaimer: "*With respect to LinkedIn account limits",
+    disclaimer: "*Respects LinkedIn's daily limits and terms of service",
     cta: {
-        button: "Start",
+        button: "Get Started",
     }
 } as const;
 

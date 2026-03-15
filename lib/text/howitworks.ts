@@ -6,17 +6,17 @@ export const howItWorksText = {
     steps: [
         {
             id: 1,
-            title: "You install the our chrome extension and configure your agent to align with your outreach objectives",
-            image: "/images/how-it-works/extension.png"
+            title: "Create a free account on this page, install our Chrome extension, and log in to the platform to get started.",
+            image: "/images/how-it-works/login-meetingmaker.png"
         },
         {
             id: 2,
-            title: "Connect your LinkedIn account with our platform",
-            image: "/images/how-it-works/linkedin.png"
+            title: "Configure SDRs, BDRs, or any role to align with your outreach goals",
+            image: "/images/how-it-works/agent-roles.png"
         },
         {
             id: 3,
-            title: "\Add leads to your pipeline, without leaving LinkedIn, and wait for the conversions to start",
+            title: "Add leads from LinkedIn to your pipeline without leaving LinkedIn and watch the conversions start. With the Premium version, leads are automatically found for you.",
             image: "/images/how-it-works/assign-to-meeting-maker1.png"
         }
     ]
