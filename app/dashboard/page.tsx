@@ -65,9 +65,36 @@ export default function DashboardPage() {
     }
   };
 
-  const handleUpgrade = (plan: "pro" | "premium") => {
-    router.push(`/pricing?selected=${plan}`);
-  };
+  const handleUpgrade = async (plan: "pro" | "premium") => {
+  setLoading(true);
+  const token = localStorage.getItem("token");
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/billing/create-checkout-session`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ plan }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.url) {
+      window.location.href = data.url; // Direct to Stripe
+    } else {
+      alert("Failed to start upgrade process.");
+    }
+  } catch (error) {
+    alert("Something went wrong.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem("token");
