@@ -27,7 +27,7 @@ export default function Pricing() {
         
         if (!token) {
             // Not logged in - redirect to signup with plan
-            router.push(`/signup?plan=${plan}`);
+            router.push(`/login?plan=${plan}`);
             return;
         }
 
