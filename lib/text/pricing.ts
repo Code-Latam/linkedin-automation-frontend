@@ -7,19 +7,23 @@ export const pricingText = {
         pro: [
             "1 LinkedIn account",
             "Unlimited leads",
-            "250 connection requests / month - linkedIn limits apply",
-            "500 messages / month- linkedIn limits apply" ,
+            "Unlimited agents per linkedIn account",
+            "Unlimited connection requests - linkedIn limits apply",
+            "Unlimited messages - linkedIn limits apply",
             "Deep lead research with company insights",
+            "Human powered lead selection",
             "Email support",
             "Advanced analytics dashboard"
         ],
         premium: [
             "1 LinkedIn account",
             "Unlimited leads",
-            "Unlimited connection requests",
+            "Unlimited agents per linkedIn account",
+            "Unlimited connection requests - linkedIn limits apply",
             "Unlimited messages - linkedIn limits apply",
             "Deep lead research with company insights",
-            "AI-powered lead selection",
+            "Human powered lead selection",
+            "AI-powered automatic lead selection",
             "Priority support",
             "Advanced analytics dashboard"
         ]

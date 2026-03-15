@@ -1,14 +1,65 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import { pricingText } from '@/lib/text/pricing';
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 
 const PRO_PRICE = 150;
 const PREMIUM_PRICE = 350;
 
 export default function Pricing() {
     const [selectedPlan, setSelectedPlan] = useState<"pro" | "premium">("pro");
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        // Check if user is logged in
+        const token = localStorage.getItem("token");
+        setIsLoggedIn(!!token);
+    }, []);
+
+    const handleUpgrade = async (plan: "pro" | "premium") => {
+        setIsLoading(true);
+        
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+            // Not logged in - redirect to signup with plan
+            router.push(`/signup?plan=${plan}`);
+            return;
+        }
+
+        try {
+            // Logged in - create checkout session
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/billing/create-checkout-session`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ plan }),
+                }
+            );
+
+            const data = await res.json();
+
+            if (data.url) {
+                // Redirect to Stripe Checkout
+                window.location.href = data.url;
+            } else {
+                alert("Failed to start upgrade process. Please try again.");
+                setIsLoading(false);
+            }
+        } catch (error) {
+            console.error("Upgrade error:", error);
+            alert("Something went wrong. Please try again.");
+            setIsLoading(false);
+        }
+    };
 
     return (
         <section className="relative py-16" id="pricing">
@@ -80,16 +131,23 @@ export default function Pricing() {
                                 ))}
                             </div>
 
-                            <Link
-                                href="/onboarding?plan=pro"
+                            <button
+                                onClick={() => handleUpgrade("pro")}
+                                disabled={isLoading}
                                 className={`w-full inline-flex items-center justify-center text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 ${
                                     selectedPlan === "pro"
                                         ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 shadow-lg shadow-cyan-500/25'
                                         : 'bg-white/10 hover:bg-white/20'
-                                }`}
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
-                                Get Started
-                            </Link>
+                                {isLoading ? "Processing..." : "Get Started"}
+                            </button>
+                            
+                            {!isLoggedIn && selectedPlan === "pro" && (
+                                <p className="text-xs text-gray-400 text-center mt-2">
+                                    You'll be prompted to sign up first
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -103,7 +161,7 @@ export default function Pricing() {
                     >
                         {selectedPlan === "premium" && (
                             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                                <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
+                                <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg whitespace-nowrap">
                                     MOST POPULAR
                                 </div>
                             </div>
@@ -131,16 +189,23 @@ export default function Pricing() {
                                 ))}
                             </div>
 
-                            <Link
-                                href="/onboarding?plan=premium"
+                            <button
+                                onClick={() => handleUpgrade("premium")}
+                                disabled={isLoading}
                                 className={`w-full inline-flex items-center justify-center text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 ${
                                     selectedPlan === "premium"
                                         ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 shadow-lg shadow-cyan-500/25'
                                         : 'bg-white/10 hover:bg-white/20'
-                                }`}
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
-                                Get Started
-                            </Link>
+                                {isLoading ? "Processing..." : "Get Started"}
+                            </button>
+                            
+                            {!isLoggedIn && selectedPlan === "premium" && (
+                                <p className="text-xs text-gray-400 text-center mt-2">
+                                    You'll be prompted to sign up first
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -152,6 +217,16 @@ export default function Pricing() {
                             <span className="text-sm text-gray-300">{feature}</span>
                         </div>
                     ))}
+                </div>
+
+                {/* Already have an account? */}
+                <div className="mt-8 text-center">
+                    <p className="text-gray-400">
+                        Already have an account?{" "}
+                        <Link href="/login" className="text-cyan-400 hover:text-cyan-300">
+                            Sign in
+                        </Link>
+                    </p>
                 </div>
 
                 {/* Disclaimer */}
