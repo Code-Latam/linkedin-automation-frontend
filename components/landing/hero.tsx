@@ -72,7 +72,7 @@ export default function Hero() {
                             </Link>
 
                         <a
-                            href="https://youtu.be/lh3yfHXk3OA"
+                            href="https://youtu.be/qH3b0460FNA"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="group px-8 py-4 border-2 border-cyan-500/30 text-cyan-300 font-semibold rounded-xl hover:bg-cyan-500/10 hover:border-cyan-500/50 backdrop-blur-sm transition-all duration-300 flex items-center gap-2"
