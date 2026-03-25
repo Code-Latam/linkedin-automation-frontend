@@ -8,13 +8,19 @@ import { pagesMetaData } from "@/lib/metadata";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#2563eb", // Your brand blue color
+  themeColor: "#2563eb",
 };
+
+// Get main metadata with safe fallbacks
+const mainMetadata = pagesMetaData.main;
 
 // Enhance metadata with additional SEO fields
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.meetingmaker.tech"),
-  ...pagesMetaData.main,
+  title: mainMetadata.title || "Astrolab Meeting Maker",
+  description: mainMetadata.description || "AI-powered LinkedIn outreach automation",
+  icons: mainMetadata.icons,
+  openGraph: mainMetadata.openGraph,
   robots: {
     index: true,
     follow: true,
@@ -31,9 +37,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: pagesMetaData.main.title,
-    description: pagesMetaData.main.description,
-    images: pagesMetaData.main.openGraph?.images,
+    title: mainMetadata.title || "Astrolab Meeting Maker",
+    description: mainMetadata.description || "AI-powered LinkedIn outreach automation",
+    images: mainMetadata.openGraph?.images,
   },
 };
 
