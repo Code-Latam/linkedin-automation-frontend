@@ -34,7 +34,7 @@ export default function Features() {
                                     <div className="relative w-full h-full transform group-hover:scale-105 transition-transform duration-500">
                                         <Image
                                             src={feature.image}
-                                            alt={feature.title}
+                                            alt={`Astrolab Meeting Maker - ${feature.title}. ${feature.description.substring(0, 100)}`}
                                             fill
                                             className="object-cover"
                                         />

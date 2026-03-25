@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import { howItWorksText } from '@/lib/text/howitworks';
+import Image from 'next/image';
 
 
 export default function HowItWorks() {
@@ -147,10 +148,12 @@ export default function HowItWorks() {
                                 }}
                                 className="absolute inset-0"
                             >
-                                <img
-                                    src={howItWorksText.steps[activeStep].image}
-                                    alt={howItWorksText.steps[activeStep].title}
-                                    className="w-full h-full object-contain p-4"
+                                <Image
+                                src={howItWorksText.steps[activeStep].image}
+                                alt={`How it works - Step ${activeStep + 1}: ${howItWorksText.steps[activeStep].title}`}
+                                fill
+                                className="object-contain p-4"
+                                sizes="(max-width: 768px) 100vw, 50vw"
                                 />
                             </div>
 
