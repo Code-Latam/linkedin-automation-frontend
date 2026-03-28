@@ -28,13 +28,20 @@ export default function DashboardPage() {
   
   // Blog state
   const [blogEnabled, setBlogEnabled] = useState(false);
-  const [blogSettings, setBlogSettings] = useState({ title: "Blog", layout: "grid" });
+  const [blogSettings, setBlogSettings] = useState({ title: "Blog", layout: "grid", customDomain: "" });
   const [articles, setArticles] = useState([]);
   const [blogLoading, setBlogLoading] = useState(true);
   
+  // LinkedIn posting state
+  const [postLinkedIn, setPostLinkedIn] = useState(false);
+  const [linkedinTemplate, setLinkedinTemplate] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  
   // Local title state for debouncing
   const [tempTitle, setTempTitle] = useState("Blog");
+  const [tempCustomDomain, setTempCustomDomain] = useState("");
   const debouncedTitle = useDebounce(tempTitle, 1000);
+  const debouncedCustomDomain = useDebounce(tempCustomDomain, 1000);
 
   console.log("in dashboard page");
 
@@ -63,10 +70,11 @@ export default function DashboardPage() {
       });
   }, [router]);
 
-  // Update tempTitle when blogSettings changes
+  // Update temp values when blogSettings changes
   useEffect(() => {
     setTempTitle(blogSettings.title);
-  }, [blogSettings.title]);
+    setTempCustomDomain(blogSettings.customDomain || "");
+  }, [blogSettings.title, blogSettings.customDomain]);
 
   // Save when debounced title changes
   useEffect(() => {
@@ -75,11 +83,19 @@ export default function DashboardPage() {
     }
   }, [debouncedTitle]);
 
+  // Save when debounced custom domain changes
+  useEffect(() => {
+    if (debouncedCustomDomain !== (blogSettings.customDomain || "")) {
+      updateBlogSettings({ customDomain: debouncedCustomDomain });
+    }
+  }, [debouncedCustomDomain]);
+
   // Fetch blog data when tab changes to blog
   useEffect(() => {
     if (activeTab === "blog") {
       fetchBlogSettings();
       fetchArticles();
+      fetchLinkedInSettings();
     }
   }, [activeTab]);
 
@@ -90,7 +106,11 @@ export default function DashboardPage() {
     });
     const data = await res.json();
     setBlogEnabled(data.enabled);
-    setBlogSettings(data.settings);
+    setBlogSettings({
+      title: data.settings.title,
+      layout: data.settings.layout,
+      customDomain: data.settings.customDomain || ""
+    });
   }
 
   async function fetchArticles() {
@@ -104,6 +124,20 @@ export default function DashboardPage() {
     setBlogLoading(false);
   }
 
+  async function fetchLinkedInSettings() {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/linkedin-template`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setPostLinkedIn(data.postLinkedIn || false);
+      setLinkedinTemplate(data.templateUrl || null);
+    } catch (err) {
+      console.error("Failed to fetch LinkedIn settings:", err);
+    }
+  }
+
   async function enableBlog() {
     const token = localStorage.getItem("token");
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/enable`, {
@@ -115,7 +149,11 @@ export default function DashboardPage() {
     });
     const data = await res.json();
     setBlogEnabled(true);
-    setBlogSettings(data.settings);
+    setBlogSettings({
+      title: data.settings.title,
+      layout: data.settings.layout,
+      customDomain: data.settings.customDomain || ""
+    });
   }
 
   async function updateBlogSettings(updates: any) {
@@ -129,7 +167,85 @@ export default function DashboardPage() {
       body: JSON.stringify(updates)
     });
     const data = await res.json();
-    setBlogSettings(data.settings);
+    setBlogSettings({
+      title: data.settings.title,
+      layout: data.settings.layout,
+      customDomain: data.settings.customDomain || ""
+    });
+  }
+
+  async function updatePostLinkedIn(enabled: boolean) {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/linkedin-posting`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ enabled })
+      });
+      if (res.ok) {
+        setPostLinkedIn(enabled);
+      } else {
+        const error = await res.json();
+        alert(error.error || "Failed to update setting");
+      }
+    } catch (err) {
+      console.error("Failed to update LinkedIn posting:", err);
+      alert("Failed to update setting");
+    }
+  }
+
+  async function uploadTemplate(file: File) {
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("template", file);
+    
+    setUploading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/linkedin-template`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setLinkedinTemplate(data.imageUrl);
+        alert("Template uploaded successfully!");
+      } else {
+        alert(data.error || "Upload failed");
+      }
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function removeTemplate() {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/linkedin-template`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        setLinkedinTemplate(null);
+        alert("Template removed");
+      } else {
+        alert("Failed to remove template");
+      }
+    } catch (err) {
+      console.error("Remove failed:", err);
+      alert("Failed to remove template");
+    }
   }
 
   const handleManageSubscription = async () => {
@@ -348,7 +464,7 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* Blog Tab - DISPLAY ONLY */}
+        {/* Blog Tab */}
         {activeTab === "blog" && (
           <>
             <h1 className="text-4xl font-bold text-white">
@@ -413,10 +529,101 @@ export default function DashboardPage() {
                         <option value="list">List</option>
                       </select>
                     </div>
+                    {/* 🆕 Custom Blog Domain Field */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Custom Blog Domain</label>
+                      <input
+                        type="text"
+                        placeholder="blog.yourcompany.com"
+                        value={tempCustomDomain}
+                        onChange={(e) => setTempCustomDomain(e.target.value)}
+                        className="w-full p-2 rounded-lg bg-white/10 border border-white/20"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        Your blog will be accessible at this domain (e.g., https://blog.yourcompany.com). 
+                        Leave empty if you're embedding on your main website.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Articles Section - DISPLAY ONLY */}
+                {/* 🆕 LinkedIn Auto-Posting Section */}
+                <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+                  <h2 className="text-xl mb-4">LinkedIn Auto-Posting</h2>
+                  <p className="text-gray-400 mb-4">
+                    Automatically share your blog articles as LinkedIn posts. When enabled, each new article
+                    will be posted to your LinkedIn profile (or company page if configured).
+                  </p>
+                  
+                  <div className="mb-6">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={postLinkedIn}
+                        onChange={(e) => updatePostLinkedIn(e.target.checked)}
+                        className="w-5 h-5 rounded border-white/20 bg-white/10 accent-cyan-500"
+                      />
+                      <span className="text-white">Automatically post articles to LinkedIn</span>
+                    </label>
+                  </div>
+
+                  {postLinkedIn && (
+                    <div className="mt-4 p-4 bg-black/30 rounded-lg">
+                      <h3 className="font-medium text-white mb-3">LinkedIn Post Template</h3>
+                      <p className="text-gray-400 text-sm mb-4">
+                        Upload a 1200×628 pixel image that will be used as the cover for your LinkedIn posts.
+                        The same image will be used for all posts to maintain consistent branding.
+                      </p>
+                      
+                      {linkedinTemplate ? (
+                        <div className="mb-4">
+                          <div className="flex gap-4 items-start">
+                            <div className="w-32 h-32 bg-gray-800 rounded-lg overflow-hidden">
+                              <img 
+                                src={linkedinTemplate} 
+                                alt="Current template" 
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-400 mb-2">Current template</p>
+                              <button
+                                onClick={removeTemplate}
+                                className="text-red-400 hover:text-red-300 text-sm"
+                              >
+                                Remove Template
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
+                          <input
+                            type="file"
+                            id="template-upload"
+                            accept="image/jpeg,image/png,image/webp"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) uploadTemplate(file);
+                            }}
+                          />
+                          <label
+                            htmlFor="template-upload"
+                            className="cursor-pointer text-cyan-400 hover:text-cyan-300"
+                          >
+                            {uploading ? "Uploading..." : "Click to upload a template image"}
+                          </label>
+                          <p className="text-gray-500 text-xs mt-2">
+                            Recommended: 1200×628 pixels, JPG, PNG, or WebP (max 5MB)
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Articles Section */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
                   <h2 className="text-xl mb-4">Your Articles</h2>
                   
@@ -440,6 +647,16 @@ export default function DashboardPage() {
                             <span className="text-xs text-gray-500">
                               {new Date(article.publishedAt).toLocaleDateString()}
                             </span>
+                            {article.linkedinPost?.posted && (
+                              <span className="text-xs text-blue-400">
+                                📤 LinkedIn: Posted
+                              </span>
+                            )}
+                            {article.linkedinPost?.error && (
+                              <span className="text-xs text-red-400" title={article.linkedinPost.error}>
+                                ❌ LinkedIn: Failed
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))}
