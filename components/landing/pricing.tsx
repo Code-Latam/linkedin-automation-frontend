@@ -234,6 +234,25 @@ export default function Pricing() {
                     {pricingText.disclaimer}
                 </p>
             </div>
+
+            {/* Onboarding Offer */}
+<div className="mt-10 rounded-2xl border border-gray-800 bg-white/[0.03] backdrop-blur-sm p-6 text-center max-w-2xl mx-auto">
+  <h4 className="text-lg font-semibold text-white mb-2">
+    Need help getting started?
+  </h4>
+
+  <p className="text-gray-400 text-sm mb-4">
+    Some clients prefer a faster setup or need expert guidance. We offer a one-time onboarding service to get you fully operational.
+  </p>
+
+  <div className="text-2xl font-bold text-white mb-2">
+    $450 <span className="text-sm text-gray-400 font-normal">one-time</span>
+  </div>
+
+  <p className="text-gray-300 text-sm">
+    Includes full configuration of your agents, workflows, and outreach setup tailored to your business.
+  </p>
+</div>
         </section>
     );
 }
