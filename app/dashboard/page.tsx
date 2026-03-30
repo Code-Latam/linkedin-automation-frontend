@@ -43,10 +43,7 @@ export default function DashboardPage() {
   const debouncedTitle = useDebounce(tempTitle, 1000);
   const debouncedCustomDomain = useDebounce(tempCustomDomain, 1000);
 
-  console.log("in dashboard page");
-
   useEffect(() => {
-    console.log("in use effect");
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -154,6 +151,23 @@ export default function DashboardPage() {
       layout: data.settings.layout,
       customDomain: data.settings.customDomain || ""
     });
+  }
+
+  async function disableBlog() {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/disable`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+    if (res.ok) {
+      setBlogEnabled(false);
+      alert("Blog disabled successfully");
+    } else {
+      alert("Failed to disable blog");
+    }
   }
 
   async function updateBlogSettings(updates: any) {
@@ -488,6 +502,29 @@ export default function DashboardPage() {
               </div>
             ) : (
               <>
+                {/* Blog Status Bar */}
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4 flex justify-between items-center">
+                  <div>
+                    <span className="text-green-400 inline-flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                      Blog Enabled
+                    </span>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Articles are being generated automatically by your SEO agents
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (confirm("Are you sure you want to disable the blog? Your existing articles will remain but no new articles will be generated.")) {
+                        disableBlog();
+                      }
+                    }}
+                    className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/30 transition"
+                  >
+                    Disable Blog
+                  </button>
+                </div>
+
                 {/* Embed Code Section */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
                   <h2 className="text-xl mb-2">Embed on Your Website</h2>
@@ -529,7 +566,6 @@ export default function DashboardPage() {
                         <option value="list">List</option>
                       </select>
                     </div>
-                    {/* 🆕 Custom Blog Domain Field */}
                     <div>
                       <label className="block text-sm font-medium mb-2">Custom Blog Domain</label>
                       <input
@@ -547,25 +583,35 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* 🆕 LinkedIn Auto-Posting Section */}
+                {/* LinkedIn Auto-Posting Section */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <h2 className="text-xl mb-4">LinkedIn Auto-Posting</h2>
+                  <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-xl">LinkedIn Auto-Posting</h2>
+                    <div className="flex items-center gap-3">
+                      <span className={`text-sm ${postLinkedIn ? 'text-green-400' : 'text-gray-500'}`}>
+                        {postLinkedIn ? '● Enabled' : '○ Disabled'}
+                      </span>
+                      <button
+                        onClick={() => updatePostLinkedIn(!postLinkedIn)}
+                        className={`
+                          relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                          ${postLinkedIn ? 'bg-cyan-500' : 'bg-gray-600'}
+                        `}
+                      >
+                        <span
+                          className={`
+                            inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                            ${postLinkedIn ? 'translate-x-6' : 'translate-x-1'}
+                          `}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                  
                   <p className="text-gray-400 mb-4">
                     Automatically share your blog articles as LinkedIn posts. When enabled, each new article
                     will be posted to your LinkedIn profile (or company page if configured).
                   </p>
-                  
-                  <div className="mb-6">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={postLinkedIn}
-                        onChange={(e) => updatePostLinkedIn(e.target.checked)}
-                        className="w-5 h-5 rounded border-white/20 bg-white/10 accent-cyan-500"
-                      />
-                      <span className="text-white">Automatically post articles to LinkedIn</span>
-                    </label>
-                  </div>
 
                   {postLinkedIn && (
                     <div className="mt-4 p-4 bg-black/30 rounded-lg">
@@ -625,38 +671,66 @@ export default function DashboardPage() {
 
                 {/* Articles Section */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <h2 className="text-xl mb-4">Your Articles</h2>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl">Your Articles</h2>
+                    <button
+                      onClick={fetchArticles}
+                      className="text-cyan-400 hover:text-cyan-300 text-sm"
+                    >
+                      🔄 Refresh
+                    </button>
+                  </div>
                   
                   {blogLoading ? (
                     <p className="text-gray-400">Loading articles...</p>
                   ) : articles.length === 0 ? (
-                    <p className="text-gray-400">No articles yet. Articles will be generated automatically by the SEO agent.</p>
+                    <div className="text-center py-8">
+                      <p className="text-gray-400 mb-2">No articles yet.</p>
+                      <p className="text-gray-500 text-sm">
+                        Articles will be generated automatically by your SEO agents. 
+                        Make sure you have at least one active SEO Manager agent.
+                      </p>
+                    </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
                       {articles.map((article: any) => (
-                        <div key={article._id} className="border border-white/10 rounded-lg p-4">
-                          <h3 className="font-semibold text-white">{article.title}</h3>
-                          <p className="text-gray-400 text-sm mt-1">{article.excerpt}</p>
-                          <div className="flex gap-4 mt-2">
-                            <span className="text-xs text-gray-500">
-                              {article.status === "published" ? "✅ Published" : "📝 Draft"}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {article.readTime} min read
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {new Date(article.publishedAt).toLocaleDateString()}
-                            </span>
-                            {article.linkedinPost?.posted && (
-                              <span className="text-xs text-blue-400">
-                                📤 LinkedIn: Posted
-                              </span>
-                            )}
-                            {article.linkedinPost?.error && (
-                              <span className="text-xs text-red-400" title={article.linkedinPost.error}>
-                                ❌ LinkedIn: Failed
-                              </span>
-                            )}
+                        <div key={article._id} className="border border-white/10 rounded-lg p-4 hover:bg-white/5 transition">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-white">{article.title}</h3>
+                              <p className="text-gray-400 text-sm mt-1 line-clamp-2">{article.excerpt}</p>
+                              <div className="flex gap-4 mt-2 flex-wrap">
+                                <span className="text-xs text-gray-500">
+                                  {article.status === "published" ? "✅ Published" : "📝 Draft"}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  📖 {article.readTime} min read
+                                </span>
+                                {article.publishedAt && (
+                                  <span className="text-xs text-gray-500">
+                                    📅 {new Date(article.publishedAt).toLocaleDateString()}
+                                  </span>
+                                )}
+                                {article.linkedinPost?.posted && (
+                                  <span className="text-xs text-blue-400" title={`Posted at ${new Date(article.linkedinPost.postedAt).toLocaleString()}`}>
+                                    📤 LinkedIn: Posted
+                                  </span>
+                                )}
+                                {article.linkedinPost?.error && (
+                                  <span className="text-xs text-red-400" title={article.linkedinPost.error}>
+                                    ❌ LinkedIn: Failed
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <a
+                              href={`/blog/${article.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-cyan-400 hover:text-cyan-300 text-sm ml-4"
+                            >
+                              View →
+                            </a>
                           </div>
                         </div>
                       ))}
