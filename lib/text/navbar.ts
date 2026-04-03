@@ -10,7 +10,8 @@ export const navbarText = {
         { name: "Pricing", href: "/#pricing" },
         { name: "Blog", href: "/blog" },  // ← ADD THIS
         { name: "Contact", href: "/#contact" },
-        { name: "FAQ", href: "/#faq" }
+        { name: "FAQ", href: "/#faq" },
+        { name: "Admin", href: "/admin" }
     ],
     cta: {
         login: "Log In"

@@ -1,13 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import AuthSlice from "@/store/slices/authSlice";
 import LinkedInSlice from "@/store/slices/linkedInSlice";
+import adminReducer from "@/store/adminSlice";  // ← Add this import
 
 export const store = configureStore({
     reducer: {
-        auth:AuthSlice,
-        linkedIn:LinkedInSlice,
+        auth: AuthSlice,
+        linkedIn: LinkedInSlice,
+        admin: adminReducer,  // ← Add this line
     },
-    devTools:true,
+    devTools: true,
 });
 
 // TYPES
