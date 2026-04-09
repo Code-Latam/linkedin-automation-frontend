@@ -329,7 +329,7 @@ export default function DashboardPage() {
   };
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-  const embedCode = `<script src="https://api.meetingmaker.tech/widgets/embed.js?token=${token}"></script>`;
+  const embedCode = `<script src="https://api.meetingmaker.tech/widgets/embed.js" data-token="${token}"></script>`;
 
   if (!user) {
     return (
