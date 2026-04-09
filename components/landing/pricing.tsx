@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation';
 
 const PRO_PRICE = 150;
 const PREMIUM_PRICE = 350;
+const ONBOARDING_PRICE = 450;
 
 export default function Pricing() {
     const [selectedPlan, setSelectedPlan] = useState<"pro" | "premium">("pro");
+    const [includeOnboarding, setIncludeOnboarding] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -20,19 +22,25 @@ export default function Pricing() {
         setIsLoggedIn(!!token);
     }, []);
 
+    const getTotalPrice = () => {
+        const basePrice = selectedPlan === "pro" ? PRO_PRICE : PREMIUM_PRICE;
+        const onboardingPrice = includeOnboarding ? ONBOARDING_PRICE : 0;
+        return basePrice + onboardingPrice;
+    };
+
     const handleUpgrade = async (plan: "pro" | "premium") => {
         setIsLoading(true);
         
         const token = localStorage.getItem("token");
         
         if (!token) {
-            // Not logged in - redirect to signup with plan
-            router.push(`/login?plan=${plan}`);
+            // Not logged in - redirect to signup with plan and onboarding preference
+            router.push(`/login?plan=${plan}&onboarding=${includeOnboarding}`);
             return;
         }
 
         try {
-            // Logged in - create checkout session
+            // Logged in - create checkout session with onboarding option
             const res = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/billing/create-checkout-session`,
                 {
@@ -41,7 +49,10 @@ export default function Pricing() {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ plan }),
+                    body: JSON.stringify({ 
+                        plan,
+                        includeOnboarding
+                    }),
                 }
             );
 
@@ -118,6 +129,16 @@ export default function Pricing() {
                             <div className="mb-6">
                                 <span className="text-5xl font-bold text-white">${PRO_PRICE}</span>
                                 <span className="text-gray-400 text-lg ml-2">/mo</span>
+                                {includeOnboarding && selectedPlan === "pro" && (
+                                    <div className="text-sm text-cyan-400 mt-1">
+                                        + ${ONBOARDING_PRICE} one-time setup
+                                    </div>
+                                )}
+                                {includeOnboarding && selectedPlan === "pro" && (
+                                    <div className="text-sm text-gray-400 mt-2">
+                                        Total today: ${getTotalPrice()}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-4 mb-8">
@@ -131,6 +152,24 @@ export default function Pricing() {
                                 ))}
                             </div>
 
+                            {/* Onboarding Checkbox for Pro */}
+                            <div className="mb-6">
+                                <label className="flex items-center gap-2 cursor-pointer justify-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={includeOnboarding}
+                                        onChange={(e) => setIncludeOnboarding(e.target.checked)}
+                                        className="w-4 h-4 rounded border-gray-600 bg-white/10"
+                                    />
+                                    <span className="text-sm text-gray-300">
+                                        Add one-time onboarding setup (+${ONBOARDING_PRICE})
+                                    </span>
+                                </label>
+                                <p className="text-xs text-gray-500 text-center mt-2">
+                                    Get expert help configuring your agents and workflows
+                                </p>
+                            </div>
+
                             <button
                                 onClick={() => handleUpgrade("pro")}
                                 disabled={isLoading}
@@ -140,7 +179,7 @@ export default function Pricing() {
                                         : 'bg-white/10 hover:bg-white/20'
                                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
-                                {isLoading ? "Processing..." : "Get Started"}
+                                {isLoading ? "Processing..." : includeOnboarding ? `Get Started ($${getTotalPrice()} today)` : "Get Started"}
                             </button>
                             
                             {!isLoggedIn && selectedPlan === "pro" && (
@@ -176,6 +215,16 @@ export default function Pricing() {
                             <div className="mb-6">
                                 <span className="text-5xl font-bold text-white">${PREMIUM_PRICE}</span>
                                 <span className="text-gray-400 text-lg ml-2">/mo</span>
+                                {includeOnboarding && selectedPlan === "premium" && (
+                                    <div className="text-sm text-cyan-400 mt-1">
+                                        + ${ONBOARDING_PRICE} one-time setup
+                                    </div>
+                                )}
+                                {includeOnboarding && selectedPlan === "premium" && (
+                                    <div className="text-sm text-gray-400 mt-2">
+                                        Total today: ${getTotalPrice()}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-4 mb-8">
@@ -189,6 +238,24 @@ export default function Pricing() {
                                 ))}
                             </div>
 
+                            {/* Onboarding Checkbox for Premium */}
+                            <div className="mb-6">
+                                <label className="flex items-center gap-2 cursor-pointer justify-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={includeOnboarding}
+                                        onChange={(e) => setIncludeOnboarding(e.target.checked)}
+                                        className="w-4 h-4 rounded border-gray-600 bg-white/10"
+                                    />
+                                    <span className="text-sm text-gray-300">
+                                        Add one-time onboarding setup (+${ONBOARDING_PRICE})
+                                    </span>
+                                </label>
+                                <p className="text-xs text-gray-500 text-center mt-2">
+                                    Get expert help configuring your agents and workflows
+                                </p>
+                            </div>
+
                             <button
                                 onClick={() => handleUpgrade("premium")}
                                 disabled={isLoading}
@@ -198,7 +265,7 @@ export default function Pricing() {
                                         : 'bg-white/10 hover:bg-white/20'
                                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
-                                {isLoading ? "Processing..." : "Get Started"}
+                                {isLoading ? "Processing..." : includeOnboarding ? `Get Started ($${getTotalPrice()} today)` : "Get Started"}
                             </button>
                             
                             {!isLoggedIn && selectedPlan === "premium" && (
@@ -235,24 +302,44 @@ export default function Pricing() {
                 </p>
             </div>
 
-            {/* Onboarding Offer */}
-<div className="mt-10 rounded-2xl border border-gray-800 bg-white/[0.03] backdrop-blur-sm p-6 text-center max-w-2xl mx-auto">
-  <h4 className="text-lg font-semibold text-white mb-2">
-    Need help getting started?
-  </h4>
+            {/* Onboarding Offer - Now integrated into the cards above, keeping this as additional info */}
+            <div className="mt-10 rounded-2xl border border-gray-800 bg-white/[0.03] backdrop-blur-sm p-6 text-center max-w-2xl mx-auto">
+                <h4 className="text-lg font-semibold text-white mb-2">
+                    What's included in onboarding?
+                </h4>
 
-  <p className="text-gray-400 text-sm mb-4">
-    Some clients prefer a faster setup or need expert guidance. We offer a one-time onboarding service to get you fully operational.
-  </p>
+                <p className="text-gray-400 text-sm mb-4">
+                    Our one-time onboarding service includes full configuration of your agents, 
+                    workflows, and outreach setup tailored to your business.
+                </p>
 
-  <div className="text-2xl font-bold text-white mb-2">
-    $450 <span className="text-sm text-gray-400 font-normal">one-time</span>
-  </div>
-
-  <p className="text-gray-300 text-sm">
-    Includes full configuration of your agents, workflows, and outreach setup tailored to your business.
-  </p>
-</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-left mt-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                        <Check className="h-4 w-4 text-cyan-400" />
+                        Agent configuration
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                        <Check className="h-4 w-4 text-cyan-400" />
+                        Workflow setup
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                        <Check className="h-4 w-4 text-cyan-400" />
+                        Outreach strategy
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                        <Check className="h-4 w-4 text-cyan-400" />
+                        API integration help
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                        <Check className="h-4 w-4 text-cyan-400" />
+                        1-hour training session
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                        <Check className="h-4 w-4 text-cyan-400" />
+                        30 days email support
+                    </div>
+                </div>
+            </div>
         </section>
     );
 }
