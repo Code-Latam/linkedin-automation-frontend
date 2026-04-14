@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 // Debounce hook
@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("account"); // "account" | "blog"
+  const [activeTab, setActiveTab] = useState("account"); // "account" | "blog" | "widgets"
   
   // Blog state
   const [blogEnabled, setBlogEnabled] = useState(false);
@@ -43,8 +43,14 @@ export default function DashboardPage() {
   const debouncedTitle = useDebounce(tempTitle, 1000);
   const debouncedCustomDomain = useDebounce(tempCustomDomain, 1000);
 
-  // 🟢 NEW: Onboarding state
+  // 🟢 Onboarding state
   const [includeOnboarding, setIncludeOnboarding] = useState(false);
+
+  // 🟢 NEW: Chat Widget state
+  const [chatAgents, setChatAgents] = useState([]);
+  const [selectedChatAgentId, setSelectedChatAgentId] = useState("");
+  const [loadingAgents, setLoadingAgents] = useState(false);
+  const [savingAgent, setSavingAgent] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -90,15 +96,22 @@ export default function DashboardPage() {
     }
   }, [debouncedCustomDomain]);
 
-  // Fetch blog data when tab changes to blog
+  // Fetch data when tabs change
   useEffect(() => {
     if (activeTab === "blog") {
       fetchBlogSettings();
       fetchArticles();
       fetchLinkedInSettings();
     }
+    if (activeTab === "widgets") {
+      fetchBlogSettings(); // For blog embed code (needs token)
+      fetchChatAgents();
+      fetchChatWidgetSettings();
+    }
   }, [activeTab]);
 
+  // ========== BLOG FUNCTIONS (Existing, unchanged) ==========
+  
   async function fetchBlogSettings() {
     const token = localStorage.getItem("token");
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings`, {
@@ -265,6 +278,66 @@ export default function DashboardPage() {
     }
   }
 
+  // ========== CHAT WIDGET FUNCTIONS (NEW) ==========
+
+  async function fetchChatAgents() {
+    const token = localStorage.getItem("token");
+    setLoadingAgents(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/agents/chat-representatives`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setChatAgents(data.agents || []);
+    } catch (err) {
+      console.error("Failed to fetch chat agents:", err);
+      setChatAgents([]);
+    } finally {
+      setLoadingAgents(false);
+    }
+  }
+
+  async function fetchChatWidgetSettings() {
+    const token = localStorage.getItem("token");
+    try {
+      // Reusing blog settings to store selectedChatAgentId (no backend changes needed)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setSelectedChatAgentId(data.settings?.selectedChatAgentId || "");
+    } catch (err) {
+      console.error("Failed to fetch chat widget settings:", err);
+    }
+  }
+
+  async function updateChatAgent(agentId: string) {
+    const token = localStorage.getItem("token");
+    setSavingAgent(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ selectedChatAgentId: agentId })
+      });
+      if (res.ok) {
+        setSelectedChatAgentId(agentId);
+      } else {
+        alert("Failed to save chat agent selection");
+      }
+    } catch (err) {
+      console.error("Failed to update chat agent:", err);
+      alert("Failed to save chat agent selection");
+    } finally {
+      setSavingAgent(false);
+    }
+  }
+
+  // ========== BILLING FUNCTIONS (Existing) ==========
+
   const handleManageSubscription = async () => {
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -295,7 +368,6 @@ export default function DashboardPage() {
     }
   };
 
-  // 🟢 UPDATED: handleUpgrade now accepts includeOnboarding parameter
   const handleUpgrade = async (plan: "pro" | "premium", includeOnboarding: boolean = false) => {
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -335,8 +407,22 @@ export default function DashboardPage() {
     router.push("/");
   };
 
+  // ========== EMBED CODE GENERATION ==========
+
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-  const embedCode = `<script src="https://api.meetingmaker.tech/widgets/embed.js" data-token="${token}"></script>`;
+  
+  // Blog embed code (moved to Widgets tab)
+  const blogEmbedCode = useMemo(() => {
+    return `<script src="https://api.meetingmaker.tech/widgets/embed.js" data-token="${token}"></script>`;
+  }, [token]);
+
+  // Chat embed code (new)
+  const chatEmbedCode = useMemo(() => {
+    if (!selectedChatAgentId) {
+      return null;
+    }
+    return `<script src="https://api.meetingmaker.tech/widgets/chat.js" data-token="${token}" data-agent-id="${selectedChatAgentId}"></script>`;
+  }, [token, selectedChatAgentId]);
 
   if (!user) {
     return (
@@ -361,7 +447,7 @@ export default function DashboardPage() {
     <div className="min-h-screen px-6 pt-24 pb-24">
       <div className="max-w-4xl mx-auto space-y-8">
 
-        {/* Tab Navigation */}
+        {/* Tab Navigation - UPDATED with 3 tabs */}
         <div className="flex gap-4 border-b border-white/10 pb-4">
           <button
             onClick={() => setActiveTab("account")}
@@ -383,16 +469,25 @@ export default function DashboardPage() {
           >
             Blog
           </button>
+          <button
+            onClick={() => setActiveTab("widgets")}
+            className={`px-4 py-2 rounded-lg transition ${
+              activeTab === "widgets" 
+                ? "bg-cyan-500 text-white" 
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            Widgets
+          </button>
         </div>
 
-        {/* Account Tab */}
+        {/* ========== ACCOUNT TAB (Unchanged) ========== */}
         {activeTab === "account" && (
           <>
             <h1 className="text-4xl font-bold text-white">
               Dashboard
             </h1>
 
-            {/* Account Card */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <h2 className="text-xl font-semibold text-white mb-4">
                 Account Information
@@ -417,7 +512,6 @@ export default function DashboardPage() {
                   <div className="mt-6 space-y-4">
                     <p className="text-sm text-gray-400">Choose your plan:</p>
                     
-                    {/* 🟢 NEW: Onboarding Checkbox */}
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -474,7 +568,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Extension Info */}
             <div className="bg-white/5 border border-cyan-500/20 rounded-2xl p-6">
               <h2 className="text-xl font-semibold text-white mb-4">
                 Chrome Extension
@@ -501,11 +594,11 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* Blog Tab */}
+        {/* ========== BLOG TAB (Content Management Only - No Embed Code) ========== */}
         {activeTab === "blog" && (
           <>
             <h1 className="text-4xl font-bold text-white">
-              Blog Settings
+              Blog Management
             </h1>
 
             {!blogEnabled ? (
@@ -525,7 +618,6 @@ export default function DashboardPage() {
               </div>
             ) : (
               <>
-                {/* Blog Status Bar */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-4 flex justify-between items-center">
                   <div>
                     <span className="text-green-400 inline-flex items-center gap-2">
@@ -545,23 +637,6 @@ export default function DashboardPage() {
                     className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/30 transition"
                   >
                     Disable Blog
-                  </button>
-                </div>
-
-                {/* Embed Code Section */}
-                <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <h2 className="text-xl mb-2">Embed on Your Website</h2>
-                  <p className="text-gray-400 mb-4">
-                    Copy this code and paste it anywhere on your website where you want your blog to appear:
-                  </p>
-                  <div className="bg-black/30 p-3 rounded-lg font-mono text-sm overflow-x-auto">
-                    <pre className="whitespace-pre-wrap break-all text-xs">{embedCode}</pre>
-                  </div>
-                  <button 
-                    onClick={() => navigator.clipboard.writeText(embedCode)}
-                    className="mt-3 text-cyan-400 hover:text-cyan-300 text-sm"
-                  >
-                    📋 Copy Code
                   </button>
                 </div>
 
@@ -606,7 +681,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* LinkedIn Auto-Posting Section */}
+                {/* LinkedIn Auto-Posting */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
                   <div className="flex justify-between items-start mb-4">
                     <h2 className="text-xl">LinkedIn Auto-Posting</h2>
@@ -762,6 +837,107 @@ export default function DashboardPage() {
                 </div>
               </>
             )}
+          </>
+        )}
+
+        {/* ========== WIDGETS TAB (NEW - All embed codes) ========== */}
+        {activeTab === "widgets" && (
+          <>
+            <h1 className="text-4xl font-bold text-white">
+              Website Widgets
+            </h1>
+            <p className="text-gray-400 -mt-2">
+              Copy and paste these scripts into your website to add Meeting Maker functionality.
+            </p>
+
+            {/* Blog Widget Section */}
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-2xl">📝</span>
+                <h2 className="text-xl">Blog Widget</h2>
+              </div>
+              <p className="text-gray-400 mb-4">
+                Display your blog articles anywhere on your website. The widget will automatically show your latest posts.
+              </p>
+              
+              <label className="block text-sm font-medium mb-2">Embed Code</label>
+              <div className="bg-black/30 p-3 rounded-lg font-mono text-sm overflow-x-auto">
+                <pre className="whitespace-pre-wrap break-all text-xs">{blogEmbedCode}</pre>
+              </div>
+              <button 
+                onClick={() => navigator.clipboard.writeText(blogEmbedCode)}
+                className="mt-3 text-cyan-400 hover:text-cyan-300 text-sm"
+              >
+                📋 Copy Code
+              </button>
+            </div>
+
+            {/* Chat Widget Section */}
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-2xl">💬</span>
+                <h2 className="text-xl">Chat Widget</h2>
+              </div>
+              <p className="text-gray-400 mb-4">
+                Add an AI-powered chat widget to your website. Select which Chat Representative agent will handle conversations.
+              </p>
+
+              {/* Agent Selector */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">Select Chat Agent</label>
+                {loadingAgents ? (
+                  <p className="text-gray-400 text-sm">Loading agents...</p>
+                ) : (
+                  <>
+                    <select
+                      value={selectedChatAgentId}
+                      onChange={(e) => updateChatAgent(e.target.value)}
+                      disabled={savingAgent}
+                      className="w-full max-w-md p-2 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 disabled:opacity-50"
+                    >
+                      <option value="" className="text-gray-400">-- No agent (widget disabled) --</option>
+                      {chatAgents.map((agent: any) => (
+                        <option key={agent._id} value={agent._id} className="text-white">
+                          {agent.name} ({agent.role})
+                        </option>
+                      ))}
+                    </select>
+                    {savingAgent && (
+                      <p className="text-gray-400 text-sm mt-1">Saving...</p>
+                    )}
+                    {chatAgents.length === 0 && !loadingAgents && (
+                      <p className="text-yellow-400 text-sm mt-2">
+                        ⚠️ No Chat Representative agents found. Create one in the Agents section first.
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Chat Embed Code (only shown if agent selected) */}
+              {selectedChatAgentId && chatEmbedCode ? (
+                <>
+                  <label className="block text-sm font-medium mb-2">Embed Code</label>
+                  <div className="bg-black/30 p-3 rounded-lg font-mono text-sm overflow-x-auto">
+                    <pre className="whitespace-pre-wrap break-all text-xs">{chatEmbedCode}</pre>
+                  </div>
+                  <button 
+                    onClick={() => navigator.clipboard.writeText(chatEmbedCode)}
+                    className="mt-3 text-cyan-400 hover:text-cyan-300 text-sm"
+                  >
+                    📋 Copy Code
+                  </button>
+                </>
+              ) : (
+                !loadingAgents && (
+                  <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                    <p className="text-yellow-400 text-sm">
+                      Select a Chat Representative agent above to generate your chat widget embed code.
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
           </>
         )}
 

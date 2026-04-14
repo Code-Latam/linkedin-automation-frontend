@@ -43,6 +43,9 @@ export default function DashboardPage() {
   const debouncedTitle = useDebounce(tempTitle, 1000);
   const debouncedCustomDomain = useDebounce(tempCustomDomain, 1000);
 
+  // 🟢 NEW: Onboarding state
+  const [includeOnboarding, setIncludeOnboarding] = useState(false);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -292,7 +295,8 @@ export default function DashboardPage() {
     }
   };
 
-  const handleUpgrade = async (plan: "pro" | "premium") => {
+  // 🟢 UPDATED: handleUpgrade now accepts includeOnboarding parameter
+  const handleUpgrade = async (plan: "pro" | "premium", includeOnboarding: boolean = false) => {
     setLoading(true);
     const token = localStorage.getItem("token");
 
@@ -305,7 +309,10 @@ export default function DashboardPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ plan }),
+          body: JSON.stringify({ 
+            plan,
+            includeOnboarding
+          }),
         }
       );
 
@@ -409,16 +416,32 @@ export default function DashboardPage() {
                 {user.client?.plan === "free" && (
                   <div className="mt-6 space-y-4">
                     <p className="text-sm text-gray-400">Choose your plan:</p>
+                    
+                    {/* 🟢 NEW: Onboarding Checkbox */}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={includeOnboarding}
+                        onChange={(e) => setIncludeOnboarding(e.target.checked)}
+                        className="w-4 h-4 rounded border-gray-600 bg-white/10"
+                      />
+                      <span className="text-gray-300">
+                        + Add Onboarding Setup ($450 one-time fee)
+                      </span>
+                    </label>
+                    
                     <div className="flex gap-4">
                       <button
-                        onClick={() => handleUpgrade("pro")}
-                        className="flex-1 px-6 py-3 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-xl text-cyan-400 font-semibold transition"
+                        onClick={() => handleUpgrade("pro", includeOnboarding)}
+                        disabled={loading}
+                        className="flex-1 px-6 py-3 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-xl text-cyan-400 font-semibold transition disabled:opacity-50"
                       >
                         Upgrade to Pro - $150/mo
                       </button>
                       <button
-                        onClick={() => handleUpgrade("premium")}
-                        className="flex-1 px-6 py-3 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-xl text-purple-400 font-semibold transition"
+                        onClick={() => handleUpgrade("premium", includeOnboarding)}
+                        disabled={loading}
+                        className="flex-1 px-6 py-3 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-xl text-purple-400 font-semibold transition disabled:opacity-50"
                       >
                         Upgrade to Premium - $350/mo
                       </button>
