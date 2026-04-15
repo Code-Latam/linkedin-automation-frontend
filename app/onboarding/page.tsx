@@ -46,7 +46,7 @@ export default function OnboardingPage() {
       localStorage.setItem("token", data.token);
 
       // Redirect to install extension page
-      router.push("/install-extension");
+      router.push("/dashboard");
     } catch (err: any) {
       setError(err.message);
     } finally {

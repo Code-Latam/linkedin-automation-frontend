@@ -55,7 +55,7 @@ export default function Onboarding() {
         onSubmit={handleSubmit}
         className="bg-neutral-900 p-8 rounded-xl w-full max-w-md space-y-4"
       >
-        <h1 className="text-2xl font-bold">Create Your Free Account</h1>
+        <h1 className="text-2xl font-bold">Create Your Account</h1>
 
         <input
           type="email"
@@ -82,7 +82,7 @@ export default function Onboarding() {
           disabled={loading}
           className="w-full bg-white text-black font-semibold p-3 rounded"
         >
-          {loading ? "Creating..." : "Start Free"}
+          {loading ? "Creating..." : "Start"}
         </button>
       </form>
     </div>

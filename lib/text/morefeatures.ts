@@ -29,7 +29,7 @@ export const moreFeaturesText = {
             icon: Upload,
             title: "Lead Search",
             description:
-                "With the Free or Pro version, use LinkedIn search tools to select your prospects and send them to one of your agents in Meeting Maker. With the Premium version, our platform automatically finds leads for you",
+                "Use LinkedIn search tools to select your prospects and send them to one of your agents in Meeting Maker. With the Premium version, our platform automatically finds leads for you",
             badge: "Prospecting",
         },
          {

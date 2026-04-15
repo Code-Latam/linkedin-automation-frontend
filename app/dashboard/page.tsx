@@ -434,7 +434,7 @@ export default function DashboardPage() {
 
   const getPlanDisplay = (plan: string) => {
     switch (plan) {
-      case "free": return "Free";
+      case "free": return "NO PLAN";
       case "pro": return "Pro";
       case "premium": return "Premium";
       default: return plan;
@@ -574,7 +574,7 @@ export default function DashboardPage() {
               </h2>
 
               <p className="text-gray-300 mb-4">
-                Make sure the extension is installed and you're logged in.
+                After upgrading your plan please install your Chrome extension and log in.
               </p>
 
               <a

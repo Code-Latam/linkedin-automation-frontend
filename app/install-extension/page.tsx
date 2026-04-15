@@ -29,7 +29,7 @@ export default function InstallExtensionPage() {
           </h1>
 
           <p className="text-gray-400 max-w-xl mx-auto">
-            Your account is ready. Install our Chrome extension to activate
+            Once you've subscribed to your plan, your account will be activated immediately. Install our Chrome extension to activate
             your workspace and start using the platform.
           </p>
         </div>

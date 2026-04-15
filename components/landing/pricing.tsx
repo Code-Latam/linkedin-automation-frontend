@@ -35,7 +35,7 @@ export default function Pricing() {
         
         if (!token) {
             // Not logged in - redirect to signup with plan and onboarding preference
-            router.push(`/login?plan=${plan}&onboarding=${includeOnboarding}`);
+            router.push(`/onboarding?plan=${plan}&onboarding=${includeOnboarding}`);
             return;
         }
 

@@ -6,7 +6,7 @@ export const howItWorksText = {
     steps: [
         {
             id: 1,
-            title: "Create a free account on this page, install our Chrome extension, and log in to the platform to get started.",
+            title: "Create an account on this page, install our Chrome extension, and log in to the platform to get started.",
             image: "/images/how-it-works/login-meetingmaker.png"
         },
         {
