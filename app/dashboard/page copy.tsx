@@ -52,14 +52,6 @@ export default function DashboardPage() {
   const [loadingAgents, setLoadingAgents] = useState(false);
   const [savingAgent, setSavingAgent] = useState(false);
 
-  // 🟢 Change Password state
-  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [changePasswordLoading, setChangePasswordLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
-
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -344,69 +336,6 @@ export default function DashboardPage() {
     }
   }
 
-  // ========== CHANGE PASSWORD FUNCTION ==========
-
-  const handleChangePassword = async () => {
-    setPasswordError("");
-    
-    if (newPassword !== confirmPassword) {
-      setPasswordError("New passwords do not match");
-      return;
-    }
-    
-    if (newPassword.length < 6) {
-      setPasswordError("Password must be at least 6 characters");
-      return;
-    }
-    
-    setChangePasswordLoading(true);
-    const token = localStorage.getItem("token");
-    
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword
-        }),
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        if (data.error === "current_password_incorrect") {
-          setPasswordError("Current password is incorrect");
-        } else if (data.error === "password_too_short") {
-          setPasswordError("Password must be at least 6 characters");
-        } else {
-          setPasswordError(data.error || "Failed to change password");
-        }
-        return;
-      }
-      
-      // Update token if returned
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
-      
-      // Clear form and close modal
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setShowChangePasswordModal(false);
-      alert("Password changed successfully!");
-      
-    } catch (err) {
-      setPasswordError("Something went wrong. Please try again.");
-    } finally {
-      setChangePasswordLoading(false);
-    }
-  };
-
   // ========== BILLING FUNCTIONS (Existing) ==========
 
   const handleManageSubscription = async () => {
@@ -656,20 +585,12 @@ export default function DashboardPage() {
               </a>
             </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowChangePasswordModal(true)}
-                className="px-6 py-3 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-xl hover:bg-cyan-500/30 transition"
-              >
-                Change Password
-              </button>
-              <button
-                onClick={handleLogout}
-                className="px-6 py-3 bg-red-500/20 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/30 transition"
-              >
-                Log Out
-              </button>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="px-6 py-3 bg-red-500/20 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/30 transition"
+            >
+              Log Out
+            </button>
           </>
         )}
 
@@ -1021,98 +942,6 @@ export default function DashboardPage() {
         )}
 
       </div>
-
-      {/* Change Password Modal */}
-      {showChangePasswordModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl max-w-md w-full p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">Change Password</h2>
-              <button
-                onClick={() => {
-                  setShowChangePasswordModal(false);
-                  setPasswordError("");
-                  setCurrentPassword("");
-                  setNewPassword("");
-                  setConfirmPassword("");
-                }}
-                className="text-gray-400 hover:text-white text-2xl"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                  placeholder="Enter your current password"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                  placeholder="At least 6 characters"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Confirm New Password
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                  placeholder="Re-enter your new password"
-                />
-              </div>
-              
-              {passwordError && (
-                <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-                  <p className="text-red-400 text-sm">{passwordError}</p>
-                </div>
-              )}
-              
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={handleChangePassword}
-                  disabled={changePasswordLoading}
-                  className="flex-1 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 rounded-lg text-white font-semibold transition disabled:opacity-50"
-                >
-                  {changePasswordLoading ? "Changing..." : "Change Password"}
-                </button>
-                <button
-                  onClick={() => {
-                    setShowChangePasswordModal(false);
-                    setPasswordError("");
-                    setCurrentPassword("");
-                    setNewPassword("");
-                    setConfirmPassword("");
-                  }}
-                  className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
