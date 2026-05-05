@@ -656,13 +656,19 @@ export default function DashboardPage() {
               </a>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
               <button
                 onClick={() => setShowChangePasswordModal(true)}
                 className="px-6 py-3 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-xl hover:bg-cyan-500/30 transition"
               >
                 Change Password
               </button>
+              <a
+                href="/forgot-password"
+                className="px-6 py-3 bg-gray-500/20 border border-gray-500/30 text-gray-400 rounded-xl hover:bg-gray-500/30 transition text-center"
+              >
+                Forgot Password?
+              </a>
               <button
                 onClick={handleLogout}
                 className="px-6 py-3 bg-red-500/20 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/30 transition"
