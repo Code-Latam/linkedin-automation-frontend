@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
-export default function ResetPasswordPage() {
+// --- Create a new component that uses useSearchParams ---
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -61,7 +63,6 @@ export default function ResetPasswordPage() {
         throw new Error(data.error || "Failed to reset password");
       }
 
-      // Save the new token for auto-login
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
@@ -70,7 +71,6 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         router.push("/dashboard");
       }, 2000);
-
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -78,6 +78,7 @@ export default function ResetPasswordPage() {
     }
   };
 
+  // Loading and error states
   if (error && !token) {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
@@ -163,5 +164,14 @@ export default function ResetPasswordPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+// --- Main Page Component with Suspense Boundary ---
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
