@@ -29,32 +29,32 @@ export const moreFeaturesText = {
             icon: Upload,
             title: "Lead Search",
             description:
-                "Use LinkedIn search tools to select your prospects and send them to one of your agents in Meeting Maker. With the Premium version, our platform automatically finds leads for you",
+                "Use LinkedIn search tools to select your prospects and send them to one of your agents in Meeting Maker. With the Premium version, our platform automatically finds leads for you through Campaigns",
             badge: "Prospecting",
         },
          {
-            id: "automated-lead-selection",
-            icon: BookOpen,
-            title: "Automated Lead Selection",
+            id: "outbound-interactions",
+            icon: Filter,
+            title: "Outbound-Interactions",
             description:
-                "With Premium, Meeting Maker automatically finds and selects prospects that match your targeting criteria",
-            badge: "Coaching",
+                "Depending on your selected outbound channel, LinkedIn or Email, the Meeting Maker will reach our automatically through the assigned AI agent, connecting holding conversations and achieving your goal.  ",
+            badge: "Outbound",
+        },
+        {
+            id: "inbound-interactions",
+            icon: Filter,
+            title: "Inbound Interactions",
+            description:
+                "Automatically handles invites on LinkedIn and inbound email, turning interest into qualified conversations and meetings.",
+            badge: "Inbound",
         },
         {
             id: "custom-goals",
-            icon: Target,
+            icon: Magnet,
             title: "Custom Goals",
             description:
                 "Define your desired outcomes—calls, demos, sign-ups, partnerships, or deals—and let agents drive conversations until they’re achieved",
             badge: "Outcomes",
-        },
-        {
-            id: "inbound-interactions",
-            icon: Mail,
-            title: "Inbound Interactions",
-            description:
-                "Automatically handles invites and replies, turning interest into qualified conversations.",
-            badge: "Inbound",
         },
         {        id: "automated-meeting-scheduler",
             icon: CalendarCheck,
@@ -72,7 +72,7 @@ export const moreFeaturesText = {
         },
         {
             id: "governance",
-            icon: Filter,
+            icon: BookOpen,
             title: "Governance",
             description:
                 "Define rules and criteria so agents only engage prospects that match your ideal customer profile",
@@ -83,16 +83,16 @@ export const moreFeaturesText = {
             icon: LineChart,
             title: "Lead Journey Analytics",
             description:
-                "Track how many leads you’ve added, connection requests sent, acceptance rates, active conversations, reply rates, and meetings booked - all your personal dashboard",
+                "Track how many leads you’ve added, connection requests sent, acceptance rates, active conversations, reply rates, and meetings booked - all on your personal dashboard",
             badge: "Analytics",
         },
         {
-            id: "CRM-Integration",
-            icon: Magnet,
-            title: "CRM Integration",
+            id: "DEAL-Tracking",
+            icon: Target,
+            title: "Deals Tracking",
             description:
-                "Send prospects to your CRM with one click whenever they’re ready for the next step",
-            badge: "Top of Funnel",
+                "Track your potential deals through all relevant stages righ here in the Meeting Maker. Optionally Integrate into Hubspot, Zoho or Salesforce",
+            badge: "CRM",
         }
     ]
 } as const;

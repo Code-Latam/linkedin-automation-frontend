@@ -10,6 +10,7 @@ export const pricingText = {
             "Unlimited agents per linkedIn account",
             "Unlimited connection requests - linkedIn limits apply",
             "Unlimited messages - linkedIn limits apply",
+            "3000 emails per month - Your email account limits may apply",
             "Deep lead research with company insights",
             "Human powered lead selection",
             "Email support",
@@ -21,9 +22,10 @@ export const pricingText = {
             "Unlimited agents per linkedIn account",
             "Unlimited connection requests - linkedIn limits apply",
             "Unlimited messages - linkedIn limits apply",
+            "15000 emails per month - Your email account limits may apply",
             "Deep lead research with company insights",
             "Human powered lead selection",
-            "AI-powered automatic lead selection",
+            "AI-powered automatic lead selection campaigns",
             "Priority support",
             "Advanced analytics dashboard"
         ]

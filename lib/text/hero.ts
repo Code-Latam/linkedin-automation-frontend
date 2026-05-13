@@ -1,10 +1,10 @@
 export const heroText = {
     headline: "The Astrolab Meeting Maker",
-    subheadline: "Find leads, start real conversations, and book meetings automatically with AI agents working across your LinkedIn funnel.",
+    subheadline: "Book meetings automatically with AI agents using linkedIn messages, email and your website chat.",
     features: [
         {
             icon: "Users",
-            text: "Automated LinkedIn outreach"
+            text: "Build on top of LinkedIn"
         },
         {
             icon: "Calendar",
@@ -12,7 +12,7 @@ export const heroText = {
         },
         {
             icon: "TrendingUp",
-            text: "3× more meetings"
+            text: "4× more meetings"
         }
     ],
     cta: {
