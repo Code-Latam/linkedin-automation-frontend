@@ -1,7 +1,7 @@
 
 export const featuresText = {
     header: {
-        title: "Run your entire LinkedIn outreach from one platform",
+        title: "Run your entire Startup outreach from one platform",
         subtitle: "Define roles, goals, and guardrails while agents handle prospecting, partnerships, conversations, and meeting booking"
     },
 
