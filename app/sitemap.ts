@@ -44,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   
   // Fetch articles from your API
   try {
-    const response = await fetch('https://api.meetingmaker.tech/blog/articles', {
+    const response = await fetch('https://api.meetingmaker.tech/blog/articles?limit=100', {
       headers: {
         'Authorization': `Bearer ${API_TOKEN}`
       },
