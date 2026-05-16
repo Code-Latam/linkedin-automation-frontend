@@ -924,13 +924,18 @@ useEffect(() => {
                       <div className="mb-4">
                         <label className="block text-sm font-medium mb-2">Subdomain</label>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <input
-                            type="text"
-                            value={tempSsrSubdomain}
-                            onChange={(e) => setTempSsrSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
-                            placeholder="yourbrand"
-                            className="flex-1 min-w-[200px] p-2 rounded-lg bg-white/10 border border-white/20"
-                          />
+                         <input
+                          type="text"
+                          defaultValue={ssrSubdomain}
+                          onBlur={(e) => {
+                            const value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+                            setSsrSubdomain(value);
+                            setTempSsrSubdomain(value);
+                            updateBlogSettings({ ssrSubdomain: value });
+                          }}
+                          placeholder="yourbrand"
+                          className="flex-1 min-w-[200px] p-2 rounded-lg bg-white/10 border border-white/20"
+                        />
                           <span className="text-gray-400">.meetingmaker.tech</span>
                         </div>
                         <p className="text-xs text-gray-400 mt-1">
@@ -942,9 +947,14 @@ useEffect(() => {
                         <label className="block text-sm font-medium mb-2">Custom Domain (optional)</label>
                         <input
                           type="text"
+                          defaultValue={ssrCustomDomain}
+                          onBlur={(e) => {
+                            const value = e.target.value;
+                            setSsrCustomDomain(value);
+                            setTempSsrCustomDomain(value);
+                            updateBlogSettings({ ssrCustomDomain: value });
+                          }}
                           placeholder="blog.yourcompany.com"
-                          value={tempSsrCustomDomain}
-                          onChange={(e) => setTempSsrCustomDomain(e.target.value)}
                           className="w-full p-2 rounded-lg bg-white/10 border border-white/20"
                         />
                         <p className="text-xs text-gray-400 mt-1">
