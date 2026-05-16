@@ -32,6 +32,12 @@ export default function DashboardPage() {
   const [articles, setArticles] = useState([]);
   const [blogLoading, setBlogLoading] = useState(true);
   
+  // 🟢 NEW: SSR Blog state
+  const [blogType, setBlogType] = useState<'widget' | 'ssr' | 'both'>('widget');
+  const [subdomain, setSubdomain] = useState('');
+  const [tempSubdomain, setTempSubdomain] = useState('');
+  const debouncedSubdomain = useDebounce(tempSubdomain, 1000);
+  
   // LinkedIn posting state
   const [postLinkedIn, setPostLinkedIn] = useState(false);
   const [linkedinTemplate, setLinkedinTemplate] = useState<string | null>(null);
@@ -104,6 +110,13 @@ export default function DashboardPage() {
     }
   }, [debouncedCustomDomain]);
 
+  // 🟢 NEW: Save when debounced subdomain changes
+  useEffect(() => {
+    if (debouncedSubdomain !== subdomain && (blogType === 'ssr' || blogType === 'both')) {
+      updateBlogSettings({ subdomain: debouncedSubdomain });
+    }
+  }, [debouncedSubdomain]);
+
   // Fetch data when tabs change
   useEffect(() => {
     if (activeTab === "blog") {
@@ -118,10 +131,35 @@ export default function DashboardPage() {
     }
   }, [activeTab]);
 
-  // ========== BLOG FUNCTIONS (Existing, unchanged) ==========
+  // ========== BLOG FUNCTIONS (Updated for SSR) ==========
   
   async function fetchBlogSettings() {
     const token = localStorage.getItem("token");
+    // Try SSR endpoint first
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/ssr/dashboard/settings`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBlogEnabled(data.enabled);
+        setBlogType(data.type || 'widget');
+        setSubdomain(data.subdomain || '');
+        setTempSubdomain(data.subdomain || '');
+        setBlogSettings({
+          title: data.title || "Blog",
+          layout: data.layout || "grid",
+          customDomain: data.customDomain || ""
+        });
+        setTempTitle(data.title || "Blog");
+        setTempCustomDomain(data.customDomain || "");
+        return;
+      }
+    } catch (err) {
+      // Fallback to old endpoint
+    }
+    
+    // Fallback to existing endpoint for backward compatibility
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
@@ -132,6 +170,8 @@ export default function DashboardPage() {
       layout: data.settings.layout,
       customDomain: data.settings.customDomain || ""
     });
+    setTempTitle(data.settings.title);
+    setTempCustomDomain(data.settings.customDomain || "");
   }
 
   async function fetchArticles() {
@@ -194,9 +234,12 @@ export default function DashboardPage() {
     }
   }
 
+  // 🟢 UPDATED: Support SSR settings
   async function updateBlogSettings(updates: any) {
     const token = localStorage.getItem("token");
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings`, {
+    
+    // Use SSR endpoint
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/ssr/dashboard/settings`, {
       method: "PUT",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -204,12 +247,17 @@ export default function DashboardPage() {
       },
       body: JSON.stringify(updates)
     });
-    const data = await res.json();
-    setBlogSettings({
-      title: data.settings.title,
-      layout: data.settings.layout,
-      customDomain: data.settings.customDomain || ""
-    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      if (data.type !== undefined) setBlogType(data.type);
+      if (data.subdomain !== undefined) setSubdomain(data.subdomain);
+      setBlogSettings({
+        title: data.title || blogSettings.title,
+        layout: data.layout || blogSettings.layout,
+        customDomain: data.customDomain || blogSettings.customDomain
+      });
+    }
   }
 
   async function updatePostLinkedIn(enabled: boolean) {
@@ -286,7 +334,7 @@ export default function DashboardPage() {
     }
   }
 
-  // ========== CHAT WIDGET FUNCTIONS (NEW) ==========
+  // ========== CHAT WIDGET FUNCTIONS ==========
 
   async function fetchChatAgents() {
     const token = localStorage.getItem("token");
@@ -308,7 +356,6 @@ export default function DashboardPage() {
   async function fetchChatWidgetSettings() {
     const token = localStorage.getItem("token");
     try {
-      // Reusing blog settings to store selectedChatAgentId (no backend changes needed)
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -388,12 +435,10 @@ export default function DashboardPage() {
         return;
       }
       
-      // Update token if returned
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
       
-      // Clear form and close modal
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -407,7 +452,7 @@ export default function DashboardPage() {
     }
   };
 
-  // ========== BILLING FUNCTIONS (Existing) ==========
+  // ========== BILLING FUNCTIONS ==========
 
   const handleManageSubscription = async () => {
     setLoading(true);
@@ -482,18 +527,27 @@ export default function DashboardPage() {
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
   
-  // Blog embed code (moved to Widgets tab)
   const blogEmbedCode = useMemo(() => {
     return `<script src="https://api.meetingmaker.tech/widgets/embed.js" data-token="${token}"></script>`;
   }, [token]);
 
-  // Chat embed code (new)
   const chatEmbedCode = useMemo(() => {
     if (!selectedChatAgentId) {
       return null;
     }
     return `<script src="https://api.meetingmaker.tech/widgets/chat.js" data-token="${token}" data-agent-id="${selectedChatAgentId}"></script>`;
   }, [token, selectedChatAgentId]);
+
+  // 🟢 NEW: Generate SSR blog URL
+  const ssrBlogUrl = useMemo(() => {
+    if (blogSettings.customDomain) {
+      return `https://${blogSettings.customDomain}`;
+    }
+    if (subdomain && (blogType === 'ssr' || blogType === 'both')) {
+      return `https://${subdomain}.meetingmaker.tech`;
+    }
+    return null;
+  }, [blogSettings.customDomain, subdomain, blogType]);
 
   if (!user) {
     return (
@@ -518,8 +572,8 @@ export default function DashboardPage() {
     <div className="min-h-screen px-6 pt-24 pb-24">
       <div className="max-w-4xl mx-auto space-y-8">
 
-        {/* Tab Navigation - UPDATED with 3 tabs */}
-        <div className="flex gap-4 border-b border-white/10 pb-4">
+        {/* Tab Navigation */}
+        <div className="flex gap-4 border-b border-white/10 pb-4 flex-wrap">
           <button
             onClick={() => setActiveTab("account")}
             className={`px-4 py-2 rounded-lg transition ${
@@ -552,7 +606,7 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* ========== ACCOUNT TAB (Unchanged) ========== */}
+        {/* ========== ACCOUNT TAB ========== */}
         {activeTab === "account" && (
           <>
             <h1 className="text-4xl font-bold text-white">
@@ -679,7 +733,7 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* ========== BLOG TAB (Content Management Only - No Embed Code) ========== */}
+        {/* ========== BLOG TAB ========== */}
         {activeTab === "blog" && (
           <>
             <h1 className="text-4xl font-bold text-white">
@@ -703,7 +757,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               <>
-                <div className="bg-white/5 border border-white/10 rounded-lg p-4 flex justify-between items-center">
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4 flex justify-between items-center flex-wrap gap-4">
                   <div>
                     <span className="text-green-400 inline-flex items-center gap-2">
                       <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
@@ -750,7 +804,7 @@ export default function DashboardPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Custom Blog Domain</label>
+                      <label className="block text-sm font-medium mb-2">Custom Blog Domain (for widget)</label>
                       <input
                         type="text"
                         placeholder="blog.yourcompany.com"
@@ -766,9 +820,119 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
+                {/* 🟢 NEW: Blog Delivery Method - SSR Section */}
+                <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+                  <h2 className="text-xl mb-4">Blog Delivery Method</h2>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Choose how your blog is delivered to visitors. The widget is quick to set up, 
+                    while SSR blog provides better SEO and is readable by AI search engines.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition">
+                      <input
+                        type="radio"
+                        name="blogType"
+                        value="widget"
+                        checked={blogType === 'widget'}
+                        onChange={() => updateBlogSettings({ type: 'widget' })}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-medium text-white">Widget (Current)</div>
+                        <p className="text-gray-400 text-sm">Embed script on your site. Quick setup, but limited SEO visibility.</p>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition">
+                      <input
+                        type="radio"
+                        name="blogType"
+                        value="ssr"
+                        checked={blogType === 'ssr'}
+                        onChange={() => updateBlogSettings({ type: 'ssr' })}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-medium text-white">SSR Blog (SEO Optimized)</div>
+                        <p className="text-gray-400 text-sm">Fully server-rendered blog on its own domain. Best for SEO and LLM visibility.</p>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition">
+                      <input
+                        type="radio"
+                        name="blogType"
+                        value="both"
+                        checked={blogType === 'both'}
+                        onChange={() => updateBlogSettings({ type: 'both' })}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-medium text-white">Both</div>
+                        <p className="text-gray-400 text-sm">Use widget on your main site AND have a dedicated SSR blog subdomain.</p>
+                      </div>
+                    </label>
+                  </div>
+                  
+                  {/* SSR Settings - Shown when SSR or Both is selected */}
+                  {(blogType === 'ssr' || blogType === 'both') && (
+                    <div className="mt-6 p-4 bg-black/30 rounded-lg">
+                      <h3 className="font-medium text-white mb-3">SSR Blog Configuration</h3>
+                      
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium mb-2">Subdomain</label>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <input
+                            type="text"
+                            value={tempSubdomain}
+                            onChange={(e) => setTempSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                            placeholder="yourbrand"
+                            className="flex-1 min-w-[200px] p-2 rounded-lg bg-white/10 border border-white/20"
+                          />
+                          <span className="text-gray-400">.meetingmaker.tech</span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Your blog will be available at: {tempSubdomain ? `https://${tempSubdomain}.meetingmaker.tech` : 'Enter a subdomain'}
+                        </p>
+                      </div>
+                      
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium mb-2">Custom Domain (optional)</label>
+                        <input
+                          type="text"
+                          placeholder="blog.yourcompany.com"
+                          value={tempCustomDomain}
+                          onChange={(e) => setTempCustomDomain(e.target.value)}
+                          className="w-full p-2 rounded-lg bg-white/10 border border-white/20"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                          Configure DNS: CNAME record for <strong>{tempCustomDomain || 'blog.yourcompany.com'}</strong> → <strong>ssr-blog-renderer.vercel.app</strong>
+                        </p>
+                      </div>
+                      
+                      {ssrBlogUrl && (
+                        <div className="mt-4 p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+                          <p className="text-sm text-cyan-400">
+                            ✅ Your SSR blog will be live at: 
+                            <a 
+                              href={ssrBlogUrl}
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="underline ml-2 hover:text-cyan-300 break-all"
+                            >
+                              {ssrBlogUrl}
+                            </a>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {/* LinkedIn Auto-Posting */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="flex justify-between items-start mb-4 flex-wrap gap-4">
                     <h2 className="text-xl">LinkedIn Auto-Posting</h2>
                     <div className="flex items-center gap-3">
                       <span className={`text-sm ${postLinkedIn ? 'text-green-400' : 'text-gray-500'}`}>
@@ -806,7 +970,7 @@ export default function DashboardPage() {
                       
                       {linkedinTemplate ? (
                         <div className="mb-4">
-                          <div className="flex gap-4 items-start">
+                          <div className="flex gap-4 items-start flex-wrap">
                             <div className="w-32 h-32 bg-gray-800 rounded-lg overflow-hidden">
                               <img 
                                 src={linkedinTemplate} 
@@ -854,7 +1018,7 @@ export default function DashboardPage() {
 
                 {/* Articles Section */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
                     <h2 className="text-xl">Your Articles</h2>
                     <button
                       onClick={fetchArticles}
@@ -878,9 +1042,9 @@ export default function DashboardPage() {
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {articles.map((article: any) => (
                         <div key={article._id} className="border border-white/10 rounded-lg p-4 hover:bg-white/5 transition">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-white">{article.title}</h3>
+                          <div className="flex justify-between items-start flex-wrap gap-4">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-white break-words">{article.title}</h3>
                               <p className="text-gray-400 text-sm mt-1 line-clamp-2">{article.excerpt}</p>
                               <div className="flex gap-4 mt-2 flex-wrap">
                                 <span className="text-xs text-gray-500">
@@ -907,10 +1071,10 @@ export default function DashboardPage() {
                               </div>
                             </div>
                             <a
-                              href={`/blog/${article.slug}`}
+                              href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-cyan-400 hover:text-cyan-300 text-sm ml-4"
+                              className="text-cyan-400 hover:text-cyan-300 text-sm shrink-0"
                             >
                               View →
                             </a>
@@ -925,7 +1089,7 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* ========== WIDGETS TAB (NEW - All embed codes) ========== */}
+        {/* ========== WIDGETS TAB ========== */}
         {activeTab === "widgets" && (
           <>
             <h1 className="text-4xl font-bold text-white">
