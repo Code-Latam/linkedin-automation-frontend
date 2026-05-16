@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("account"); // "account" | "blog" | "widgets"
+  const [activeTab, setActiveTab] = useState("account");
   
   // Blog state
   const [blogEnabled, setBlogEnabled] = useState(false);
@@ -32,11 +32,15 @@ export default function DashboardPage() {
   const [articles, setArticles] = useState([]);
   const [blogLoading, setBlogLoading] = useState(true);
   
-  // 🟢 NEW: SSR Blog state
+  // SSR Blog state
   const [blogType, setBlogType] = useState<'widget' | 'ssr' | 'both'>('widget');
-  const [subdomain, setSubdomain] = useState('');
-  const [tempSubdomain, setTempSubdomain] = useState('');
-  const debouncedSubdomain = useDebounce(tempSubdomain, 1000);
+  const [ssrSubdomain, setSsrSubdomain] = useState('');
+  const [tempSsrSubdomain, setTempSsrSubdomain] = useState('');
+  const [ssrCustomDomain, setSsrCustomDomain] = useState('');
+  const [tempSsrCustomDomain, setTempSsrCustomDomain] = useState('');
+  
+  const debouncedSsrSubdomain = useDebounce(tempSsrSubdomain, 1000);
+  const debouncedSsrCustomDomain = useDebounce(tempSsrCustomDomain, 1000);
   
   // LinkedIn posting state
   const [postLinkedIn, setPostLinkedIn] = useState(false);
@@ -49,16 +53,16 @@ export default function DashboardPage() {
   const debouncedTitle = useDebounce(tempTitle, 1000);
   const debouncedCustomDomain = useDebounce(tempCustomDomain, 1000);
 
-  // 🟢 Onboarding state
+  // Onboarding state
   const [includeOnboarding, setIncludeOnboarding] = useState(false);
 
-  // 🟢 NEW: Chat Widget state
+  // Chat Widget state
   const [chatAgents, setChatAgents] = useState([]);
   const [selectedChatAgentId, setSelectedChatAgentId] = useState("");
   const [loadingAgents, setLoadingAgents] = useState(false);
   const [savingAgent, setSavingAgent] = useState(false);
 
-  // 🟢 Change Password state
+  // Change Password state
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -103,19 +107,26 @@ export default function DashboardPage() {
     }
   }, [debouncedTitle]);
 
-  // Save when debounced custom domain changes
+  // Save when debounced widget custom domain changes
   useEffect(() => {
     if (debouncedCustomDomain !== (blogSettings.customDomain || "")) {
       updateBlogSettings({ customDomain: debouncedCustomDomain });
     }
   }, [debouncedCustomDomain]);
 
-  // 🟢 NEW: Save when debounced subdomain changes
+  // Save when debounced SSR subdomain changes
   useEffect(() => {
-    if (debouncedSubdomain !== subdomain && (blogType === 'ssr' || blogType === 'both')) {
-      updateBlogSettings({ subdomain: debouncedSubdomain });
+    if (debouncedSsrSubdomain !== ssrSubdomain && (blogType === 'ssr' || blogType === 'both')) {
+      updateBlogSettings({ ssrSubdomain: debouncedSsrSubdomain });
     }
-  }, [debouncedSubdomain]);
+  }, [debouncedSsrSubdomain]);
+
+  // Save when debounced SSR custom domain changes
+  useEffect(() => {
+    if (debouncedSsrCustomDomain !== ssrCustomDomain && (blogType === 'ssr' || blogType === 'both')) {
+      updateBlogSettings({ ssrCustomDomain: debouncedSsrCustomDomain });
+    }
+  }, [debouncedSsrCustomDomain]);
 
   // Fetch data when tabs change
   useEffect(() => {
@@ -125,13 +136,13 @@ export default function DashboardPage() {
       fetchLinkedInSettings();
     }
     if (activeTab === "widgets") {
-      fetchBlogSettings(); // For blog embed code (needs token)
+      fetchBlogSettings();
       fetchChatAgents();
       fetchChatWidgetSettings();
     }
   }, [activeTab]);
 
-  // ========== BLOG FUNCTIONS (Updated for SSR) ==========
+  // ========== BLOG FUNCTIONS ==========
   
   async function fetchBlogSettings() {
     const token = localStorage.getItem("token");
@@ -142,10 +153,13 @@ export default function DashboardPage() {
       });
       if (res.ok) {
         const data = await res.json();
+        console.log("SSR Settings loaded:", data);
         setBlogEnabled(data.enabled);
         setBlogType(data.type || 'widget');
-        setSubdomain(data.subdomain || '');
-        setTempSubdomain(data.subdomain || '');
+        setSsrSubdomain(data.ssrSubdomain || '');
+        setTempSsrSubdomain(data.ssrSubdomain || '');
+        setSsrCustomDomain(data.ssrCustomDomain || '');
+        setTempSsrCustomDomain(data.ssrCustomDomain || '');
         setBlogSettings({
           title: data.title || "Blog",
           layout: data.layout || "grid",
@@ -156,7 +170,7 @@ export default function DashboardPage() {
         return;
       }
     } catch (err) {
-      // Fallback to old endpoint
+      console.log("SSR endpoint not available, falling back");
     }
     
     // Fallback to existing endpoint for backward compatibility
@@ -234,29 +248,52 @@ export default function DashboardPage() {
     }
   }
 
-  // 🟢 UPDATED: Support SSR settings
   async function updateBlogSettings(updates: any) {
     const token = localStorage.getItem("token");
     
-    // Use SSR endpoint
+    const payload: any = {};
+    
+    // Widget fields
+    if (updates.title !== undefined) payload.title = updates.title;
+    if (updates.layout !== undefined) payload.layout = updates.layout;
+    if (updates.customDomain !== undefined) payload.customDomain = updates.customDomain;
+    
+    // SSR fields
+    if (updates.type !== undefined) payload.type = updates.type;
+    if (updates.ssrSubdomain !== undefined) payload.ssrSubdomain = updates.ssrSubdomain;
+    if (updates.ssrCustomDomain !== undefined) payload.ssrCustomDomain = updates.ssrCustomDomain;
+    
+    // Handle legacy field name
+    if (updates.subdomain !== undefined && updates.ssrSubdomain === undefined) {
+      payload.ssrSubdomain = updates.subdomain;
+    }
+    
+    console.log("Saving settings:", payload);
+    
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/ssr/dashboard/settings`, {
       method: "PUT",
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(updates)
+      body: JSON.stringify(payload)
     });
     
     if (res.ok) {
       const data = await res.json();
+      console.log("Settings saved response:", data);
       if (data.type !== undefined) setBlogType(data.type);
-      if (data.subdomain !== undefined) setSubdomain(data.subdomain);
+      if (data.ssrSubdomain !== undefined) setSsrSubdomain(data.ssrSubdomain);
+      if (data.ssrCustomDomain !== undefined) setSsrCustomDomain(data.ssrCustomDomain);
       setBlogSettings({
         title: data.title || blogSettings.title,
         layout: data.layout || blogSettings.layout,
         customDomain: data.customDomain || blogSettings.customDomain
       });
+    } else {
+      const error = await res.json();
+      console.error("Failed to save settings:", error);
+      alert(error.error || "Failed to save settings");
     }
   }
 
@@ -538,16 +575,15 @@ export default function DashboardPage() {
     return `<script src="https://api.meetingmaker.tech/widgets/chat.js" data-token="${token}" data-agent-id="${selectedChatAgentId}"></script>`;
   }, [token, selectedChatAgentId]);
 
-  // 🟢 NEW: Generate SSR blog URL
   const ssrBlogUrl = useMemo(() => {
-    if (blogSettings.customDomain) {
-      return `https://${blogSettings.customDomain}`;
+    if (ssrCustomDomain) {
+      return `https://${ssrCustomDomain}`;
     }
-    if (subdomain && (blogType === 'ssr' || blogType === 'both')) {
-      return `https://${subdomain}.meetingmaker.tech`;
+    if (ssrSubdomain && (blogType === 'ssr' || blogType === 'both')) {
+      return `https://${ssrSubdomain}.meetingmaker.tech`;
     }
     return null;
-  }, [blogSettings.customDomain, subdomain, blogType]);
+  }, [ssrCustomDomain, ssrSubdomain, blogType]);
 
   if (!user) {
     return (
@@ -779,9 +815,12 @@ export default function DashboardPage() {
                   </button>
                 </div>
 
-                {/* Blog Settings */}
+                {/* Widget Blog Settings - Existing */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <h2 className="text-xl mb-4">Blog Settings</h2>
+                  <h2 className="text-xl mb-4">Widget Blog Settings</h2>
+                  <p className="text-gray-400 text-sm mb-4">
+                    These settings apply to the widget embedded on your website.
+                  </p>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">Blog Title</label>
@@ -804,23 +843,22 @@ export default function DashboardPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Custom Blog Domain (for widget)</label>
+                      <label className="block text-sm font-medium mb-2">Custom Domain (for widget)</label>
                       <input
                         type="text"
-                        placeholder="blog.yourcompany.com"
+                        placeholder="yourwebsite.com"
                         value={tempCustomDomain}
                         onChange={(e) => setTempCustomDomain(e.target.value)}
                         className="w-full p-2 rounded-lg bg-white/10 border border-white/20"
                       />
                       <p className="text-xs text-gray-400 mt-1">
-                        Your blog will be accessible at this domain (e.g., https://blog.yourcompany.com). 
-                        Leave empty if you're embedding on your main website.
+                        Where your website is hosted. Leave empty if you're embedding on your main website.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* 🟢 NEW: Blog Delivery Method - SSR Section */}
+                {/* Blog Delivery Method - SSR Section */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
                   <h2 className="text-xl mb-4">Blog Delivery Method</h2>
                   <p className="text-gray-400 text-sm mb-4">
@@ -885,15 +923,15 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <input
                             type="text"
-                            value={tempSubdomain}
-                            onChange={(e) => setTempSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                            value={tempSsrSubdomain}
+                            onChange={(e) => setTempSsrSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
                             placeholder="yourbrand"
                             className="flex-1 min-w-[200px] p-2 rounded-lg bg-white/10 border border-white/20"
                           />
                           <span className="text-gray-400">.meetingmaker.tech</span>
                         </div>
                         <p className="text-xs text-gray-400 mt-1">
-                          Your blog will be available at: {tempSubdomain ? `https://${tempSubdomain}.meetingmaker.tech` : 'Enter a subdomain'}
+                          Your blog will be available at: {tempSsrSubdomain ? `https://${tempSsrSubdomain}.meetingmaker.tech` : 'Enter a subdomain'}
                         </p>
                       </div>
                       
@@ -902,12 +940,12 @@ export default function DashboardPage() {
                         <input
                           type="text"
                           placeholder="blog.yourcompany.com"
-                          value={tempCustomDomain}
-                          onChange={(e) => setTempCustomDomain(e.target.value)}
+                          value={tempSsrCustomDomain}
+                          onChange={(e) => setTempSsrCustomDomain(e.target.value)}
                           className="w-full p-2 rounded-lg bg-white/10 border border-white/20"
                         />
                         <p className="text-xs text-gray-400 mt-1">
-                          Configure DNS: CNAME record for <strong>{tempCustomDomain || 'blog.yourcompany.com'}</strong> → <strong>ssr-blog-renderer.vercel.app</strong>
+                          Configure DNS: CNAME record for <strong>{tempSsrCustomDomain || 'blog.yourcompany.com'}</strong> → <strong>ssr-blog-renderer.vercel.app</strong>
                         </p>
                       </div>
                       
