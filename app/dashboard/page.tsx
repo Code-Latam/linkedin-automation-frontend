@@ -115,18 +115,21 @@ export default function DashboardPage() {
   }, [debouncedCustomDomain]);
 
   // Save when debounced SSR subdomain changes
-  useEffect(() => {
-    if (debouncedSsrSubdomain !== ssrSubdomain && (blogType === 'ssr' || blogType === 'both')) {
-      updateBlogSettings({ ssrSubdomain: debouncedSsrSubdomain });
-    }
-  }, [debouncedSsrSubdomain]);
+  // Save when debounced SSR subdomain changes - NO TYPE CHECK
+useEffect(() => {
+  if (debouncedSsrSubdomain !== ssrSubdomain) {
+    console.log("Saving subdomain:", debouncedSsrSubdomain);
+    updateBlogSettings({ ssrSubdomain: debouncedSsrSubdomain });
+  }
+}, [debouncedSsrSubdomain]);
 
-  // Save when debounced SSR custom domain changes
-  useEffect(() => {
-    if (debouncedSsrCustomDomain !== ssrCustomDomain && (blogType === 'ssr' || blogType === 'both')) {
-      updateBlogSettings({ ssrCustomDomain: debouncedSsrCustomDomain });
-    }
-  }, [debouncedSsrCustomDomain]);
+// Save when debounced SSR custom domain changes - NO TYPE CHECK
+useEffect(() => {
+  if (debouncedSsrCustomDomain !== ssrCustomDomain) {
+    console.log("Saving custom domain:", debouncedSsrCustomDomain);
+    updateBlogSettings({ ssrCustomDomain: debouncedSsrCustomDomain });
+  }
+}, [debouncedSsrCustomDomain]);
 
   // Fetch data when tabs change
   useEffect(() => {
