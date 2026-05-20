@@ -316,28 +316,29 @@ export default function DashboardPage() {
     }
   }
 
-  async function submitArticle(articleId: string) {
-    const token = localStorage.getItem("token");
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles/${articleId}/submit`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-      if (res.ok) {
-        await fetchArticles(articlesPage, statusFilter);
-        alert("Article submitted for publishing");
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to submit article");
-      }
-    } catch (err) {
-      console.error("Failed to submit article:", err);
-      alert("Failed to submit article");
+ async function submitArticle(articleId: string) {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles/${articleId}`, {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status: "published", publishedAt: new Date().toISOString() })
+    });
+    if (res.ok) {
+      await fetchArticles(articlesPage, statusFilter);
+      alert("Article published successfully!");
+    } else {
+      const error = await res.json();
+      alert(error.error || "Failed to publish article");
     }
+  } catch (err) {
+    console.error("Failed to publish article:", err);
+    alert("Failed to publish article");
   }
+}
 
   function openEditModal(article: any) {
     setEditingArticle(article);
