@@ -1367,7 +1367,7 @@ export default function DashboardPage() {
         📤 Submit
       </button>
       <a
-        href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
+         href={`/dashboard/preview/${article._id}`}
         target="_blank"
         rel="noopener noreferrer"
         className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
@@ -1380,7 +1380,7 @@ export default function DashboardPage() {
     <>
       <span className="text-gray-500 text-sm px-3 py-1">⏳ Pending...</span>
       <a
-        href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
+        href={`/dashboard/preview/${article._id}`}
         target="_blank"
         rel="noopener noreferrer"
         className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
