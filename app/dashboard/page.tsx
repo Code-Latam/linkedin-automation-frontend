@@ -1366,21 +1366,48 @@ export default function DashboardPage() {
       >
         📤 Submit
       </button>
-      <a
-         href={`/dashboard/articles/preview/${article._id}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
-      >
-        👁️ View
-      </a>
+      <button
+      onClick={() => {
+        const token = localStorage.getItem("token");
+        const previewUrl = `${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles/preview/${article._id}`;
+        const win = window.open();
+        win?.document.write(`
+          <html>
+            <head><title>Preview: ${article.title}</title>
+            <style>body{font-family:sans-serif;max-width:800px;margin:0 auto;padding:2rem;line-height:1.6}img{max-width:100%}.warning{background:#fef3c7;border:1px solid #f59e0b;padding:1rem;border-radius:0.5rem;margin-bottom:1rem}</style>
+            </head>
+            <body>
+              <div id="content">Loading...</div>
+              <script>
+                fetch('${previewUrl}',{headers:{'Authorization':'Bearer ${token}'}})
+                  .then(r=>r.json())
+                  .then(d=>{
+                    if(d.article){
+                      document.body.innerHTML = \`
+                        <a href="#" onclick="window.close()">← Close</a>
+                        <div class="warning">⚠️ Preview - Not yet published</div>
+                        <h1>\${d.article.title}</h1>
+                        \${d.article.featuredImage ? '<img src="'+d.article.featuredImage+'">' : ''}
+                        <div>\${d.article.content}</div>
+                      \`;
+                    } else document.body.innerHTML = 'Not found';
+                  });
+              </script>
+            </body>
+          </html>
+        `);
+      }}
+      className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
+    >
+      👁️ View
+    </button>
     </>
   )}
   {article.status === 'submitted' && (
     <>
       <span className="text-gray-500 text-sm px-3 py-1">⏳ Pending...</span>
       <a
-        href={`/dashboard/articles/preview/${article._id}`}
+        href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
         target="_blank"
         rel="noopener noreferrer"
         className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
