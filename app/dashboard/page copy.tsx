@@ -24,13 +24,23 @@ export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("account"); // "account" | "blog" | "widgets"
+  const [activeTab, setActiveTab] = useState("account");
   
   // Blog state
   const [blogEnabled, setBlogEnabled] = useState(false);
   const [blogSettings, setBlogSettings] = useState({ title: "Blog", layout: "grid", customDomain: "" });
   const [articles, setArticles] = useState([]);
   const [blogLoading, setBlogLoading] = useState(true);
+  
+  // SSR Blog state
+  const [blogType, setBlogType] = useState<'widget' | 'ssr' | 'both'>('widget');
+  const [ssrSubdomain, setSsrSubdomain] = useState('');
+  const [tempSsrSubdomain, setTempSsrSubdomain] = useState('');
+  const [ssrCustomDomain, setSsrCustomDomain] = useState('');
+  const [tempSsrCustomDomain, setTempSsrCustomDomain] = useState('');
+  
+  const debouncedSsrSubdomain = useDebounce(tempSsrSubdomain, 1000);
+  const debouncedSsrCustomDomain = useDebounce(tempSsrCustomDomain, 1000);
   
   // LinkedIn posting state
   const [postLinkedIn, setPostLinkedIn] = useState(false);
@@ -43,16 +53,16 @@ export default function DashboardPage() {
   const debouncedTitle = useDebounce(tempTitle, 1000);
   const debouncedCustomDomain = useDebounce(tempCustomDomain, 1000);
 
-  // 🟢 Onboarding state
+  // Onboarding state
   const [includeOnboarding, setIncludeOnboarding] = useState(false);
 
-  // 🟢 NEW: Chat Widget state
+  // Chat Widget state
   const [chatAgents, setChatAgents] = useState([]);
   const [selectedChatAgentId, setSelectedChatAgentId] = useState("");
   const [loadingAgents, setLoadingAgents] = useState(false);
   const [savingAgent, setSavingAgent] = useState(false);
 
-  // 🟢 Change Password state
+  // Change Password state
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -97,12 +107,29 @@ export default function DashboardPage() {
     }
   }, [debouncedTitle]);
 
-  // Save when debounced custom domain changes
+  // Save when debounced widget custom domain changes
   useEffect(() => {
     if (debouncedCustomDomain !== (blogSettings.customDomain || "")) {
       updateBlogSettings({ customDomain: debouncedCustomDomain });
     }
   }, [debouncedCustomDomain]);
+
+  // Save when debounced SSR subdomain changes
+  // Save when debounced SSR subdomain changes - NO TYPE CHECK
+useEffect(() => {
+  if (debouncedSsrSubdomain !== ssrSubdomain) {
+    console.log("Saving subdomain:", debouncedSsrSubdomain);
+    updateBlogSettings({ ssrSubdomain: debouncedSsrSubdomain });
+  }
+}, [debouncedSsrSubdomain]);
+
+// Save when debounced SSR custom domain changes - NO TYPE CHECK
+useEffect(() => {
+  if (debouncedSsrCustomDomain !== ssrCustomDomain) {
+    console.log("Saving custom domain:", debouncedSsrCustomDomain);
+    updateBlogSettings({ ssrCustomDomain: debouncedSsrCustomDomain });
+  }
+}, [debouncedSsrCustomDomain]);
 
   // Fetch data when tabs change
   useEffect(() => {
@@ -112,16 +139,44 @@ export default function DashboardPage() {
       fetchLinkedInSettings();
     }
     if (activeTab === "widgets") {
-      fetchBlogSettings(); // For blog embed code (needs token)
+      fetchBlogSettings();
       fetchChatAgents();
       fetchChatWidgetSettings();
     }
   }, [activeTab]);
 
-  // ========== BLOG FUNCTIONS (Existing, unchanged) ==========
+  // ========== BLOG FUNCTIONS ==========
   
   async function fetchBlogSettings() {
     const token = localStorage.getItem("token");
+    // Try SSR endpoint first
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/ssr/dashboard/settings`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        console.log("SSR Settings loaded:", data);
+        setBlogEnabled(data.enabled);
+        setBlogType(data.type || 'widget');
+        setSsrSubdomain(data.ssrSubdomain || '');
+        setTempSsrSubdomain(data.ssrSubdomain || '');
+        setSsrCustomDomain(data.ssrCustomDomain || '');
+        setTempSsrCustomDomain(data.ssrCustomDomain || '');
+        setBlogSettings({
+          title: data.title || "Blog",
+          layout: data.layout || "grid",
+          customDomain: data.customDomain || ""
+        });
+        setTempTitle(data.title || "Blog");
+        setTempCustomDomain(data.customDomain || "");
+        return;
+      }
+    } catch (err) {
+      console.log("SSR endpoint not available, falling back");
+    }
+    
+    // Fallback to existing endpoint for backward compatibility
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
@@ -132,6 +187,8 @@ export default function DashboardPage() {
       layout: data.settings.layout,
       customDomain: data.settings.customDomain || ""
     });
+    setTempTitle(data.settings.title);
+    setTempCustomDomain(data.settings.customDomain || "");
   }
 
   async function fetchArticles() {
@@ -196,20 +253,51 @@ export default function DashboardPage() {
 
   async function updateBlogSettings(updates: any) {
     const token = localStorage.getItem("token");
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings`, {
+    
+    const payload: any = {};
+    
+    // Widget fields
+    if (updates.title !== undefined) payload.title = updates.title;
+    if (updates.layout !== undefined) payload.layout = updates.layout;
+    if (updates.customDomain !== undefined) payload.customDomain = updates.customDomain;
+    
+    // SSR fields
+    if (updates.type !== undefined) payload.type = updates.type;
+    if (updates.ssrSubdomain !== undefined) payload.ssrSubdomain = updates.ssrSubdomain;
+    if (updates.ssrCustomDomain !== undefined) payload.ssrCustomDomain = updates.ssrCustomDomain;
+    
+    // Handle legacy field name
+    if (updates.subdomain !== undefined && updates.ssrSubdomain === undefined) {
+      payload.ssrSubdomain = updates.subdomain;
+    }
+    
+    console.log("Saving settings:", payload);
+    
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/ssr/dashboard/settings`, {
       method: "PUT",
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(updates)
+      body: JSON.stringify(payload)
     });
-    const data = await res.json();
-    setBlogSettings({
-      title: data.settings.title,
-      layout: data.settings.layout,
-      customDomain: data.settings.customDomain || ""
-    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      console.log("Settings saved response:", data);
+      if (data.type !== undefined) setBlogType(data.type);
+      if (data.ssrSubdomain !== undefined) setSsrSubdomain(data.ssrSubdomain);
+      if (data.ssrCustomDomain !== undefined) setSsrCustomDomain(data.ssrCustomDomain);
+      setBlogSettings({
+        title: data.title || blogSettings.title,
+        layout: data.layout || blogSettings.layout,
+        customDomain: data.customDomain || blogSettings.customDomain
+      });
+    } else {
+      const error = await res.json();
+      console.error("Failed to save settings:", error);
+      alert(error.error || "Failed to save settings");
+    }
   }
 
   async function updatePostLinkedIn(enabled: boolean) {
@@ -286,7 +374,7 @@ export default function DashboardPage() {
     }
   }
 
-  // ========== CHAT WIDGET FUNCTIONS (NEW) ==========
+  // ========== CHAT WIDGET FUNCTIONS ==========
 
   async function fetchChatAgents() {
     const token = localStorage.getItem("token");
@@ -308,7 +396,6 @@ export default function DashboardPage() {
   async function fetchChatWidgetSettings() {
     const token = localStorage.getItem("token");
     try {
-      // Reusing blog settings to store selectedChatAgentId (no backend changes needed)
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -388,12 +475,10 @@ export default function DashboardPage() {
         return;
       }
       
-      // Update token if returned
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
       
-      // Clear form and close modal
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -407,7 +492,7 @@ export default function DashboardPage() {
     }
   };
 
-  // ========== BILLING FUNCTIONS (Existing) ==========
+  // ========== BILLING FUNCTIONS ==========
 
   const handleManageSubscription = async () => {
     setLoading(true);
@@ -482,18 +567,26 @@ export default function DashboardPage() {
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
   
-  // Blog embed code (moved to Widgets tab)
   const blogEmbedCode = useMemo(() => {
     return `<script src="https://api.meetingmaker.tech/widgets/embed.js" data-token="${token}"></script>`;
   }, [token]);
 
-  // Chat embed code (new)
   const chatEmbedCode = useMemo(() => {
     if (!selectedChatAgentId) {
       return null;
     }
     return `<script src="https://api.meetingmaker.tech/widgets/chat.js" data-token="${token}" data-agent-id="${selectedChatAgentId}"></script>`;
   }, [token, selectedChatAgentId]);
+
+  const ssrBlogUrl = useMemo(() => {
+    if (ssrCustomDomain) {
+      return `https://${ssrCustomDomain}`;
+    }
+    if (ssrSubdomain && (blogType === 'ssr' || blogType === 'both')) {
+      return `https://${ssrSubdomain}.meetingmaker.tech`;
+    }
+    return null;
+  }, [ssrCustomDomain, ssrSubdomain, blogType]);
 
   if (!user) {
     return (
@@ -518,8 +611,8 @@ export default function DashboardPage() {
     <div className="min-h-screen px-6 pt-24 pb-24">
       <div className="max-w-4xl mx-auto space-y-8">
 
-        {/* Tab Navigation - UPDATED with 3 tabs */}
-        <div className="flex gap-4 border-b border-white/10 pb-4">
+        {/* Tab Navigation */}
+        <div className="flex gap-4 border-b border-white/10 pb-4 flex-wrap">
           <button
             onClick={() => setActiveTab("account")}
             className={`px-4 py-2 rounded-lg transition ${
@@ -552,7 +645,7 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* ========== ACCOUNT TAB (Unchanged) ========== */}
+        {/* ========== ACCOUNT TAB ========== */}
         {activeTab === "account" && (
           <>
             <h1 className="text-4xl font-bold text-white">
@@ -679,7 +772,7 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* ========== BLOG TAB (Content Management Only - No Embed Code) ========== */}
+        {/* ========== BLOG TAB ========== */}
         {activeTab === "blog" && (
           <>
             <h1 className="text-4xl font-bold text-white">
@@ -703,7 +796,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               <>
-                <div className="bg-white/5 border border-white/10 rounded-lg p-4 flex justify-between items-center">
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4 flex justify-between items-center flex-wrap gap-4">
                   <div>
                     <span className="text-green-400 inline-flex items-center gap-2">
                       <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
@@ -725,9 +818,12 @@ export default function DashboardPage() {
                   </button>
                 </div>
 
-                {/* Blog Settings */}
+                {/* Widget Blog Settings - Existing */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <h2 className="text-xl mb-4">Blog Settings</h2>
+                  <h2 className="text-xl mb-4">Widget Blog Settings</h2>
+                  <p className="text-gray-400 text-sm mb-4">
+                    These settings apply to the widget embedded on your website.
+                  </p>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">Blog Title</label>
@@ -750,25 +846,144 @@ export default function DashboardPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Custom Blog Domain</label>
+                      <label className="block text-sm font-medium mb-2">Custom Domain (for widget)</label>
                       <input
                         type="text"
-                        placeholder="blog.yourcompany.com"
+                        placeholder="yourwebsite.com"
                         value={tempCustomDomain}
                         onChange={(e) => setTempCustomDomain(e.target.value)}
                         className="w-full p-2 rounded-lg bg-white/10 border border-white/20"
                       />
                       <p className="text-xs text-gray-400 mt-1">
-                        Your blog will be accessible at this domain (e.g., https://blog.yourcompany.com). 
-                        Leave empty if you're embedding on your main website.
+                        Where your website is hosted. Leave empty if you're embedding on your main website.
                       </p>
                     </div>
                   </div>
                 </div>
 
+                {/* Blog Delivery Method - SSR Section */}
+                <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+                  <h2 className="text-xl mb-4">Blog Delivery Method</h2>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Choose how your blog is delivered to visitors. The widget is quick to set up, 
+                    while SSR blog provides better SEO and is readable by AI search engines.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition">
+                      <input
+                        type="radio"
+                        name="blogType"
+                        value="widget"
+                        checked={blogType === 'widget'}
+                        onChange={() => updateBlogSettings({ type: 'widget' })}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-medium text-white">Widget (Current)</div>
+                        <p className="text-gray-400 text-sm">Embed script on your site. Quick setup, but limited SEO visibility.</p>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition">
+                      <input
+                        type="radio"
+                        name="blogType"
+                        value="ssr"
+                        checked={blogType === 'ssr'}
+                        onChange={() => updateBlogSettings({ type: 'ssr' })}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-medium text-white">SSR Blog (SEO Optimized)</div>
+                        <p className="text-gray-400 text-sm">Fully server-rendered blog on its own domain. Best for SEO and LLM visibility.</p>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition">
+                      <input
+                        type="radio"
+                        name="blogType"
+                        value="both"
+                        checked={blogType === 'both'}
+                        onChange={() => updateBlogSettings({ type: 'both' })}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-medium text-white">Both</div>
+                        <p className="text-gray-400 text-sm">Use widget on your main site AND have a dedicated SSR blog subdomain.</p>
+                      </div>
+                    </label>
+                  </div>
+                  
+                  {/* SSR Settings - Shown when SSR or Both is selected */}
+                  {(blogType === 'ssr' || blogType === 'both') && (
+                    <div className="mt-6 p-4 bg-black/30 rounded-lg">
+                      <h3 className="font-medium text-white mb-3">SSR Blog Configuration</h3>
+                      
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium mb-2">Subdomain</label>
+                        <div className="flex items-center gap-2 flex-wrap">
+                         <input
+                          type="text"
+                          defaultValue={ssrSubdomain}
+                          onBlur={(e) => {
+                            const value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+                            setSsrSubdomain(value);
+                            setTempSsrSubdomain(value);
+                            updateBlogSettings({ ssrSubdomain: value });
+                          }}
+                          placeholder="yourbrand"
+                          className="flex-1 min-w-[200px] p-2 rounded-lg bg-white/10 border border-white/20"
+                        />
+                          <span className="text-gray-400">.meetingmaker.tech</span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Your blog will be available at: {tempSsrSubdomain ? `https://${tempSsrSubdomain}.meetingmaker.tech` : 'Enter a subdomain'}
+                        </p>
+                      </div>
+                      
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium mb-2">Custom Domain (optional)</label>
+                        <input
+                          type="text"
+                          defaultValue={ssrCustomDomain}
+                          onBlur={(e) => {
+                            const value = e.target.value;
+                            setSsrCustomDomain(value);
+                            setTempSsrCustomDomain(value);
+                            updateBlogSettings({ ssrCustomDomain: value });
+                          }}
+                          placeholder="blog.yourcompany.com"
+                          className="w-full p-2 rounded-lg bg-white/10 border border-white/20"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                          Configure DNS: CNAME record for <strong>{tempSsrCustomDomain || 'blog.yourcompany.com'}</strong> → <strong>ssr-blog-renderer.vercel.app</strong>
+                        </p>
+                      </div>
+                      
+                      {ssrBlogUrl && (
+                        <div className="mt-4 p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+                          <p className="text-sm text-cyan-400">
+                            ✅ Your SSR blog will be live at: 
+                            <a 
+                              href={ssrBlogUrl}
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="underline ml-2 hover:text-cyan-300 break-all"
+                            >
+                              {ssrBlogUrl}
+                            </a>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {/* LinkedIn Auto-Posting */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="flex justify-between items-start mb-4 flex-wrap gap-4">
                     <h2 className="text-xl">LinkedIn Auto-Posting</h2>
                     <div className="flex items-center gap-3">
                       <span className={`text-sm ${postLinkedIn ? 'text-green-400' : 'text-gray-500'}`}>
@@ -806,7 +1021,7 @@ export default function DashboardPage() {
                       
                       {linkedinTemplate ? (
                         <div className="mb-4">
-                          <div className="flex gap-4 items-start">
+                          <div className="flex gap-4 items-start flex-wrap">
                             <div className="w-32 h-32 bg-gray-800 rounded-lg overflow-hidden">
                               <img 
                                 src={linkedinTemplate} 
@@ -854,7 +1069,7 @@ export default function DashboardPage() {
 
                 {/* Articles Section */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
                     <h2 className="text-xl">Your Articles</h2>
                     <button
                       onClick={fetchArticles}
@@ -878,9 +1093,9 @@ export default function DashboardPage() {
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {articles.map((article: any) => (
                         <div key={article._id} className="border border-white/10 rounded-lg p-4 hover:bg-white/5 transition">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-white">{article.title}</h3>
+                          <div className="flex justify-between items-start flex-wrap gap-4">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-white break-words">{article.title}</h3>
                               <p className="text-gray-400 text-sm mt-1 line-clamp-2">{article.excerpt}</p>
                               <div className="flex gap-4 mt-2 flex-wrap">
                                 <span className="text-xs text-gray-500">
@@ -907,10 +1122,10 @@ export default function DashboardPage() {
                               </div>
                             </div>
                             <a
-                              href={`/blog/${article.slug}`}
+                              href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-cyan-400 hover:text-cyan-300 text-sm ml-4"
+                              className="text-cyan-400 hover:text-cyan-300 text-sm shrink-0"
                             >
                               View →
                             </a>
@@ -925,7 +1140,7 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* ========== WIDGETS TAB (NEW - All embed codes) ========== */}
+        {/* ========== WIDGETS TAB ========== */}
         {activeTab === "widgets" && (
           <>
             <h1 className="text-4xl font-bold text-white">
