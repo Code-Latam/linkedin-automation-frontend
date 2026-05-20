@@ -1352,36 +1352,54 @@ export default function DashboardPage() {
                                 </div>
                               </div>
                               <div className="flex gap-2 shrink-0">
-                                {article.status === 'draft' && (
-                                  <>
-                                    <button
-                                      onClick={() => openEditModal(article)}
-                                      className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
-                                    >
-                                      ✏️ Edit
-                                    </button>
-                                    <button
-                                      onClick={() => submitArticle(article._id)}
-                                      className="text-green-400 hover:text-green-300 text-sm px-3 py-1 rounded border border-green-400/30 hover:bg-green-400/10 transition"
-                                    >
-                                      📤 Submit
-                                    </button>
-                                  </>
-                                )}
-                                {article.status === 'submitted' && (
-                                  <span className="text-gray-500 text-sm px-3 py-1">⏳ Pending...</span>
-                                )}
-                                {article.status === 'published' && (
-                                  <a
-                                    href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
-                                  >
-                                    View →
-                                  </a>
-                                )}
-                              </div>
+  {article.status === 'draft' && (
+    <>
+      <button
+        onClick={() => openEditModal(article)}
+        className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
+      >
+        ✏️ Edit
+      </button>
+      <button
+        onClick={() => submitArticle(article._id)}
+        className="text-green-400 hover:text-green-300 text-sm px-3 py-1 rounded border border-green-400/30 hover:bg-green-400/10 transition"
+      >
+        📤 Submit
+      </button>
+      <a
+        href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
+      >
+        👁️ View
+      </a>
+    </>
+  )}
+  {article.status === 'submitted' && (
+    <>
+      <span className="text-gray-500 text-sm px-3 py-1">⏳ Pending...</span>
+      <a
+        href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
+      >
+        👁️ View
+      </a>
+    </>
+  )}
+  {article.status === 'published' && (
+    <a
+      href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
+    >
+      👁️ View
+    </a>
+  )}
+</div>
                             </div>
                           </div>
                         ))}
