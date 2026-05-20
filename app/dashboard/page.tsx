@@ -2,11 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from 'next/dynamic';
-import 'react-quill/dist/quill.snow.css';
-
-// Dynamically import ReactQuill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
 
 // Debounce hook
 function useDebounce(value: any, delay: number) {
@@ -93,6 +91,21 @@ export default function DashboardPage() {
   });
   const [savingArticle, setSavingArticle] = useState(false);
 
+  // TipTap editor instance
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Image.configure({
+        inline: true,
+        allowBase64: true,
+      }),
+    ],
+    content: editFormData.content,
+    onUpdate: ({ editor }) => {
+      setEditFormData({ ...editFormData, content: editor.getHTML() });
+    },
+  });
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -167,6 +180,13 @@ export default function DashboardPage() {
       fetchChatWidgetSettings();
     }
   }, [activeTab]);
+
+  // Update editor content when editFormData.content changes
+  useEffect(() => {
+    if (editor && editFormData.content !== editor.getHTML()) {
+      editor.commands.setContent(editFormData.content);
+    }
+  }, [editFormData.content, editor]);
 
   // ========== BLOG FUNCTIONS ==========
   
@@ -1530,12 +1550,66 @@ export default function DashboardPage() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Content</label>
-                <ReactQuill
-                  theme="snow"
-                  value={editFormData.content}
-                  onChange={(value) => setEditFormData({ ...editFormData, content: value })}
-                  className="bg-gray-800 text-white rounded-lg [&_.ql-toolbar]:border-gray-600 [&_.ql-container]:border-gray-600 [&_.ql-editor]:text-white"
-                />
+                <div className="border border-gray-600 rounded-lg bg-gray-800 overflow-hidden">
+                  <div className="border-b border-gray-600 p-2 flex gap-2 flex-wrap bg-gray-800">
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleBold().run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('bold') ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      Bold
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleItalic().run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('italic') ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      Italic
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('heading', { level: 2 }) ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      H2
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('heading', { level: 3 }) ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      H3
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('bulletList') ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      Bullet List
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('orderedList') ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      Numbered List
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = window.prompt('Enter image URL:');
+                        if (url) editor?.chain().focus().setImage({ src: url }).run();
+                      }}
+                      className="px-2 py-1 rounded text-sm bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    >
+                      Add Image
+                    </button>
+                  </div>
+                  <EditorContent editor={editor} className="prose prose-invert max-w-none p-4 min-h-[300px] text-white focus:outline-none" />
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  Use the toolbar to format your content. Images can be added via URL.
+                </p>
               </div>
               
               <div>
