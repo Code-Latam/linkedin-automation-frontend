@@ -97,6 +97,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
+    {
+      url: `${baseUrl}/places-that-link-back-to-us`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',  // Backlinks don't change often
+      priority: 0.6,  // Slightly lower than main pages, but still important
+    },
+
   ];
   
   // Blog homepage on the SSR domain
