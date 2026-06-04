@@ -1,43 +1,43 @@
 
 export const featuresText = {
     header: {
-        title: "Run your entire Startup outreach from one platform",
+        title: "Automate your entire LinkedIn Startup outreach using AI from one platform",
         subtitle: "Define roles, goals, and guardrails while agents handle prospecting, partnerships, conversations, and meeting booking"
     },
 
     
     items: [
         {
-            slug: "autonomous-outreach",
-            title: "Autonomous Outreach",
+            slug: "autonomous-ai-outreach",
+            title: "Autonomous AI Outreach",
             description: "Select leads individually, in bulk or through campaigns on LinkedIn and send them to Meeting Maker. AI agents can act as researchers, SDRs, BDRs, and meeting setters—handling outreach and booking meetings automatically through LinkedIn messages or email. With Premium, Meeting Maker also finds and selects leads for you according to your ICP, TAM, services or products.",
             image: "/images/features/assign-to-meeting-maker1.png",
 
         },
         {
-            slug: "communicates-better-than-human",
-            title: "Communicates better than a human",
+            slug: "communicates-better-than-human-on-linkedin",
+            title: "Communicates better than a human on LinkedIn and other funnels",
             description: "The agents, whatever their roles, read every conversation on LinkedIn, email and website chat, understand subtle signals, identify pain points, and respond naturally, just like a human would. They optimize their strategy based on your historical performance data combined with aggregated industry insights—learning from what works and what doesn't across thousands of conversations. They never get angry and never lose patience",
             image: "/images/features/conversation2.png",
 
         },
         {
             slug: "deep-lead-research",
-            title: "Deep Lead Research",
+            title: "Deep Lead Research with LinkedIn AI Tools",
             description: "Before the first message, the agent analyzes company data, recent news, funding events, leadership changes, and LinkedIn activity to build a complete picture of each prospect. Every outreach is then personalized based on what matters to them right now — not a template or sequence",
             image: "/images/features/deep-research3.png",
 
         },
         {
-            slug: "Integration with your CRM",
+            slug: "Integration-with-your-crm",
             title: "Integration with your CRM",
             description: "Send your selectd leads with one click to hubspot or Zoho without ever leaving LinkedIn.",
             image: "/images/features/CRM2.png",
 
         },
         {
-            slug: "Turbo boost LinkedIn",
-            title: "Turbo Boost LinkedIn",
+            slug: "turbo-boost-Linkedin-sales-outreach-with-ai-agents",
+            title: "Turbo Boost LinkedIn Sales Outreach with AI Agents",
             description: "Use LinkedIn or Sales Navigator to generate a precise list of ideal prospects. Send the entire list to Meeting Maker in one click, and launch automated, AI-driven outreach instantly. With Meeting Maker Premium, the platform will also automatically select the highest-potential leads for you, prioritizing those most likely to convert based on historical data and ideal customer profile.",
             image: "/images/features/search-linkedin.png",
 

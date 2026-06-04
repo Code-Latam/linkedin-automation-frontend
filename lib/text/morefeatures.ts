@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 export const moreFeaturesText = {
     header: {
-        title: "AI agents that run and scale your LinkedIn outreach",
+        title: "Automate AI agents that run and scale your LinkedIn Sales outreach",
         subtitle: "Your all-in-one AI companion for smarter, faster LinkedIn growth from first touch to booked meeting.",
         sidebarBadge: "Avg. users book meetings in week one",
         ctaText: "Book a discovery call",
@@ -29,13 +29,13 @@ export const moreFeaturesText = {
             icon: Upload,
             title: "Lead Search",
             description:
-                "Use LinkedIn search tools to select your prospects and send them to one of your agents in Meeting Maker. With the Premium version, our platform automatically finds leads for you through Campaigns",
+                "Use Automated inkedIn search tools to select your prospects and send them to one of your agents in Meeting Maker. With the Premium version, our platform automatically finds leads for you through Campaigns",
             badge: "Prospecting",
         },
          {
             id: "outbound-interactions",
             icon: Filter,
-            title: "Outbound-Interactions",
+            title: "AI Automated LinkedIn Outbound-Interactions",
             description:
                 "Depending on your selected outbound channel, LinkedIn or Email, the Meeting Maker will reach our automatically through the assigned AI agent, connecting holding conversations and achieving your goal.  ",
             badge: "Outbound",
@@ -43,7 +43,7 @@ export const moreFeaturesText = {
         {
             id: "inbound-interactions",
             icon: Filter,
-            title: "Inbound Interactions",
+            title: "AI Automated LinkedIn Inbound Interactions",
             description:
                 "Automatically handles invites on LinkedIn and inbound email, turning interest into qualified conversations and meetings.",
             badge: "Inbound",
@@ -89,7 +89,7 @@ export const moreFeaturesText = {
         {
             id: "DEAL-Tracking",
             icon: Target,
-            title: "Deals Tracking",
+            title: "LinkedIn Deals Tracking",
             description:
                 "Track your potential deals through all relevant stages righ here in the Meeting Maker. Optionally Integrate into Hubspot, Zoho or Salesforce",
             badge: "CRM",

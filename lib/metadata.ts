@@ -67,9 +67,9 @@ export const pagesMetaData = {
 
   // Homepage
   home: {
-    title: `${name} | AI-Powered LinkedIn Outreach & Meeting Automation`,
+    title: `LinkedIn Automation AI Powered Outreach & Meeting Orchestration`,
     description:
-      "Automate your LinkedIn lead generation with Meeting Maker. AI agents handle prospecting, conversations, and meeting booking automatically. Start getting 3x more meetings today.",
+      "LinkedIn Automation with Meeting Maker. AI agents handle prospecting, conversations, and meeting booking automatically. Start getting 3x more meetings.",
     icons: {
       icon: faviconPath,
       apple: appleIconPath,
