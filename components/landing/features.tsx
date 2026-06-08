@@ -71,7 +71,7 @@ export default function Features() {
                             <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                                 <iframe
                                     className="w-full h-full"
-                                    src="https://www.youtube.com/embed/tULXwkF7lg0"
+                                    src="https://www.youtube.com/embed/A5tk0rz53sI"
                                     title="General Overview of The meeting Maker"
                                     frameBorder="0"
                                     allowFullScreen
@@ -85,7 +85,7 @@ export default function Features() {
                             <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                                 <iframe
                                     className="w-full h-full"
-                                    src="https://www.youtube.com/embed/8_jUnitPapE"
+                                    src="https://www.youtube.com/embed/YR6TLKzCZgc"
                                     title="How to create your own SDR or BDR agent"
                                     frameBorder="0"
                                     allowFullScreen
@@ -99,8 +99,8 @@ export default function Features() {
                             <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                                 <iframe
                                     className="w-full h-full"
-                                    src="https://www.youtube.com/embed/IBkWXUWJjY4"
-                                    title="How to Assign people to your agents"
+                                    src="https://www.youtube.com/embed/L6PLGWzFmWI"
+                                    title="How to Assign prospects to your agents"
                                     frameBorder="0"
                                     allowFullScreen
                                 />
@@ -113,8 +113,8 @@ export default function Features() {
                             <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                                 <iframe
                                     className="w-full h-full"
-                                    src="https://www.youtube.com/embed/j0-gaiLTDTM"
-                                    title="Agents People List and Dashboard"
+                                    src="https://www.youtube.com/embed/xTToS5xjUEg"
+                                    title="How to track your AI outreach performance"
                                     frameBorder="0"
                                     allowFullScreen
                                 />
@@ -127,8 +127,8 @@ export default function Features() {
                             <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                                 <iframe
                                     className="w-full h-full"
-                                    src="https://www.youtube.com/embed/kDjPJnVVgGA"
-                                    title="How to setup an SEO Manager Agent"
+                                    src="https://www.youtube.com/embed/oFPYGzWrwtM"
+                                    title="How to setup an SEO AI Manager Agent"
                                     frameBorder="0"
                                     allowFullScreen
                                 />
@@ -141,7 +141,7 @@ export default function Features() {
                             <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                                 <iframe
                                     className="w-full h-full"
-                                    src="https://www.youtube.com/embed/4INUvAtm4Vs"
+                                    src="https://www.youtube.com/embed/DArEDeVQp5E"
                                     title="How to Set Up Your Astrolab Meeting Maker Account"
                                     frameBorder="0"
                                     allowFullScreen
