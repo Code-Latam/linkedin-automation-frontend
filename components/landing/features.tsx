@@ -71,7 +71,7 @@ export default function Features() {
                             <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                                 <iframe
                                     className="w-full h-full"
-                                    src="https://www.youtube.com/embed/A5tk0rz53sI"
+                                    src="https://www.youtube.com/embed/zuiiqMlNEEE"
                                     title="General Overview of The meeting Maker"
                                     frameBorder="0"
                                     allowFullScreen
@@ -92,6 +92,20 @@ export default function Features() {
                                 />
                             </div>
                             <h3 className="text-lg font-semibold text-white">How to create your own SDR or BDR agent</h3>
+                        </div>
+
+                        {/* Video 2.1 */}
+                        <div className="space-y-4">
+                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
+                                <iframe
+                                    className="w-full h-full"
+                                    src="https://www.youtube.com/embed/gR5IiO2gMEo"
+                                    title="How to create your own Marketing Manager Agent"
+                                    frameBorder="0"
+                                    allowFullScreen
+                                />
+                            </div>
+                            <h3 className="text-lg font-semibold text-white">How to create your own Marketing Manager Agent and run organic marketing campaigns</h3>
                         </div>
 
                         {/* Video 3 */}
