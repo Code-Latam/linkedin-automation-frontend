@@ -17,6 +17,6 @@ export const heroText = {
     ],
     cta: {
         primary: "Get Started",
-        secondary: "Watch Demo"
+        secondary: "Watch Overview"
     }
 } as const;
