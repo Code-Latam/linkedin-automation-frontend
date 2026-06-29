@@ -9,7 +9,7 @@ export const featuresText = {
     items: [
         {
             slug: "autonomous-ai-outreach",
-            title: "Autonomous AI Outreach",
+            title: "Replace your SDR team with AI agents that work 24/7",
             description: "Select leads individually, in bulk or through campaigns on LinkedIn and send them to Meeting Maker. AI agents can act as researchers, SDRs, BDRs, and meeting setters — handling outreach and booking meetings automatically through LinkedIn messages or email. With Premium, Meeting Maker also finds and selects leads for you according to your ICP, TAM, services or products.",
             image: "/images/features/assign-to-meeting-maker1.png",
 
@@ -23,7 +23,7 @@ export const featuresText = {
         },
         {
             slug: "deep-lead-research",
-            title: "Deep Lead Research with LinkedIn AI Tools",
+            title: "Every prospect is researched before the first message using company news, hiring signals, leadership changes and buying intent.",
             description: "Before the first message, the agent analyzes company data, recent news, funding events, leadership changes, and LinkedIn activity to build a complete picture of each prospect. Every outreach is then personalized based on what matters to them right now - not a template or sequence",
             image: "/images/features/deep-research3.png",
 
