@@ -9,7 +9,6 @@ export const footerText = {
             items: [
                 { name: "Features", href: "/#features" },
                 { name: "How It Works", href: "/#how-it-works" },
-                {name: 'More Features', href: '/#more-features' },
                 { name: "Pricing", href: "/#pricing" },
                 { name: "Contact", href: "/#contact" },
                 { name: "FAQ", href: "/#faq" }

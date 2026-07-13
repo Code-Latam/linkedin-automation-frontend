@@ -1,18 +1,22 @@
 export const heroText = {
     headline: "The Astrolab Meeting Maker",
-    subheadline: "Book meetings automatically with AI agents using linkedIn messages, email and your website chat.",
+    subheadline: "Revenue generation on autopilot.",
     features: [
         {
             icon: "Users",
-            text: "Build on top of LinkedIn"
+            text: "Build on top of LinkedIn and Email"
         },
         {
             icon: "Calendar",
-            text: "Smart meeting booking"
+            text: "AI Sales Team"
         },
         {
             icon: "TrendingUp",
-            text: "4× more meetings"
+            text: "AI Marketing Team"
+        },
+        {
+            icon: "CSRTeam",
+            text: "AI Customer Services Team"
         }
     ],
     cta: {

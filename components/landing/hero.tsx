@@ -44,6 +44,9 @@ export default function Hero() {
                                     case "TrendingUp":
                                         IconComponent = TrendingUp;
                                         break;
+                                    case "CSRTeam":
+                                        IconComponent = TrendingUp;
+                                        break;
                                     default:
                                         return null;
                                 }

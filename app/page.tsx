@@ -5,7 +5,6 @@ import Pricing from "@/components/landing/pricing";
 import Contact from "@/components/landing/contact";
 import FAQ from "@/components/landing/faqs";
 import Footer from "@/components/landing/footer";
-import { MoreFeatures } from "@/components/landing/morefeatures";
 import HowItWorks from "@/components/landing/howitworks";
 import type { Metadata } from "next";
 import { pagesMetaData } from "@/lib/metadata";
@@ -111,7 +110,6 @@ export default function Home() {
         <Navbar />
         <Hero />
         <Features />
-        <MoreFeatures />
         <HowItWorks />
         <Pricing />
         <Contact />
