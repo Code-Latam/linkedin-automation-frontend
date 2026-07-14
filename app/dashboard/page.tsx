@@ -756,6 +756,8 @@ export default function DashboardPage() {
   };
 
   const hasStripeCustomer = !!user.client?.stripeCustomerId;
+  const isPaidPlan = ["postboost", "marketing", "premium"].includes(user.client?.plan);
+  const hasValidSubscription = hasStripeCustomer && isPaidPlan;
 
   return (
     <div className="min-h-screen px-6 pt-24 pb-24">
@@ -823,17 +825,15 @@ export default function DashboardPage() {
                   </span>
                 </p>
 
-                {/* Show upgrade options for ALL users */}
-                <div className="mt-6 space-y-4">
-                  <p className="text-sm text-gray-400">
-                    {user.client?.plan === "free" 
-                      ? "Choose your plan:" 
-                      : `Upgrade from ${getPlanDisplay(user.client?.plan)}:`}
-                  </p>
-                  
-                  <div className="space-y-3">
-                    {/* Post Boost - hide if already on Post Boost */}
-                    {user.client?.plan !== "postboost" && (
+                {/* Show upgrade options for users without a valid subscription */}
+                {!hasValidSubscription && (
+                  <div className="mt-6 space-y-4">
+                    <p className="text-sm text-gray-400">
+                      {user.client?.plan === "free" ? "Choose your plan:" : "You need to subscribe to a plan:"}
+                    </p>
+                    
+                    <div className="space-y-3">
+                      {/* Post Boost */}
                       <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-gray-700">
                         <div>
                           <h4 className="font-semibold text-white">🚀 Post Boost</h4>
@@ -844,13 +844,11 @@ export default function DashboardPage() {
                           disabled={loading}
                           className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
                         >
-                          {user.client?.plan === "free" ? "$49/mo" : "Switch to $49/mo"}
+                          $49/mo
                         </button>
                       </div>
-                    )}
 
-                    {/* Marketing - hide if already on Marketing */}
-                    {user.client?.plan !== "marketing" && (
+                      {/* Marketing */}
                       <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-cyan-500/30">
                         <div>
                           <h4 className="font-semibold text-white">📊 Marketing</h4>
@@ -862,13 +860,11 @@ export default function DashboardPage() {
                           disabled={loading}
                           className="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-lg text-cyan-400 font-semibold transition disabled:opacity-50 text-sm"
                         >
-                          {user.client?.plan === "free" ? "$149/mo" : "Switch to $149/mo"}
+                          $149/mo
                         </button>
                       </div>
-                    )}
 
-                    {/* Premium - hide if already on Premium */}
-                    {user.client?.plan !== "premium" && (
+                      {/* Premium */}
                       <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
                         <div>
                           <h4 className="font-semibold text-white">💎 Premium</h4>
@@ -880,15 +876,13 @@ export default function DashboardPage() {
                             disabled={loading}
                             className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm"
                           >
-                            {user.client?.plan === "free" ? "$350/mo" : "Switch to $350/mo"}
+                            $350/mo
                           </button>
                         </div>
                       </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Onboarding - Only show for Premium upgrades */}
-                  {user.client?.plan !== "premium" && (
+                    {/* Onboarding - Only for Premium */}
                     <div className="mt-4 p-4 bg-white/5 rounded-lg border border-gray-700">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -905,28 +899,32 @@ export default function DashboardPage() {
                         Get expert help configuring your agents and workflows
                       </p>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                {(user.client?.plan === "postboost" || user.client?.plan === "marketing" || user.client?.plan === "premium") && (
+                {/* Show Manage Subscription for users with a valid subscription */}
+                {hasValidSubscription && (
                   <div className="mt-6">
                     {!hasStripeCustomer ? (
                       <p className="text-yellow-400 text-sm">
                         Subscription issue detected. Please contact support.
                       </p>
                     ) : (
-                      <>
+                      <div className="p-4 bg-white/5 rounded-lg border border-gray-700">
+                        <p className="text-sm text-gray-400 mb-3">
+                          You are currently on the <strong className="text-white">{getPlanDisplay(user.client?.plan)}</strong> plan.
+                        </p>
                         <button
                           onClick={handleManageSubscription}
                           disabled={loading}
-                          className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 rounded-xl text-white font-semibold transition disabled:opacity-50"
+                          className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 rounded-xl text-white font-semibold transition disabled:opacity-50"
                         >
                           {loading ? "Loading..." : "Manage Subscription"}
                         </button>
-                        <p className="text-xs text-gray-400 mt-2">
+                        <p className="text-xs text-gray-400 mt-2 text-center">
                           Upgrade, downgrade, or cancel your subscription
                         </p>
-                      </>
+                      </div>
                     )}
                   </div>
                 )}
