@@ -823,12 +823,17 @@ export default function DashboardPage() {
                   </span>
                 </p>
 
-                {user.client?.plan === "free" && (
-                  <div className="mt-6 space-y-4">
-                    <p className="text-sm text-gray-400">Choose your plan:</p>
-                    
-                    <div className="space-y-3">
-                      {/* Post Boost */}
+                {/* Show upgrade options for ALL users */}
+                <div className="mt-6 space-y-4">
+                  <p className="text-sm text-gray-400">
+                    {user.client?.plan === "free" 
+                      ? "Choose your plan:" 
+                      : `Upgrade from ${getPlanDisplay(user.client?.plan)}:`}
+                  </p>
+                  
+                  <div className="space-y-3">
+                    {/* Post Boost - hide if already on Post Boost */}
+                    {user.client?.plan !== "postboost" && (
                       <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-gray-700">
                         <div>
                           <h4 className="font-semibold text-white">🚀 Post Boost</h4>
@@ -839,11 +844,13 @@ export default function DashboardPage() {
                           disabled={loading}
                           className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
                         >
-                          $49/mo
+                          {user.client?.plan === "free" ? "$49/mo" : "Switch to $49/mo"}
                         </button>
                       </div>
+                    )}
 
-                      {/* Marketing */}
+                    {/* Marketing - hide if already on Marketing */}
+                    {user.client?.plan !== "marketing" && (
                       <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-cyan-500/30">
                         <div>
                           <h4 className="font-semibold text-white">📊 Marketing</h4>
@@ -855,11 +862,13 @@ export default function DashboardPage() {
                           disabled={loading}
                           className="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-lg text-cyan-400 font-semibold transition disabled:opacity-50 text-sm"
                         >
-                          $149/mo
+                          {user.client?.plan === "free" ? "$149/mo" : "Switch to $149/mo"}
                         </button>
                       </div>
+                    )}
 
-                      {/* Premium */}
+                    {/* Premium - hide if already on Premium */}
+                    {user.client?.plan !== "premium" && (
                       <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
                         <div>
                           <h4 className="font-semibold text-white">💎 Premium</h4>
@@ -871,13 +880,15 @@ export default function DashboardPage() {
                             disabled={loading}
                             className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm"
                           >
-                            $350/mo
+                            {user.client?.plan === "free" ? "$350/mo" : "Switch to $350/mo"}
                           </button>
                         </div>
                       </div>
-                    </div>
+                    )}
+                  </div>
 
-                    {/* Onboarding - Only for Premium */}
+                  {/* Onboarding - Only show for Premium upgrades */}
+                  {user.client?.plan !== "premium" && (
                     <div className="mt-4 p-4 bg-white/5 rounded-lg border border-gray-700">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -894,8 +905,8 @@ export default function DashboardPage() {
                         Get expert help configuring your agents and workflows
                       </p>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {(user.client?.plan === "postboost" || user.client?.plan === "marketing" || user.client?.plan === "premium") && (
                   <div className="mt-6">
