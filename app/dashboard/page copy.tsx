@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
 
 // Debounce hook
 function useDebounce(value: any, delay: number) {
@@ -70,6 +73,39 @@ export default function DashboardPage() {
   const [changePasswordLoading, setChangePasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
+  // Article pagination and filtering
+  const [articlesPage, setArticlesPage] = useState(1);
+  const [articlesTotal, setArticlesTotal] = useState(0);
+  const [articlesTotalPages, setArticlesTotalPages] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [publishingWorkflow, setPublishingWorkflow] = useState('auto');
+
+  // Article editing modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<any>(null);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    content: '',
+    excerpt: '',
+    featuredImage: ''
+  });
+  const [savingArticle, setSavingArticle] = useState(false);
+
+  // TipTap editor instance
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Image.configure({
+        inline: true,
+        allowBase64: true,
+      }),
+    ],
+    content: editFormData.content,
+    onUpdate: ({ editor }) => {
+      setEditFormData({ ...editFormData, content: editor.getHTML() });
+    },
+  });
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -115,27 +151,27 @@ export default function DashboardPage() {
   }, [debouncedCustomDomain]);
 
   // Save when debounced SSR subdomain changes
-  // Save when debounced SSR subdomain changes - NO TYPE CHECK
-useEffect(() => {
-  if (debouncedSsrSubdomain !== ssrSubdomain) {
-    console.log("Saving subdomain:", debouncedSsrSubdomain);
-    updateBlogSettings({ ssrSubdomain: debouncedSsrSubdomain });
-  }
-}, [debouncedSsrSubdomain]);
+  useEffect(() => {
+    if (debouncedSsrSubdomain !== ssrSubdomain) {
+      console.log("Saving subdomain:", debouncedSsrSubdomain);
+      updateBlogSettings({ ssrSubdomain: debouncedSsrSubdomain });
+    }
+  }, [debouncedSsrSubdomain]);
 
-// Save when debounced SSR custom domain changes - NO TYPE CHECK
-useEffect(() => {
-  if (debouncedSsrCustomDomain !== ssrCustomDomain) {
-    console.log("Saving custom domain:", debouncedSsrCustomDomain);
-    updateBlogSettings({ ssrCustomDomain: debouncedSsrCustomDomain });
-  }
-}, [debouncedSsrCustomDomain]);
+  // Save when debounced SSR custom domain changes
+  useEffect(() => {
+    if (debouncedSsrCustomDomain !== ssrCustomDomain) {
+      console.log("Saving custom domain:", debouncedSsrCustomDomain);
+      updateBlogSettings({ ssrCustomDomain: debouncedSsrCustomDomain });
+    }
+  }, [debouncedSsrCustomDomain]);
 
   // Fetch data when tabs change
   useEffect(() => {
     if (activeTab === "blog") {
       fetchBlogSettings();
-      fetchArticles();
+      fetchPublishingWorkflow();
+      fetchArticles(1, 'all');
       fetchLinkedInSettings();
     }
     if (activeTab === "widgets") {
@@ -144,6 +180,13 @@ useEffect(() => {
       fetchChatWidgetSettings();
     }
   }, [activeTab]);
+
+  // Update editor content when editFormData.content changes
+  useEffect(() => {
+    if (editor && editFormData.content !== editor.getHTML()) {
+      editor.commands.setContent(editFormData.content);
+    }
+  }, [editFormData.content, editor]);
 
   // ========== BLOG FUNCTIONS ==========
   
@@ -191,15 +234,121 @@ useEffect(() => {
     setTempCustomDomain(data.settings.customDomain || "");
   }
 
-  async function fetchArticles() {
+  async function fetchArticles(page: number = 1, status: string = statusFilter) {
     const token = localStorage.getItem("token");
     setBlogLoading(true);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles`, {
-      headers: { "Authorization": `Bearer ${token}` }
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles?page=${page}&limit=10&status=${status}`;
+      const res = await fetch(url, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setArticles(data.articles);
+      setArticlesTotal(data.total);
+      setArticlesPage(data.page);
+      setArticlesTotalPages(data.totalPages);
+    } catch (err) {
+      console.error("Failed to fetch articles:", err);
+    } finally {
+      setBlogLoading(false);
+    }
+  }
+
+  async function fetchPublishingWorkflow() {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings/publishing-workflow`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setPublishingWorkflow(data.publishingWorkflow);
+    } catch (err) {
+      console.error("Failed to fetch publishing workflow:", err);
+    }
+  }
+
+  async function updatePublishingWorkflow(workflow: string) {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/settings/publishing-workflow`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ publishingWorkflow: workflow })
+      });
+      if (res.ok) {
+        setPublishingWorkflow(workflow);
+        alert(`Publishing workflow set to ${workflow === 'auto' ? 'Auto-publish' : 'Manual approval'}`);
+      }
+    } catch (err) {
+      console.error("Failed to update publishing workflow:", err);
+    }
+  }
+
+  async function updateDraftArticle(articleId: string, data: any) {
+    const token = localStorage.getItem("token");
+    setSavingArticle(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles/${articleId}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        await fetchArticles(articlesPage, statusFilter);
+        setShowEditModal(false);
+        setEditingArticle(null);
+        alert("Article saved successfully");
+      } else {
+        const error = await res.json();
+        alert(error.error || "Failed to save article");
+      }
+    } catch (err) {
+      console.error("Failed to update article:", err);
+      alert("Failed to save article");
+    } finally {
+      setSavingArticle(false);
+    }
+  }
+
+ async function submitArticle(articleId: string) {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles/${articleId}`, {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status: "published", publishedAt: new Date().toISOString() })
     });
-    const data = await res.json();
-    setArticles(data.articles);
-    setBlogLoading(false);
+    if (res.ok) {
+      await fetchArticles(articlesPage, statusFilter);
+      alert("Article published successfully!");
+    } else {
+      const error = await res.json();
+      alert(error.error || "Failed to publish article");
+    }
+  } catch (err) {
+    console.error("Failed to publish article:", err);
+    alert("Failed to publish article");
+  }
+}
+
+  function openEditModal(article: any) {
+    setEditingArticle(article);
+    setEditFormData({
+      title: article.title,
+      content: article.content,
+      excerpt: article.excerpt || '',
+      featuredImage: article.featuredImage || ''
+    });
+    setShowEditModal(true);
   }
 
   async function fetchLinkedInSettings() {
@@ -861,6 +1010,46 @@ useEffect(() => {
                   </div>
                 </div>
 
+                {/* Publishing Workflow Setting */}
+                <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+                  <h2 className="text-xl mb-4">Article Publishing Workflow</h2>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Control how automatically generated articles are published.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition">
+                      <input
+                        type="radio"
+                        name="publishingWorkflow"
+                        value="auto"
+                        checked={publishingWorkflow === 'auto'}
+                        onChange={() => updatePublishingWorkflow('auto')}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-medium text-white">Auto-publish</div>
+                        <p className="text-gray-400 text-sm">Articles go live immediately when generated. No review needed.</p>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition">
+                      <input
+                        type="radio"
+                        name="publishingWorkflow"
+                        value="manual"
+                        checked={publishingWorkflow === 'manual'}
+                        onChange={() => updatePublishingWorkflow('manual')}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-medium text-white">Manual approval</div>
+                        <p className="text-gray-400 text-sm">Articles are saved as drafts. You review, edit, and submit for publishing.</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
                 {/* Blog Delivery Method - SSR Section */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
                   <h2 className="text-xl mb-4">Blog Delivery Method</h2>
@@ -924,18 +1113,18 @@ useEffect(() => {
                       <div className="mb-4">
                         <label className="block text-sm font-medium mb-2">Subdomain</label>
                         <div className="flex items-center gap-2 flex-wrap">
-                         <input
-                          type="text"
-                          defaultValue={ssrSubdomain}
-                          onBlur={(e) => {
-                            const value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
-                            setSsrSubdomain(value);
-                            setTempSsrSubdomain(value);
-                            updateBlogSettings({ ssrSubdomain: value });
-                          }}
-                          placeholder="yourbrand"
-                          className="flex-1 min-w-[200px] p-2 rounded-lg bg-white/10 border border-white/20"
-                        />
+                          <input
+                            type="text"
+                            defaultValue={ssrSubdomain}
+                            onBlur={(e) => {
+                              const value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+                              setSsrSubdomain(value);
+                              setTempSsrSubdomain(value);
+                              updateBlogSettings({ ssrSubdomain: value });
+                            }}
+                            placeholder="yourbrand"
+                            className="flex-1 min-w-[200px] p-2 rounded-lg bg-white/10 border border-white/20"
+                          />
                           <span className="text-gray-400">.meetingmaker.tech</span>
                         </div>
                         <p className="text-xs text-gray-400 mt-1">
@@ -1067,72 +1256,206 @@ useEffect(() => {
                   )}
                 </div>
 
-                {/* Articles Section */}
+                {/* Articles Section with Filters and Pagination */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
                   <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
                     <h2 className="text-xl">Your Articles</h2>
-                    <button
-                      onClick={fetchArticles}
-                      className="text-cyan-400 hover:text-cyan-300 text-sm"
-                    >
-                      🔄 Refresh
-                    </button>
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => {
+                          setStatusFilter('all');
+                          fetchArticles(1, 'all');
+                        }}
+                        className={`px-3 py-1 rounded-lg text-sm transition ${
+                          statusFilter === 'all' ? 'bg-cyan-500 text-white' : 'bg-white/10 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        All
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStatusFilter('draft');
+                          fetchArticles(1, 'draft');
+                        }}
+                        className={`px-3 py-1 rounded-lg text-sm transition ${
+                          statusFilter === 'draft' ? 'bg-yellow-500 text-white' : 'bg-white/10 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        Draft
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStatusFilter('submitted');
+                          fetchArticles(1, 'submitted');
+                        }}
+                        className={`px-3 py-1 rounded-lg text-sm transition ${
+                          statusFilter === 'submitted' ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        Submitted
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStatusFilter('published');
+                          fetchArticles(1, 'published');
+                        }}
+                        className={`px-3 py-1 rounded-lg text-sm transition ${
+                          statusFilter === 'published' ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        Published
+                      </button>
+                    </div>
                   </div>
                   
                   {blogLoading ? (
                     <p className="text-gray-400">Loading articles...</p>
                   ) : articles.length === 0 ? (
                     <div className="text-center py-8">
-                      <p className="text-gray-400 mb-2">No articles yet.</p>
+                      <p className="text-gray-400 mb-2">No articles found.</p>
                       <p className="text-gray-500 text-sm">
-                        Articles will be generated automatically by your SEO agents. 
-                        Make sure you have at least one active SEO Manager agent.
+                        {statusFilter === 'draft' && 'No draft articles waiting for review.'}
+                        {statusFilter === 'submitted' && 'No articles pending publishing.'}
+                        {statusFilter === 'published' && 'No published articles yet.'}
+                        {statusFilter === 'all' && 'Articles will appear here once generated.'}
                       </p>
                     </div>
                   ) : (
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {articles.map((article: any) => (
-                        <div key={article._id} className="border border-white/10 rounded-lg p-4 hover:bg-white/5 transition">
-                          <div className="flex justify-between items-start flex-wrap gap-4">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-white break-words">{article.title}</h3>
-                              <p className="text-gray-400 text-sm mt-1 line-clamp-2">{article.excerpt}</p>
-                              <div className="flex gap-4 mt-2 flex-wrap">
-                                <span className="text-xs text-gray-500">
-                                  {article.status === "published" ? "✅ Published" : "📝 Draft"}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  📖 {article.readTime} min read
-                                </span>
-                                {article.publishedAt && (
-                                  <span className="text-xs text-gray-500">
-                                    📅 {new Date(article.publishedAt).toLocaleDateString()}
-                                  </span>
-                                )}
-                                {article.linkedinPost?.posted && (
-                                  <span className="text-xs text-blue-400" title={`Posted at ${new Date(article.linkedinPost.postedAt).toLocaleString()}`}>
-                                    📤 LinkedIn: Posted
-                                  </span>
-                                )}
-                                {article.linkedinPost?.error && (
-                                  <span className="text-xs text-red-400" title={article.linkedinPost.error}>
-                                    ❌ LinkedIn: Failed
-                                  </span>
-                                )}
+                    <>
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {articles.map((article: any) => (
+                          <div key={article._id} className="border border-white/10 rounded-lg p-4 hover:bg-white/5 transition">
+                            <div className="flex justify-between items-start flex-wrap gap-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-2">
+                                  <h3 className="font-semibold text-white break-words">{article.title}</h3>
+                                  {article.status === 'draft' && (
+                                    <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">Draft</span>
+                                  )}
+                                  {article.status === 'submitted' && (
+                                    <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">Submitted</span>
+                                  )}
+                                  {article.status === 'published' && (
+                                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">Published</span>
+                                  )}
+                                </div>
+                                <p className="text-gray-400 text-sm mt-1 line-clamp-2">{article.excerpt}</p>
+                                <div className="flex gap-4 mt-2 flex-wrap">
+                                  <span className="text-xs text-gray-500">📖 {article.readTime} min read</span>
+                                  {article.publishedAt && (
+                                    <span className="text-xs text-gray-500">
+                                      📅 {new Date(article.publishedAt).toLocaleDateString()}
+                                    </span>
+                                  )}
+                                  {article.linkedinPost?.posted && (
+                                    <span className="text-xs text-blue-400">📤 LinkedIn: Posted</span>
+                                  )}
+                                </div>
                               </div>
+                              <div className="flex gap-2 shrink-0">
+  {article.status === 'draft' && (
+    <>
+      <button
+        onClick={() => openEditModal(article)}
+        className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
+      >
+        ✏️ Edit
+      </button>
+      <button
+        onClick={() => submitArticle(article._id)}
+        className="text-green-400 hover:text-green-300 text-sm px-3 py-1 rounded border border-green-400/30 hover:bg-green-400/10 transition"
+      >
+        📤 Submit
+      </button>
+      <button
+      onClick={() => {
+        const token = localStorage.getItem("token");
+        const previewUrl = `${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles/preview/${article._id}`;
+        const win = window.open();
+        win?.document.write(`
+          <html>
+            <head><title>Preview: ${article.title}</title>
+            <style>body{font-family:sans-serif;max-width:800px;margin:0 auto;padding:2rem;line-height:1.6}img{max-width:100%}.warning{background:#fef3c7;border:1px solid #f59e0b;padding:1rem;border-radius:0.5rem;margin-bottom:1rem}</style>
+            </head>
+            <body>
+              <div id="content">Loading...</div>
+              <script>
+                fetch('${previewUrl}',{headers:{'Authorization':'Bearer ${token}'}})
+                  .then(r=>r.json())
+                  .then(d=>{
+                    if(d.article){
+                      document.body.innerHTML = \`
+                        <a href="#" onclick="window.close()">← Close</a>
+                        <div class="warning">⚠️ Preview - Not yet published</div>
+                        <h1>\${d.article.title}</h1>
+                        \${d.article.featuredImage ? '<img src="'+d.article.featuredImage+'">' : ''}
+                        <div>\${d.article.content}</div>
+                      \`;
+                    } else document.body.innerHTML = 'Not found';
+                  });
+              </script>
+            </body>
+          </html>
+        `);
+      }}
+      className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
+    >
+      👁️ View
+    </button>
+    </>
+  )}
+  {article.status === 'submitted' && (
+    <>
+      <span className="text-gray-500 text-sm px-3 py-1">⏳ Pending...</span>
+      <a
+        href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
+      >
+        👁️ View
+      </a>
+    </>
+  )}
+  {article.status === 'published' && (
+    <a
+      href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
+    >
+      👁️ View
+    </a>
+  )}
+</div>
                             </div>
-                            <a
-                              href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-cyan-400 hover:text-cyan-300 text-sm shrink-0"
-                            >
-                              View →
-                            </a>
                           </div>
+                        ))}
+                      </div>
+                      
+                      {/* Pagination */}
+                      {articlesTotalPages > 1 && (
+                        <div className="flex justify-center items-center gap-4 mt-6">
+                          <button
+                            onClick={() => fetchArticles(articlesPage - 1, statusFilter)}
+                            disabled={articlesPage === 1}
+                            className="px-4 py-2 rounded-lg bg-white/10 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                          >
+                            ← Previous
+                          </button>
+                          <span className="text-gray-400">
+                            Page {articlesPage} of {articlesTotalPages}
+                          </span>
+                          <button
+                            onClick={() => fetchArticles(articlesPage + 1, statusFilter)}
+                            disabled={articlesPage === articlesTotalPages}
+                            className="px-4 py-2 rounded-lg bg-white/10 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+                          >
+                            Next →
+                          </button>
                         </div>
-                      ))}
-                    </div>
+                      )}
+                    </>
                   )}
                 </div>
               </>
@@ -1242,6 +1565,156 @@ useEffect(() => {
         )}
 
       </div>
+
+      {/* Article Edit Modal */}
+      {showEditModal && editingArticle && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">Edit Article</h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingArticle(null);
+                }}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Title</label>
+                <input
+                  type="text"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                  className="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Content</label>
+                <div className="border border-gray-600 rounded-lg bg-gray-800 overflow-hidden">
+                  <div className="border-b border-gray-600 p-2 flex gap-2 flex-wrap bg-gray-800">
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleBold().run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('bold') ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      Bold
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleItalic().run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('italic') ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      Italic
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('heading', { level: 2 }) ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      H2
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('heading', { level: 3 }) ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      H3
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('bulletList') ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      Bullet List
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                      className={`px-2 py-1 rounded text-sm ${editor?.isActive('orderedList') ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                    >
+                      Numbered List
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = window.prompt('Enter image URL:');
+                        if (url) editor?.chain().focus().setImage({ src: url }).run();
+                      }}
+                      className="px-2 py-1 rounded text-sm bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    >
+                      Add Image
+                    </button>
+                  </div>
+                  <EditorContent editor={editor} className="prose prose-invert max-w-none p-4 min-h-[300px] text-white focus:outline-none" />
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  Use the toolbar to format your content. Images can be added via URL.
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Excerpt</label>
+                <textarea
+                  value={editFormData.excerpt}
+                  onChange={(e) => setEditFormData({ ...editFormData, excerpt: e.target.value })}
+                  rows={3}
+                  className="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                  placeholder="Short summary of the article..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Featured Image URL</label>
+                <input
+                  type="text"
+                  value={editFormData.featuredImage}
+                  onChange={(e) => setEditFormData({ ...editFormData, featuredImage: e.target.value })}
+                  className="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                  placeholder="https://example.com/image.jpg"
+                />
+                {editFormData.featuredImage && (
+                  <img
+                    src={editFormData.featuredImage}
+                    alt="Preview"
+                    className="mt-2 h-32 w-auto object-cover rounded-lg"
+                    onError={(e) => (e.currentTarget.style.display = 'none')}
+                  />
+                )}
+              </div>
+            </div>
+            
+            <div className="flex gap-3 pt-6 mt-4 border-t border-gray-700">
+              <button
+                onClick={() => updateDraftArticle(editingArticle._id, {
+                  title: editFormData.title,
+                  content: editFormData.content,
+                  excerpt: editFormData.excerpt,
+                  featuredImage: editFormData.featuredImage
+                })}
+                disabled={savingArticle}
+                className="flex-1 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 rounded-lg text-white font-semibold transition disabled:opacity-50"
+              >
+                {savingArticle ? "Saving..." : "Save Changes"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingArticle(null);
+                }}
+                className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Change Password Modal */}
       {showChangePasswordModal && (

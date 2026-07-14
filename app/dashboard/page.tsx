@@ -316,29 +316,29 @@ export default function DashboardPage() {
     }
   }
 
- async function submitArticle(articleId: string) {
-  const token = localStorage.getItem("token");
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles/${articleId}`, {
-      method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ status: "published", publishedAt: new Date().toISOString() })
-    });
-    if (res.ok) {
-      await fetchArticles(articlesPage, statusFilter);
-      alert("Article published successfully!");
-    } else {
-      const error = await res.json();
-      alert(error.error || "Failed to publish article");
+  async function submitArticle(articleId: string) {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles/${articleId}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ status: "published", publishedAt: new Date().toISOString() })
+      });
+      if (res.ok) {
+        await fetchArticles(articlesPage, statusFilter);
+        alert("Article published successfully!");
+      } else {
+        const error = await res.json();
+        alert(error.error || "Failed to publish article");
+      }
+    } catch (err) {
+      console.error("Failed to publish article:", err);
+      alert("Failed to publish article");
     }
-  } catch (err) {
-    console.error("Failed to publish article:", err);
-    alert("Failed to publish article");
   }
-}
 
   function openEditModal(article: any) {
     setEditingArticle(article);
@@ -673,7 +673,7 @@ export default function DashboardPage() {
     }
   };
 
-  const handleUpgrade = async (plan: "pro" | "premium", includeOnboarding: boolean = false) => {
+  const handleUpgrade = async (plan: "postboost" | "marketing" | "premium", includeOnboarding: boolean = false) => {
     setLoading(true);
     const token = localStorage.getItem("token");
 
@@ -747,10 +747,11 @@ export default function DashboardPage() {
 
   const getPlanDisplay = (plan: string) => {
     switch (plan) {
-      case "free": return "NO PLAN";
-      case "pro": return "Pro";
-      case "premium": return "Premium";
-      default: return plan;
+      case "free": return "No Plan";
+      case "postboost": return "🚀 Post Boost";
+      case "marketing": return "📊 Marketing";
+      case "premium": return "💎 Premium";
+      default: return plan || "No Plan";
     }
   };
 
@@ -814,8 +815,9 @@ export default function DashboardPage() {
                   <span className={`
                     px-2 py-1 rounded-full text-xs font-medium ml-2
                     ${user.client?.plan === "free" ? "bg-gray-600 text-gray-200" : ""}
-                    ${user.client?.plan === "pro" ? "bg-cyan-600 text-white" : ""}
-                    ${user.client?.plan === "premium" ? "bg-purple-600 text-white" : ""}
+                    ${user.client?.plan === "postboost" ? "bg-purple-600 text-white" : ""}
+                    ${user.client?.plan === "marketing" ? "bg-cyan-600 text-white" : ""}
+                    ${user.client?.plan === "premium" ? "bg-amber-600 text-white" : ""}
                   `}>
                     {getPlanDisplay(user.client?.plan)}
                   </span>
@@ -825,38 +827,77 @@ export default function DashboardPage() {
                   <div className="mt-6 space-y-4">
                     <p className="text-sm text-gray-400">Choose your plan:</p>
                     
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={includeOnboarding}
-                        onChange={(e) => setIncludeOnboarding(e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-600 bg-white/10"
-                      />
-                      <span className="text-gray-300">
-                        + Add Onboarding Setup ($450 one-time fee)
-                      </span>
-                    </label>
-                    
-                    <div className="flex gap-4">
-                      <button
-                        onClick={() => handleUpgrade("pro", includeOnboarding)}
-                        disabled={loading}
-                        className="flex-1 px-6 py-3 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-xl text-cyan-400 font-semibold transition disabled:opacity-50"
-                      >
-                        Upgrade to Pro - $150/mo
-                      </button>
-                      <button
-                        onClick={() => handleUpgrade("premium", includeOnboarding)}
-                        disabled={loading}
-                        className="flex-1 px-6 py-3 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-xl text-purple-400 font-semibold transition disabled:opacity-50"
-                      >
-                        Upgrade to Premium - $350/mo
-                      </button>
+                    <div className="space-y-3">
+                      {/* Post Boost */}
+                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-gray-700">
+                        <div>
+                          <h4 className="font-semibold text-white">🚀 Post Boost</h4>
+                          <p className="text-sm text-gray-400">Boost LinkedIn posts through our network</p>
+                        </div>
+                        <button
+                          onClick={() => handleUpgrade("postboost", false)}
+                          disabled={loading}
+                          className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
+                        >
+                          $49/mo
+                        </button>
+                      </div>
+
+                      {/* Marketing */}
+                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-cyan-500/30">
+                        <div>
+                          <h4 className="font-semibold text-white">📊 Marketing</h4>
+                          <p className="text-sm text-gray-400">Full marketing suite with AI agents</p>
+                          <span className="text-xs text-cyan-400">Most Popular</span>
+                        </div>
+                        <button
+                          onClick={() => handleUpgrade("marketing", false)}
+                          disabled={loading}
+                          className="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-lg text-cyan-400 font-semibold transition disabled:opacity-50 text-sm"
+                        >
+                          $149/mo
+                        </button>
+                      </div>
+
+                      {/* Premium */}
+                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
+                        <div>
+                          <h4 className="font-semibold text-white">💎 Premium</h4>
+                          <p className="text-sm text-gray-400">Full platform access with CRM</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleUpgrade("premium", includeOnboarding)}
+                            disabled={loading}
+                            className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm"
+                          >
+                            $350/mo
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Onboarding - Only for Premium */}
+                    <div className="mt-4 p-4 bg-white/5 rounded-lg border border-gray-700">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={includeOnboarding}
+                          onChange={(e) => setIncludeOnboarding(e.target.checked)}
+                          className="w-4 h-4 rounded border-gray-600 bg-white/10"
+                        />
+                        <span className="text-gray-300">
+                          Add one-time onboarding setup for Premium (+$450)
+                        </span>
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1 ml-6">
+                        Get expert help configuring your agents and workflows
+                      </p>
                     </div>
                   </div>
                 )}
 
-                {(user.client?.plan === "pro" || user.client?.plan === "premium") && (
+                {(user.client?.plan === "postboost" || user.client?.plan === "marketing" || user.client?.plan === "premium") && (
                   <div className="mt-6">
                     {!hasStripeCustomer ? (
                       <p className="text-yellow-400 text-sm">
@@ -1353,81 +1394,81 @@ export default function DashboardPage() {
                                 </div>
                               </div>
                               <div className="flex gap-2 shrink-0">
-  {article.status === 'draft' && (
-    <>
-      <button
-        onClick={() => openEditModal(article)}
-        className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
-      >
-        ✏️ Edit
-      </button>
-      <button
-        onClick={() => submitArticle(article._id)}
-        className="text-green-400 hover:text-green-300 text-sm px-3 py-1 rounded border border-green-400/30 hover:bg-green-400/10 transition"
-      >
-        📤 Submit
-      </button>
-      <button
-      onClick={() => {
-        const token = localStorage.getItem("token");
-        const previewUrl = `${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles/preview/${article._id}`;
-        const win = window.open();
-        win?.document.write(`
-          <html>
-            <head><title>Preview: ${article.title}</title>
-            <style>body{font-family:sans-serif;max-width:800px;margin:0 auto;padding:2rem;line-height:1.6}img{max-width:100%}.warning{background:#fef3c7;border:1px solid #f59e0b;padding:1rem;border-radius:0.5rem;margin-bottom:1rem}</style>
-            </head>
-            <body>
-              <div id="content">Loading...</div>
-              <script>
-                fetch('${previewUrl}',{headers:{'Authorization':'Bearer ${token}'}})
-                  .then(r=>r.json())
-                  .then(d=>{
-                    if(d.article){
-                      document.body.innerHTML = \`
-                        <a href="#" onclick="window.close()">← Close</a>
-                        <div class="warning">⚠️ Preview - Not yet published</div>
-                        <h1>\${d.article.title}</h1>
-                        \${d.article.featuredImage ? '<img src="'+d.article.featuredImage+'">' : ''}
-                        <div>\${d.article.content}</div>
-                      \`;
-                    } else document.body.innerHTML = 'Not found';
-                  });
-              </script>
-            </body>
-          </html>
-        `);
-      }}
-      className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
-    >
-      👁️ View
-    </button>
-    </>
-  )}
-  {article.status === 'submitted' && (
-    <>
-      <span className="text-gray-500 text-sm px-3 py-1">⏳ Pending...</span>
-      <a
-        href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
-      >
-        👁️ View
-      </a>
-    </>
-  )}
-  {article.status === 'published' && (
-    <a
-      href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
-    >
-      👁️ View
-    </a>
-  )}
-</div>
+                                {article.status === 'draft' && (
+                                  <>
+                                    <button
+                                      onClick={() => openEditModal(article)}
+                                      className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
+                                    >
+                                      ✏️ Edit
+                                    </button>
+                                    <button
+                                      onClick={() => submitArticle(article._id)}
+                                      className="text-green-400 hover:text-green-300 text-sm px-3 py-1 rounded border border-green-400/30 hover:bg-green-400/10 transition"
+                                    >
+                                      📤 Submit
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        const token = localStorage.getItem("token");
+                                        const previewUrl = `${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/articles/preview/${article._id}`;
+                                        const win = window.open();
+                                        win?.document.write(`
+                                          <html>
+                                            <head><title>Preview: ${article.title}</title>
+                                            <style>body{font-family:sans-serif;max-width:800px;margin:0 auto;padding:2rem;line-height:1.6}img{max-width:100%}.warning{background:#fef3c7;border:1px solid #f59e0b;padding:1rem;border-radius:0.5rem;margin-bottom:1rem}</style>
+                                            </head>
+                                            <body>
+                                              <div id="content">Loading...</div>
+                                              <script>
+                                                fetch('${previewUrl}',{headers:{'Authorization':'Bearer ${token}'}})
+                                                  .then(r=>r.json())
+                                                  .then(d=>{
+                                                    if(d.article){
+                                                      document.body.innerHTML = \`
+                                                        <a href="#" onclick="window.close()">← Close</a>
+                                                        <div class="warning">⚠️ Preview - Not yet published</div>
+                                                        <h1>\${d.article.title}</h1>
+                                                        \${d.article.featuredImage ? '<img src="'+d.article.featuredImage+'">' : ''}
+                                                        <div>\${d.article.content}</div>
+                                                      \`;
+                                                    } else document.body.innerHTML = 'Not found';
+                                                  });
+                                              </script>
+                                            </body>
+                                          </html>
+                                        `);
+                                      }}
+                                      className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
+                                    >
+                                      👁️ View
+                                    </button>
+                                  </>
+                                )}
+                                {article.status === 'submitted' && (
+                                  <>
+                                    <span className="text-gray-500 text-sm px-3 py-1">⏳ Pending...</span>
+                                    <a
+                                      href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
+                                    >
+                                      👁️ View
+                                    </a>
+                                  </>
+                                )}
+                                {article.status === 'published' && (
+                                  <a
+                                    href={ssrBlogUrl ? `${ssrBlogUrl}/${article.slug}` : `/blog/${article.slug}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
+                                  >
+                                    👁️ View
+                                  </a>
+                                )}
+                              </div>
                             </div>
                           </div>
                         ))}
