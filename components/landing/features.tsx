@@ -24,7 +24,7 @@ export default function Features() {
                             src="/images/features/platform-overview.png"
                             alt="Meeting Maker Platform Overview"
                             fill
-                            className="object-contain"
+                            className="object-cover md:object-contain"
                             priority
                         />
                     </div>
