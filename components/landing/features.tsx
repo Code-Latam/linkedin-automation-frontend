@@ -20,16 +20,17 @@ export default function Features() {
 
             {/* Platform Overview Image */}
             <div className="flex justify-center mb-24 px-4 sm:px-6 lg:px-8">
-                <Image
-                    src="/images/features/platform-overview.png"
-                    alt="Meeting Maker Platform Overview"
-                    width={1800}
-                    height={2200}
-                    priority
-                    className="w-full h-auto md:w-auto md:h-[950px]"
-                />
+                <div className="overflow-hidden rounded-3xl">
+                    <Image
+                        src="/images/features/platform-overview.png"
+                        alt="Meeting Maker Platform Overview"
+                        width={1800}
+                        height={2200}
+                        priority
+                        className="w-full h-auto md:w-auto md:h-[850px] lg:h-[950px] xl:h-[1100px]"
+                    />
+                </div>
             </div>
-
             {/* Features Grid */}
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
