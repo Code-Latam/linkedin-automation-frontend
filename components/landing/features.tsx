@@ -5,9 +5,9 @@ import { featuresText } from '@/lib/text/features';
 export default function Features() {
     return (
         <section id="features" className="relative overflow-hidden py-24">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-                {/* Header */}
+            {/* Header */}
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-20">
                     <h2 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white mb-6 tracking-tight">
                         {featuresText.header.title}
@@ -16,21 +16,22 @@ export default function Features() {
                         {featuresText.header.subtitle}
                     </p>
                 </div>
+            </div>
 
-                {/* Platform Overview Image */}
-                <div className="mb-24">
-                   <div className="relative w-full aspect-[4/5] md:aspect-[16/9] rounded-3xl overflow-hidden">
-                        <Image
-                            src="/images/features/platform-overview.png"
-                            alt="Meeting Maker Platform Overview"
-                            fill
-                            className="object-contain"
-                            priority
-                        />
-                    </div>
-                </div>
+            {/* Platform Overview Image */}
+            <div className="flex justify-center mb-24 px-4 sm:px-6 lg:px-8">
+                <Image
+                    src="/images/features/platform-overview.png"
+                    alt="Meeting Maker Platform Overview"
+                    width={1800}
+                    height={2200}
+                    priority
+                    className="w-full h-auto md:w-auto md:h-[950px]"
+                />
+            </div>
 
-                {/* Features Grid */}
+            {/* Features Grid */}
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
                     {featuresText.items.map((feature) => (
                         <div
@@ -61,8 +62,8 @@ export default function Features() {
                         </div>
                     ))}
                 </div>
-
             </div>
+
         </section>
     );
 }
