@@ -19,12 +19,12 @@ export default function Features() {
 
                 {/* Platform Overview Image */}
                 <div className="mb-24">
-                    <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden">
+                   <div className="relative w-full aspect-[4/5] md:aspect-[16/9] rounded-3xl overflow-hidden">
                         <Image
                             src="/images/features/platform-overview.png"
                             alt="Meeting Maker Platform Overview"
                             fill
-                            className="object-cover md:object-contain"
+                            className="object-contain"
                             priority
                         />
                     </div>
