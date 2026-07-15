@@ -6,7 +6,7 @@ export default function Features() {
     return (
         <section id="features" className="relative overflow-hidden py-24">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                
+
                 {/* Header */}
                 <div className="text-center mb-20">
                     <h2 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white mb-6 tracking-tight">
@@ -17,154 +17,49 @@ export default function Features() {
                     </p>
                 </div>
 
-                {/* Features Grid */}
-                <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-                    {featuresText.items.map((feature) => {
-                        return (
-                            <div
-                                key={feature.slug}
-                                className="group relative"
-                            >
-                                {/* Image */}
-                                <div className="relative h-64 mb-8 rounded-2xl overflow-hidden transition-all duration-500">
-                                    <div className="relative w-full h-full transform group-hover:scale-105 transition-transform duration-500">
-                                        <Image
-                                            src={feature.image}
-                                            alt={`Astrolab Meeting Maker - ${feature.title}. ${feature.description.substring(0, 100)}`}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Content */}
-                                <div className="space-y-3 mb-10">
-                                    <h3 className="text-2xl font-bold text-white leading-tight group-hover:text-cyan-400 transition-colors duration-300">
-                                        {feature.title}
-                                    </h3>
-                                    <p className="text-base text-gray-400 leading-relaxed">
-                                        {feature.description}
-                                    </p>
-                                </div>
-                            </div>
-                        );
-                    })}
+                {/* Platform Overview Image */}
+                <div className="mb-24">
+                    <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden">
+                        <Image
+                            src="/images/features/platform-overview.png"
+                            alt="Meeting Maker Platform Overview"
+                            fill
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
                 </div>
 
-                {/* ========================= */}
-                {/* Instructional Videos Section */}
-                {/* ========================= */}
-                <div className="mt-24">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl sm:text-4xl font-semibold text-white mb-4">
-                            Instructional Videos
-                        </h2>
-                        <p className="text-gray-400 max-w-2xl mx-auto">
-                            Learn how to get the most out of Meeting Maker with step-by-step walkthroughs.
-                        </p>
-                    </div>
-
-                    <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-                        
-                        {/* Video 1 */}
-                        <div className="space-y-4">
-                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-                                <iframe
-                                    className="w-full h-full"
-                                    src="https://www.youtube.com/embed/zuiiqMlNEEE"
-                                    title="General Overview of The meeting Maker"
-                                    frameBorder="0"
-                                    allowFullScreen
-                                />
+                {/* Features Grid */}
+                <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+                    {featuresText.items.map((feature) => (
+                        <div
+                            key={feature.slug}
+                            className="group relative"
+                        >
+                            {/* Image */}
+                            <div className="relative h-64 mb-8 rounded-2xl overflow-hidden transition-all duration-500">
+                                <div className="relative w-full h-full transform group-hover:scale-105 transition-transform duration-500">
+                                    <Image
+                                        src={feature.image}
+                                        alt={`Astrolab Meeting Maker - ${feature.title}. ${feature.description.substring(0, 100)}`}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                </div>
                             </div>
-                            <h3 className="text-lg font-semibold text-white">General Overview of The meeting Maker</h3>
-                        </div>
 
-                        {/* Video 2 */}
-                        <div className="space-y-4">
-                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-                                <iframe
-                                    className="w-full h-full"
-                                    src="https://www.youtube.com/embed/YR6TLKzCZgc"
-                                    title="How to create your own SDR or BDR agent"
-                                    frameBorder="0"
-                                    allowFullScreen
-                                />
+                            {/* Content */}
+                            <div className="space-y-3 mb-10">
+                                <h3 className="text-2xl font-bold text-white leading-tight group-hover:text-cyan-400 transition-colors duration-300">
+                                    {feature.title}
+                                </h3>
+                                <p className="text-base text-gray-400 leading-relaxed">
+                                    {feature.description}
+                                </p>
                             </div>
-                            <h3 className="text-lg font-semibold text-white">How to create your own SDR or BDR agent</h3>
                         </div>
-
-                        {/* Video 2.1 */}
-                        <div className="space-y-4">
-                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-                                <iframe
-                                    className="w-full h-full"
-                                    src="https://www.youtube.com/embed/gR5IiO2gMEo"
-                                    title="How to create your own Marketing Manager Agent"
-                                    frameBorder="0"
-                                    allowFullScreen
-                                />
-                            </div>
-                            <h3 className="text-lg font-semibold text-white">How to create your own Marketing Manager Agent and run organic marketing campaigns</h3>
-                        </div>
-
-                        {/* Video 3 */}
-                        <div className="space-y-4">
-                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-                                <iframe
-                                    className="w-full h-full"
-                                    src="https://www.youtube.com/embed/L6PLGWzFmWI"
-                                    title="How to Assign prospects to your agents"
-                                    frameBorder="0"
-                                    allowFullScreen
-                                />
-                            </div>
-                            <h3 className="text-lg font-semibold text-white">How to Assign people to your agents</h3>
-                        </div>
-
-                        {/* Video 4 */}
-                        <div className="space-y-4">
-                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-                                <iframe
-                                    className="w-full h-full"
-                                    src="https://www.youtube.com/embed/xTToS5xjUEg"
-                                    title="How to track your AI outreach performance"
-                                    frameBorder="0"
-                                    allowFullScreen
-                                />
-                            </div>
-                            <h3 className="text-lg font-semibold text-white">Agents People List and Dashboard</h3>
-                        </div>
-
-                        {/* Video 5 */}
-                        <div className="space-y-4">
-                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-                                <iframe
-                                    className="w-full h-full"
-                                    src="https://www.youtube.com/embed/oFPYGzWrwtM"
-                                    title="How to setup an SEO AI Manager Agent"
-                                    frameBorder="0"
-                                    allowFullScreen
-                                />
-                            </div>
-                            <h3 className="text-lg font-semibold text-white">How to setup an SEO Manager Agent</h3>
-                        </div>
-
-                        {/* Video 6 */}
-                        <div className="space-y-4">
-                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-                                <iframe
-                                    className="w-full h-full"
-                                    src="https://www.youtube.com/embed/DArEDeVQp5E"
-                                    title="How to Set Up Your Astrolab Meeting Maker Account"
-                                    frameBorder="0"
-                                    allowFullScreen
-                                />
-                            </div>
-                            <h3 className="text-lg font-semibold text-white">How to Set Up Your Astrolab Meeting Maker Account</h3>
-                        </div>
-
-                    </div>
+                    ))}
                 </div>
 
             </div>

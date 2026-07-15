@@ -1,26 +1,27 @@
 
 export const featuresText = {
     header: {
-        title: "We use an holistic aproach to increase 5X the flow of your LinkedIn and email funnel",
-        subtitle: "The Meeting Maker's AI Marketing team builds your brand through smart engagement while its SDR, BDR and CSR team reaches out and handles inbound and outbound on autopilot."
+        title: "Replace an entire sales and marketing department with one AI platform.",
+        subtitle: "Marketing, sales, prospect research, CRM, and customer engagement work together automatically while your team focuses only on closing deals."
     },
 
     
     items: [
         {
-            slug: "autonomous-ai-outreach",
-            title: "AI Sales and Customer services team that work 24/7",
-            description: "Let your AI sales team comprised of SDRs, BDRs select leads individually, in bulk, through campaigns or through an uploaded file, and let them engage through targeted messages or email.  They do all this while your Customer Services Team handles inbound traffic— booking meetings with yout ideal prospects all day long.",
-            image: "/images/features/assign-to-meeting-maker1.png",
-
-        },
-        {
             slug: "The-Meeting-Maker-Marketing-Team-use-it-to-warmup-your-prospects-and-drive-inbound",
-            title: "The Meeting Maker Marketing Team. Use it to warmup your prospects and drive inbound",
-            description: "Empower the AI sales team by using the Meeting Maker Marketing team to warmup your prospects in all networks that matter. They post original content, target viral posts, drop strategic comments, and monitor competitors and influencers 24/7.",
+            title: "Marketing Team. Use it to warmup your prospects and drive inbound",
+            description: "Empower the AI sales team by using the Marketing team to warmup your prospects in all networks that matter. They post original content, target viral posts, drop strategic comments, and monitor competitors and influencers 24/7.",
             image: "/images/features/conversation2.png",
 
         },
+        {
+            slug: "autonomous-ai-outreach",
+            title: "Sales and Customer services teams that work 24/7",
+            description: "Your AI outbound team—SDRs and BDRs—prospects and engages leads across LinkedIn and email. Your AI inbound team handles questions and books meetings with your ideal buyers. Both run 24/7. Neither needs a CRM.",
+            image: "/images/features/assign-to-meeting-maker1.png",
+
+        },
+        
         {
             slug: "deep-lead-research",
             title: "Every prospect is researched before the first message is sent.",
@@ -30,7 +31,7 @@ export const featuresText = {
         },
         {
             slug: "Integration-with-your-crm",
-            title: "Use the inbuild CRM or Integrate with your own CRM",
+            title: "No CRM required. But we play nice with yours.",
             description: "Handle your important contacts and deals in the Meeting Maker itself or send them to your favorite CRM with one click",
             image: "/images/features/CRM2.png",
 

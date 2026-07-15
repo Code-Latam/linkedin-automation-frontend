@@ -1,6 +1,6 @@
 export const heroText = {
     headline: "The Astrolab Meeting Maker",
-    subheadline: "Autonomous Revenue generation",
+    subheadline: "Autonomous Revenue Generation for startups, fractional leaders and solopreneurs",
     features: [
         {
             icon: "Users",

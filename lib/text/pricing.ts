@@ -19,10 +19,10 @@ export const pricingText = {
                ],
             cta: "Get Started",
             badge: null,
-            popular: true
+            popular: false
         },
         marketing: {
-            name: "Marketing",
+            name: "Marketing Team",
             price: 149,
             description: "Full marketing suite with AI Marketing Team",
             features: [
@@ -36,11 +36,11 @@ export const pricingText = {
                 "Unlimited AI marketing team members per LinkedIn account"
             ],
             cta: "Get Started",
-            badge: "MOST POPULAR",
+            badge: "BEST VALUE",
             popular: false
         },
         premium: {
-            name: "Premium",
+            name: "Marketing + Sales Teams",
             price: 350,
             description: "Full platform access with AI Sales Team",
             features: [
@@ -53,11 +53,12 @@ export const pricingText = {
                 "Important contacts management",
                 "AI-powered automatic lead selection campaigns",
                 "6,000 emails per month",
-                "Priority 24 hours max SLA through email"
+                "Priority 24 hours max SLA through email",
+                "✅ Optional: One-time onboarding setup (+$450) - checkbox below"
             ],
             cta: "Get Started",
-            badge: "BEST VALUE",
-            popular: false
+            badge: "MOST POPULAR",
+            popular: true
         }
     },
     sharedFeatures: [
