@@ -38,7 +38,7 @@ export default function BookMeetingPage() {
             <div className="relative bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl rounded-3xl border border-gray-800 p-8 sm:p-10">
               <div className="flex justify-center items-center">
                 <iframe 
-                  src="https://calendly.com/steven-apiastrolab/30min"
+                  src="https://cal.com/meeting-maker/30min"
                   width="100%"
                   height="700"
                   frameBorder="0"
