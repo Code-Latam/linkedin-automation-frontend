@@ -30,17 +30,17 @@ export const featuresText = {
 
         },
         {
-            slug: "Integration-with-your-crm",
+            slug: "integration-with-your-crm",
             title: "No CRM required. But we play nice with yours.",
             description: "Handle your important contacts and deals in the Meeting Maker itself or send them to your favorite CRM with one click",
             image: "/images/features/CRM2.png",
 
         },
         {
-            slug: "Boost-Linkedin-Post-with-our-network",
-            title: "Boost your linkedIn post using our network! ",
-            description: "Other teams in the Meeting Maker community will automatically like and comment on your post, making you an authority on your field and increasing the chance of your post going viral. One post can be boosted per day and is included in the subscription.",
-            image: "/images/features/search-linkedin.png",
+            slug: "improve-your-linkedin-authority-and-boost-your-presence",
+            title: "Improve your LinkedIn Authority Ranking and boost your presence",
+            description: "Our Authority Ranking tool measures your profile against peers in your role continously while the Meeting Maker improves it. - Then, take it further: the Meeting Maker community automatically likes and comments on your posts, increasing virality. One post boosted per day, included in the subscription.",
+            image: "/images/features/Authority.png",
 
         },
         {
