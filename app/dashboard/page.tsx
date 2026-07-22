@@ -6,6 +6,13 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 
+declare global {
+  interface Window {
+    endorsely_referral?: string;
+  }
+}
+
+
 // Debounce hook
 function useDebounce(value: any, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -673,39 +680,45 @@ export default function DashboardPage() {
     }
   };
 
-  const handleUpgrade = async (plan: "postboost" | "marketing" | "premium", includeOnboarding: boolean = false) => {
-    setLoading(true);
-    const token = localStorage.getItem("token");
+  
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/billing/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ 
-            plan,
-            includeOnboarding
-          }),
-        }
-      );
+const handleUpgrade = async (
+  plan: "postboost" | "marketing" | "premium",
+  includeOnboarding: boolean = false
+) => {
+  setLoading(true);
+  const token = localStorage.getItem("token");
 
-      const data = await res.json();
-
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert("Failed to start upgrade process.");
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/billing/create-checkout-session`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          plan,
+          includeOnboarding,
+          endorsely_referral: window.endorsely_referral,
+        }),
       }
-    } catch (error) {
-      alert("Something went wrong.");
-    } finally {
-      setLoading(false);
+    );
+
+    const data = await res.json();
+
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert("Failed to start upgrade process.");
     }
-  };
+  } catch (error) {
+    alert("Something went wrong.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem("token");
