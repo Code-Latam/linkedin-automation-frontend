@@ -58,10 +58,14 @@ export default function Pricing() {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ 
-                        plan,
-                        includeOnboarding: plan === "premium" ? includeOnboarding : false
-                    }),
+                    body: JSON.stringify({
+                    plan,
+                    includeOnboarding: plan === "premium" ? includeOnboarding : false,
+                    endorsely_referral:
+                        typeof window !== "undefined"
+                            ? (window as any).endorsely_referral
+                            : undefined,
+                }),
                 }
             );
 

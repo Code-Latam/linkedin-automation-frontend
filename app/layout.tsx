@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import StoreProvider from "@/components/providers/storeProvider";
 import { pagesMetaData } from "@/lib/metadata";
+import Script from "next/script";
 
 // Add viewport configuration
 export const viewport: Viewport = {
@@ -54,6 +55,13 @@ export default function RootLayout({
         <StoreProvider>
           {children}
         </StoreProvider>
+
+        <Script
+        id="endorsely"
+        src="https://assets.endorsely.com/endorsely.js"
+        strategy="afterInteractive"
+        data-endorsely="ab864022-6efe-4095-953b-729bcd9571a6"
+      />
       </body>
     </html>
   );
