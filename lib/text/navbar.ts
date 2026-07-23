@@ -7,6 +7,7 @@ export const navbarText = {
         { name: "Features", href: "/#features" },
         { name: "How It Works", href: "/#how-it-works" },
         { name: "Pricing", href: "/#pricing" },
+        { name: "Free Tools", href: "/free-tools" },
         { name: "Blog", href: "https://blog.meetingmaker.tech/6980df60d4dd6be0b8e3081c" },
         { name: "Contact", href: "/#contact" },
         { name: "Book Meeting", href: "/book-meeting" },
