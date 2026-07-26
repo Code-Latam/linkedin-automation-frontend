@@ -16,14 +16,14 @@ export const pricingText = {
                 "Network of engaged accounts",
                 "AI-powered engagement",
                 "Post status tracking"
-               ],
+            ],
             cta: "Get Started",
             badge: null,
             popular: false
         },
         marketing: {
             name: "Marketing Team",
-            price: 149,
+            price: 99,
             description: "Full marketing suite with AI Marketing Team",
             features: [
                 "Everything in Post Boost",
@@ -41,7 +41,7 @@ export const pricingText = {
         },
         premium: {
             name: "Marketing + Sales Teams",
-            price: 350,
+            price: 199,
             description: "Full platform access with AI Sales Team",
             features: [
                 "Everything in Post Boost",
@@ -59,12 +59,30 @@ export const pricingText = {
             cta: "Get Started",
             badge: "MOST POPULAR",
             popular: true
+        },
+        enterprise: {
+            name: "Enterprise Edition",
+            price: 799,
+            description: "Full platform with 5 LinkedIn accounts",
+            features: [
+                "Everything in Marketing + Sales Teams",
+                "5 LinkedIn accounts included",
+                "Run campaigns across multiple accounts",
+                "Scale your outreach 5x",
+                "Dedicated account manager",
+                "Priority support (12 hours max SLA)",
+                "✅ Optional: One-time onboarding setup (+$450) - checkbox below"
+            ],
+            cta: "Contact Sales",
+            badge: "ENTERPRISE",
+            popular: false
         }
     },
     sharedFeatures: [
         "No contracts, cancel anytime",
         "Secure and private",
-        "Regular feature updates"
+        "Regular feature updates",
+        "24/7 support"
     ],
-    disclaimer: "*Respects LinkedIn's daily limits and terms of service"
+    disclaimer: "*Respects LinkedIn's daily limits and terms of service. Yearly plans include 20% discount."
 } as const;

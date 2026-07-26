@@ -7,14 +7,22 @@ import { useRouter } from 'next/navigation';
 
 // Price constants
 const POSTBOOST_PRICE = 49;
-const MARKETING_PRICE = 149;
-const PREMIUM_PRICE = 350;
+const MARKETING_PRICE = 99;
+const PREMIUM_PRICE = 199;
+const ENTERPRISE_PRICE = 799;
 const ONBOARDING_PRICE = 450;
 
-type Plan = "postboost" | "marketing" | "premium";
+// Yearly prices (20% discount - ROUNDED)
+const MARKETING_YEARLY = 950;
+const PREMIUM_YEARLY = 1910;
+const ENTERPRISE_YEARLY = 7670;
+
+type Plan = "postboost" | "marketing" | "premium" | "enterprise";
+type Interval = "month" | "year";
 
 export default function Pricing() {
     const [selectedPlan, setSelectedPlan] = useState<Plan>("marketing");
+    const [selectedInterval, setSelectedInterval] = useState<Interval>("month");
     const [includeOnboarding, setIncludeOnboarding] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -25,17 +33,35 @@ export default function Pricing() {
         setIsLoggedIn(!!token);
     }, []);
 
-    const getPrice = (plan: Plan) => {
+    const getPrice = (plan: Plan, interval: Interval) => {
         switch(plan) {
             case "postboost": return POSTBOOST_PRICE;
-            case "marketing": return MARKETING_PRICE;
-            case "premium": return PREMIUM_PRICE;
+            case "marketing": return interval === "month" ? MARKETING_PRICE : MARKETING_YEARLY;
+            case "premium": return interval === "month" ? PREMIUM_PRICE : PREMIUM_YEARLY;
+            case "enterprise": return interval === "month" ? ENTERPRISE_PRICE : ENTERPRISE_YEARLY;
+        }
+    };
+
+    const getPriceDisplay = (plan: Plan, interval: Interval) => {
+        const price = getPrice(plan, interval);
+        if (interval === "year") {
+            return `$${price}/yr`;
+        }
+        return `$${price}/mo`;
+    };
+
+    const getMonthlyEquivalent = (plan: Plan) => {
+        switch(plan) {
+            case "marketing": return (MARKETING_YEARLY / 12).toFixed(2);
+            case "premium": return (PREMIUM_YEARLY / 12).toFixed(2);
+            case "enterprise": return (ENTERPRISE_YEARLY / 12).toFixed(2);
+            default: return null;
         }
     };
 
     const getTotalPrice = () => {
-        const basePrice = getPrice(selectedPlan);
-        const onboardingPrice = (selectedPlan === "premium" && includeOnboarding) ? ONBOARDING_PRICE : 0;
+        const basePrice = getPrice(selectedPlan, selectedInterval);
+        const onboardingPrice = (selectedPlan === "premium" || selectedPlan === "enterprise") && includeOnboarding ? ONBOARDING_PRICE : 0;
         return basePrice + onboardingPrice;
     };
 
@@ -45,7 +71,7 @@ export default function Pricing() {
         const token = localStorage.getItem("token");
         
         if (!token) {
-            router.push(`/onboarding?plan=${plan}&onboarding=${includeOnboarding && plan === 'premium'}`);
+            router.push(`/onboarding?plan=${plan}&onboarding=${includeOnboarding && (plan === 'premium' || plan === 'enterprise')}&interval=${selectedInterval}`);
             return;
         }
 
@@ -59,13 +85,14 @@ export default function Pricing() {
                         Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify({
-                    plan,
-                    includeOnboarding: plan === "premium" ? includeOnboarding : false,
-                    endorsely_referral:
-                        typeof window !== "undefined"
-                            ? (window as any).endorsely_referral
-                            : undefined,
-                }),
+                        plan,
+                        includeOnboarding: (plan === "premium" || plan === "enterprise") ? includeOnboarding : false,
+                        interval: selectedInterval,
+                        endorsely_referral:
+                            typeof window !== "undefined"
+                                ? (window as any).endorsely_referral
+                                : undefined,
+                    }),
                 }
             );
 
@@ -87,8 +114,20 @@ export default function Pricing() {
     const plans = [
         { key: "postboost" as Plan, ...pricingText.plans.postboost },
         { key: "marketing" as Plan, ...pricingText.plans.marketing },
-        { key: "premium" as Plan, ...pricingText.plans.premium }
+        { key: "premium" as Plan, ...pricingText.plans.premium },
+        { key: "enterprise" as Plan, ...pricingText.plans.enterprise }
     ];
+
+    const showOnboarding = (plan: Plan) => {
+        return plan === "premium" || plan === "enterprise";
+    };
+
+    const getPlanBadge = (plan: Plan) => {
+        if (plan === "marketing") return "BEST VALUE";
+        if (plan === "premium") return "MOST POPULAR";
+        if (plan === "enterprise") return "ENTERPRISE";
+        return null;
+    };
 
     return (
         <section className="relative py-16" id="pricing">
@@ -103,12 +142,41 @@ export default function Pricing() {
                     </p>
                 </div>
 
-                {/* Pricing Cards - 3 columns */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Interval Toggle */}
+                <div className="flex justify-center mb-8">
+                    <div className="bg-white/5 border border-gray-800 rounded-xl p-1 flex gap-1">
+                        <button
+                            onClick={() => setSelectedInterval("month")}
+                            className={`px-6 py-2 rounded-lg transition ${
+                                selectedInterval === "month"
+                                    ? "bg-cyan-500 text-white"
+                                    : "text-gray-400 hover:text-white"
+                            }`}
+                        >
+                            Monthly
+                        </button>
+                        <button
+                            onClick={() => setSelectedInterval("year")}
+                            className={`px-6 py-2 rounded-lg transition ${
+                                selectedInterval === "year"
+                                    ? "bg-cyan-500 text-white"
+                                    : "text-gray-400 hover:text-white"
+                            }`}
+                        >
+                            Yearly
+                            <span className="ml-1 text-xs text-green-400">Save 20%</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Pricing Cards - 4 columns */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {plans.map((plan) => {
                         const isSelected = selectedPlan === plan.key;
-                        const price = getPrice(plan.key);
-                        const showOnboarding = plan.key === "premium";
+                        const price = getPrice(plan.key, selectedInterval);
+                        const isYearly = selectedInterval === "year";
+                        const badge = getPlanBadge(plan.key);
+                        const monthlyEq = getMonthlyEquivalent(plan.key);
                         
                         return (
                             <div
@@ -120,10 +188,14 @@ export default function Pricing() {
                                 }`}
                                 onClick={() => setSelectedPlan(plan.key)}
                             >
-                                {plan.badge && isSelected && (
+                                {badge && isSelected && (
                                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                                        <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg whitespace-nowrap">
-                                            {plan.badge}
+                                        <div className={`text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg whitespace-nowrap ${
+                                            badge === "BEST VALUE" ? "bg-gradient-to-r from-green-500 to-emerald-500" :
+                                            badge === "MOST POPULAR" ? "bg-gradient-to-r from-cyan-500 to-blue-500" :
+                                            "bg-gradient-to-r from-purple-500 to-pink-500"
+                                        }`}>
+                                            {badge}
                                         </div>
                                     </div>
                                 )}
@@ -134,14 +206,25 @@ export default function Pricing() {
                                     <p className="text-gray-400 text-sm mb-4">{plan.description}</p>
                                     
                                     <div className="mb-4">
-                                        <span className="text-4xl font-bold text-white">${price}</span>
-                                        <span className="text-gray-400 text-lg ml-2">/mo</span>
-                                        {showOnboarding && includeOnboarding && isSelected && (
+                                        <span className="text-4xl font-bold text-white">
+                                            {getPriceDisplay(plan.key, selectedInterval)}
+                                        </span>
+                                        {isYearly && monthlyEq && (
+                                            <span className="text-sm text-gray-400 ml-2">
+                                                (${monthlyEq}/mo)
+                                            </span>
+                                        )}
+                                        {isYearly && (
+                                            <div className="text-sm text-green-400 mt-1">
+                                                Save 20% vs monthly
+                                            </div>
+                                        )}
+                                        {showOnboarding(plan.key) && includeOnboarding && isSelected && (
                                             <div className="text-sm text-cyan-400 mt-1">
                                                 + ${ONBOARDING_PRICE} one-time setup
                                             </div>
                                         )}
-                                        {showOnboarding && includeOnboarding && isSelected && (
+                                        {showOnboarding(plan.key) && includeOnboarding && isSelected && (
                                             <div className="text-sm text-gray-400 mt-1">
                                                 Total today: ${getTotalPrice()}
                                             </div>
@@ -159,8 +242,8 @@ export default function Pricing() {
                                         ))}
                                     </div>
 
-                                    {/* Onboarding option - only for Premium */}
-                                    {showOnboarding && isSelected && (
+                                    {/* Onboarding option - only for Premium plans */}
+                                    {showOnboarding(plan.key) && isSelected && (
                                         <div className="mb-4">
                                             <label className="flex items-center gap-2 cursor-pointer justify-center">
                                                 <input
@@ -206,7 +289,7 @@ export default function Pricing() {
                 </div>
 
                 {/* Features shared across all plans */}
-                <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
                     {pricingText.sharedFeatures.map((feature, index) => (
                         <div key={index} className="text-center p-4 rounded-lg bg-white/5 border border-gray-800">
                             <span className="text-sm text-gray-300">{feature}</span>
@@ -229,7 +312,7 @@ export default function Pricing() {
                 </p>
             </div>
 
-            {/* Onboarding info - only show if relevant */}
+            {/* Onboarding info */}
             <div className="mt-10 rounded-2xl border border-gray-800 bg-white/[0.03] backdrop-blur-sm p-6 text-center max-w-2xl mx-auto">
                 <h4 className="text-lg font-semibold text-white mb-2">
                     What's included in Premium Onboarding?

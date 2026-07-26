@@ -682,9 +682,11 @@ export default function DashboardPage() {
 
   
 
+// Complete updated handleUpgrade with interval support
 const handleUpgrade = async (
-  plan: "postboost" | "marketing" | "premium",
-  includeOnboarding: boolean = false
+  plan: "postboost" | "marketing" | "premium" | "enterprise",
+  includeOnboarding: boolean = false,
+  interval: "month" | "year" = "month"  // Added interval parameter
 ) => {
   setLoading(true);
   const token = localStorage.getItem("token");
@@ -701,6 +703,7 @@ const handleUpgrade = async (
         body: JSON.stringify({
           plan,
           includeOnboarding,
+          interval,  // Pass interval to backend
           endorsely_referral: window.endorsely_referral,
         }),
       }
@@ -759,17 +762,18 @@ const handleUpgrade = async (
   }
 
   const getPlanDisplay = (plan: string) => {
-    switch (plan) {
-      case "free": return "No Plan";
-      case "postboost": return "🚀 Post Boost";
-      case "marketing": return "📊 Marketing";
-      case "premium": return "💎 Premium";
-      default: return plan || "No Plan";
-    }
-  };
+  switch (plan) {
+    case "free": return "No Plan";
+    case "postboost": return "🚀 Post Boost";
+    case "marketing": return "📊 Marketing";
+    case "premium": return "💎 Premium";
+    case "enterprise": return "🏢 Enterprise";  // ← ADD THIS
+    default: return plan || "No Plan";
+  }
+};
 
   const hasStripeCustomer = !!user.client?.stripeCustomerId;
-  const isPaidPlan = ["postboost", "marketing", "premium"].includes(user.client?.plan);
+  const isPaidPlan = ["postboost", "marketing", "premium", "enterprise"].includes(user.client?.plan);
   const hasValidSubscription = hasStripeCustomer && isPaidPlan;
 
   return (
@@ -828,92 +832,111 @@ const handleUpgrade = async (
                 <p>
                   <strong>Plan:</strong>{" "}
                   <span className={`
-                    px-2 py-1 rounded-full text-xs font-medium ml-2
-                    ${user.client?.plan === "free" ? "bg-gray-600 text-gray-200" : ""}
-                    ${user.client?.plan === "postboost" ? "bg-purple-600 text-white" : ""}
-                    ${user.client?.plan === "marketing" ? "bg-cyan-600 text-white" : ""}
-                    ${user.client?.plan === "premium" ? "bg-amber-600 text-white" : ""}
-                  `}>
-                    {getPlanDisplay(user.client?.plan)}
-                  </span>
+                  px-2 py-1 rounded-full text-xs font-medium ml-2
+                  ${user.client?.plan === "free" ? "bg-gray-600 text-gray-200" : ""}
+                  ${user.client?.plan === "postboost" ? "bg-purple-600 text-white" : ""}
+                  ${user.client?.plan === "marketing" ? "bg-cyan-600 text-white" : ""}
+                  ${user.client?.plan === "premium" ? "bg-amber-600 text-white" : ""}
+                  ${user.client?.plan === "enterprise" ? "bg-purple-600 text-white" : ""}  // ← ADD THIS
+                `}>
+                  {getPlanDisplay(user.client?.plan)}
+                </span>
                 </p>
 
                 {/* Show upgrade options for users without a valid subscription */}
                 {!hasValidSubscription && (
-                  <div className="mt-6 space-y-4">
-                    <p className="text-sm text-gray-400">
-                      {user.client?.plan === "free" ? "Choose your plan:" : "You need to subscribe to a plan:"}
-                    </p>
-                    
-                    <div className="space-y-3">
-                      {/* Post Boost */}
-                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-gray-700">
-                        <div>
-                          <h4 className="font-semibold text-white">🚀 Post Boost</h4>
-                          <p className="text-sm text-gray-400">Boost LinkedIn posts through our network</p>
-                        </div>
-                        <button
-                          onClick={() => handleUpgrade("postboost", false)}
-                          disabled={loading}
-                          className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
-                        >
-                          $49/mo
-                        </button>
-                      </div>
+    <div className="mt-6 space-y-4">
+        <p className="text-sm text-gray-400">
+            {user.client?.plan === "free" ? "Choose your plan:" : "You need to subscribe to a plan:"}
+        </p>
+        
+        <div className="space-y-3">
+            {/* Post Boost */}
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-gray-700">
+                <div>
+                    <h4 className="font-semibold text-white">🚀 Post Boost</h4>
+                    <p className="text-sm text-gray-400">Boost LinkedIn posts through our network</p>
+                </div>
+                <button
+                    onClick={() => handleUpgrade("postboost", false)}
+                    disabled={loading}
+                    className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
+                >
+                    $49/mo
+                </button>
+            </div>
 
-                      {/* Marketing */}
-                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-cyan-500/30">
-                        <div>
-                          <h4 className="font-semibold text-white">📊 Marketing</h4>
-                          <p className="text-sm text-gray-400">Full marketing suite with AI agents</p>
-                          <span className="text-xs text-cyan-400">Most Popular</span>
-                        </div>
-                        <button
-                          onClick={() => handleUpgrade("marketing", false)}
-                          disabled={loading}
-                          className="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-lg text-cyan-400 font-semibold transition disabled:opacity-50 text-sm"
-                        >
-                          $149/mo
-                        </button>
-                      </div>
+            {/* Marketing */}
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-cyan-500/30">
+                <div>
+                    <h4 className="font-semibold text-white">📊 Marketing Team</h4>
+                    <p className="text-sm text-gray-400">Full marketing suite with AI agents</p>
+                    <span className="text-xs text-cyan-400">Most Popular</span>
+                </div>
+                <button
+                    onClick={() => handleUpgrade("marketing", false)}
+                    disabled={loading}
+                    className="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-lg text-cyan-400 font-semibold transition disabled:opacity-50 text-sm"
+                >
+                    $99/mo
+                </button>
+            </div>
 
-                      {/* Premium */}
-                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
-                        <div>
-                          <h4 className="font-semibold text-white">💎 Premium</h4>
-                          <p className="text-sm text-gray-400">Full platform access with CRM</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => handleUpgrade("premium", includeOnboarding)}
-                            disabled={loading}
-                            className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm"
-                          >
-                            $350/mo
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+            {/* Premium */}
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
+                <div>
+                    <h4 className="font-semibold text-white">💎 Marketing + Sales Teams</h4>
+                    <p className="text-sm text-gray-400">Full platform access with CRM</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => handleUpgrade("premium", includeOnboarding)}
+                        disabled={loading}
+                        className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm"
+                    >
+                        $199/mo
+                    </button>
+                </div>
+            </div>
 
-                    {/* Onboarding - Only for Premium */}
-                    <div className="mt-4 p-4 bg-white/5 rounded-lg border border-gray-700">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={includeOnboarding}
-                          onChange={(e) => setIncludeOnboarding(e.target.checked)}
-                          className="w-4 h-4 rounded border-gray-600 bg-white/10"
-                        />
-                        <span className="text-gray-300">
-                          Add one-time onboarding setup for Premium (+$450)
-                        </span>
-                      </label>
-                      <p className="text-xs text-gray-500 mt-1 ml-6">
-                        Get expert help configuring your agents and workflows
-                      </p>
-                    </div>
-                  </div>
-                )}
+            {/* Enterprise */}
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-purple-500/30">
+                <div>
+                    <h4 className="font-semibold text-white">🏢 Enterprise Edition</h4>
+                    <p className="text-sm text-gray-400">5 LinkedIn accounts + priority support</p>
+                    <span className="text-xs text-purple-400">For Agencies</span>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => handleUpgrade("enterprise", includeOnboarding)}
+                        disabled={loading}
+                        className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
+                    >
+                        $799/mo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {/* Onboarding - Only for Premium & Enterprise */}
+        <div className="mt-4 p-4 bg-white/5 rounded-lg border border-gray-700">
+            <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                    type="checkbox"
+                    checked={includeOnboarding}
+                    onChange={(e) => setIncludeOnboarding(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-600 bg-white/10"
+                />
+                <span className="text-gray-300">
+                    Add one-time onboarding setup for Premium or Enterprise (+$450)
+                </span>
+            </label>
+            <p className="text-xs text-gray-500 mt-1 ml-6">
+                Get expert help configuring your agents and workflows
+            </p>
+        </div>
+    </div>
+)}
 
                 {/* Show Manage Subscription for users with a valid subscription */}
                 {hasValidSubscription && (
