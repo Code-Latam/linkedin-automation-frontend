@@ -12,7 +12,6 @@ declare global {
   }
 }
 
-
 // Debounce hook
 function useDebounce(value: any, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -35,6 +34,9 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("account");
+  
+  // Billing interval state for dashboard upgrades
+  const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
   
   // Blog state
   const [blogEnabled, setBlogEnabled] = useState(false);
@@ -680,48 +682,46 @@ export default function DashboardPage() {
     }
   };
 
-  
+  // Complete updated handleUpgrade with interval support
+  const handleUpgrade = async (
+    plan: "postboost" | "marketing" | "premium" | "enterprise",
+    includeOnboarding: boolean = false,
+    interval: "month" | "year" = "month"
+  ) => {
+    setLoading(true);
+    const token = localStorage.getItem("token");
 
-// Complete updated handleUpgrade with interval support
-const handleUpgrade = async (
-  plan: "postboost" | "marketing" | "premium" | "enterprise",
-  includeOnboarding: boolean = false,
-  interval: "month" | "year" = "month"  // Added interval parameter
-) => {
-  setLoading(true);
-  const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/billing/create-checkout-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            plan,
+            includeOnboarding,
+            interval,
+            endorsely_referral: window.endorsely_referral,
+          }),
+        }
+      );
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/billing/create-checkout-session`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          plan,
-          includeOnboarding,
-          interval,  // Pass interval to backend
-          endorsely_referral: window.endorsely_referral,
-        }),
+      const data = await res.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Failed to start upgrade process.");
       }
-    );
-
-    const data = await res.json();
-
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      alert("Failed to start upgrade process.");
+    } catch (error) {
+      alert("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    alert("Something went wrong.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -762,15 +762,15 @@ const handleUpgrade = async (
   }
 
   const getPlanDisplay = (plan: string) => {
-  switch (plan) {
-    case "free": return "No Plan";
-    case "postboost": return "🚀 Post Boost";
-    case "marketing": return "📊 Marketing";
-    case "premium": return "💎 Premium";
-    case "enterprise": return "🏢 Enterprise";  // ← ADD THIS
-    default: return plan || "No Plan";
-  }
-};
+    switch (plan) {
+      case "free": return "No Plan";
+      case "postboost": return "🚀 Post Boost";
+      case "marketing": return "📊 Marketing";
+      case "premium": return "💎 Premium";
+      case "enterprise": return "🏢 Enterprise";
+      default: return plan || "No Plan";
+    }
+  };
 
   const hasStripeCustomer = !!user.client?.stripeCustomerId;
   const isPaidPlan = ["postboost", "marketing", "premium", "enterprise"].includes(user.client?.plan);
@@ -832,111 +832,139 @@ const handleUpgrade = async (
                 <p>
                   <strong>Plan:</strong>{" "}
                   <span className={`
-                  px-2 py-1 rounded-full text-xs font-medium ml-2
-                  ${user.client?.plan === "free" ? "bg-gray-600 text-gray-200" : ""}
-                  ${user.client?.plan === "postboost" ? "bg-purple-600 text-white" : ""}
-                  ${user.client?.plan === "marketing" ? "bg-cyan-600 text-white" : ""}
-                  ${user.client?.plan === "premium" ? "bg-amber-600 text-white" : ""}
-                  ${user.client?.plan === "enterprise" ? "bg-purple-600 text-white" : ""}  // ← ADD THIS
-                `}>
-                  {getPlanDisplay(user.client?.plan)}
-                </span>
+                    px-2 py-1 rounded-full text-xs font-medium ml-2
+                    ${user.client?.plan === "free" ? "bg-gray-600 text-gray-200" : ""}
+                    ${user.client?.plan === "postboost" ? "bg-purple-600 text-white" : ""}
+                    ${user.client?.plan === "marketing" ? "bg-cyan-600 text-white" : ""}
+                    ${user.client?.plan === "premium" ? "bg-amber-600 text-white" : ""}
+                    ${user.client?.plan === "enterprise" ? "bg-purple-600 text-white" : ""}
+                  `}>
+                    {getPlanDisplay(user.client?.plan)}
+                  </span>
+                  {user.client?.subscriptionInterval === 'year' && (
+                    <span className="ml-2 text-xs text-green-400">(Yearly)</span>
+                  )}
                 </p>
 
                 {/* Show upgrade options for users without a valid subscription */}
                 {!hasValidSubscription && (
-    <div className="mt-6 space-y-4">
-        <p className="text-sm text-gray-400">
-            {user.client?.plan === "free" ? "Choose your plan:" : "You need to subscribe to a plan:"}
-        </p>
-        
-        <div className="space-y-3">
-            {/* Post Boost */}
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-gray-700">
-                <div>
-                    <h4 className="font-semibold text-white">🚀 Post Boost</h4>
-                    <p className="text-sm text-gray-400">Boost LinkedIn posts through our network</p>
-                </div>
-                <button
-                    onClick={() => handleUpgrade("postboost", false)}
-                    disabled={loading}
-                    className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
-                >
-                    $49/mo
-                </button>
-            </div>
+                  <div className="mt-6 space-y-4">
+                    <p className="text-sm text-gray-400">
+                      {user.client?.plan === "free" ? "Choose your plan:" : "You need to subscribe to a plan:"}
+                    </p>
+                    
+                    {/* Billing Interval Toggle */}
+                    <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-1 w-fit">
+                      <button
+                        onClick={() => setBillingInterval("month")}
+                        className={`px-4 py-1.5 rounded-lg text-sm transition ${
+                          billingInterval === "month"
+                            ? "bg-cyan-500 text-white"
+                            : "text-gray-400 hover:text-white"
+                        }`}
+                      >
+                        Monthly
+                      </button>
+                      <button
+                        onClick={() => setBillingInterval("year")}
+                        className={`px-4 py-1.5 rounded-lg text-sm transition ${
+                          billingInterval === "year"
+                            ? "bg-cyan-500 text-white"
+                            : "text-gray-400 hover:text-white"
+                        }`}
+                      >
+                        Yearly
+                        <span className="ml-1 text-xs text-green-400">Save 20%</span>
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {/* Post Boost - Monthly only */}
+                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-gray-700">
+                        <div>
+                          <h4 className="font-semibold text-white">🚀 Post Boost</h4>
+                          <p className="text-sm text-gray-400">Boost LinkedIn posts through our network</p>
+                        </div>
+                        <button
+                          onClick={() => handleUpgrade("postboost", false, "month")}
+                          disabled={loading}
+                          className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
+                        >
+                          $49/mo
+                        </button>
+                      </div>
 
-            {/* Marketing */}
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-cyan-500/30">
-                <div>
-                    <h4 className="font-semibold text-white">📊 Marketing Team</h4>
-                    <p className="text-sm text-gray-400">Full marketing suite with AI agents</p>
-                    <span className="text-xs text-cyan-400">Most Popular</span>
-                </div>
-                <button
-                    onClick={() => handleUpgrade("marketing", false)}
-                    disabled={loading}
-                    className="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-lg text-cyan-400 font-semibold transition disabled:opacity-50 text-sm"
-                >
-                    $99/mo
-                </button>
-            </div>
+                      {/* Marketing - Monthly & Yearly */}
+                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-cyan-500/30">
+                        <div>
+                          <h4 className="font-semibold text-white">📊 Marketing Team</h4>
+                          <p className="text-sm text-gray-400">Full marketing suite with AI agents</p>
+                          <span className="text-xs text-cyan-400">Most Popular</span>
+                        </div>
+                        <button
+                          onClick={() => handleUpgrade("marketing", false, billingInterval)}
+                          disabled={loading}
+                          className="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-lg text-cyan-400 font-semibold transition disabled:opacity-50 text-sm"
+                        >
+                          {billingInterval === "month" ? "$99/mo" : "$950/yr"}
+                        </button>
+                      </div>
 
-            {/* Premium */}
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
-                <div>
-                    <h4 className="font-semibold text-white">💎 Marketing + Sales Teams</h4>
-                    <p className="text-sm text-gray-400">Full platform access with CRM</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => handleUpgrade("premium", includeOnboarding)}
-                        disabled={loading}
-                        className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm"
-                    >
-                        $199/mo
-                    </button>
-                </div>
-            </div>
+                      {/* Premium - Monthly & Yearly */}
+                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
+                        <div>
+                          <h4 className="font-semibold text-white">💎 Marketing + Sales Teams</h4>
+                          <p className="text-sm text-gray-400">Full platform access with CRM</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleUpgrade("premium", includeOnboarding, billingInterval)}
+                            disabled={loading}
+                            className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm"
+                          >
+                            {billingInterval === "month" ? "$199/mo" : "$1,910/yr"}
+                          </button>
+                        </div>
+                      </div>
 
-            {/* Enterprise */}
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-purple-500/30">
-                <div>
-                    <h4 className="font-semibold text-white">🏢 Enterprise Edition</h4>
-                    <p className="text-sm text-gray-400">5 LinkedIn accounts + priority support</p>
-                    <span className="text-xs text-purple-400">For Agencies</span>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => handleUpgrade("enterprise", includeOnboarding)}
-                        disabled={loading}
-                        className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
-                    >
-                        $799/mo
-                    </button>
-                </div>
-            </div>
-        </div>
+                      {/* Enterprise - Monthly & Yearly */}
+                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-purple-500/30">
+                        <div>
+                          <h4 className="font-semibold text-white">🏢 Enterprise Edition</h4>
+                          <p className="text-sm text-gray-400">5 LinkedIn accounts + priority support</p>
+                          <span className="text-xs text-purple-400">For Agencies</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleUpgrade("enterprise", includeOnboarding, billingInterval)}
+                            disabled={loading}
+                            className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
+                          >
+                            {billingInterval === "month" ? "$799/mo" : "$7,670/yr"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
 
-        {/* Onboarding - Only for Premium & Enterprise */}
-        <div className="mt-4 p-4 bg-white/5 rounded-lg border border-gray-700">
-            <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                    type="checkbox"
-                    checked={includeOnboarding}
-                    onChange={(e) => setIncludeOnboarding(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-600 bg-white/10"
-                />
-                <span className="text-gray-300">
-                    Add one-time onboarding setup for Premium or Enterprise (+$450)
-                </span>
-            </label>
-            <p className="text-xs text-gray-500 mt-1 ml-6">
-                Get expert help configuring your agents and workflows
-            </p>
-        </div>
-    </div>
-)}
+                    {/* Onboarding - Only for Premium & Enterprise */}
+                    <div className="mt-4 p-4 bg-white/5 rounded-lg border border-gray-700">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={includeOnboarding}
+                          onChange={(e) => setIncludeOnboarding(e.target.checked)}
+                          className="w-4 h-4 rounded border-gray-600 bg-white/10"
+                        />
+                        <span className="text-gray-300">
+                          Add one-time onboarding setup for Premium or Enterprise (+$450)
+                        </span>
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1 ml-6">
+                        Get expert help configuring your agents and workflows
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Show Manage Subscription for users with a valid subscription */}
                 {hasValidSubscription && (
@@ -949,7 +977,22 @@ const handleUpgrade = async (
                       <div className="p-4 bg-white/5 rounded-lg border border-gray-700">
                         <p className="text-sm text-gray-400 mb-3">
                           You are currently on the <strong className="text-white">{getPlanDisplay(user.client?.plan)}</strong> plan.
+                          {user.client?.subscriptionInterval === 'year' && (
+                            <span className="ml-2 text-green-400">(Yearly)</span>
+                          )}
                         </p>
+                        
+                        {/* Warning for yearly subscribers */}
+                        {user.client?.subscriptionInterval === 'year' && (
+                          <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                            <p className="text-yellow-400 text-sm">
+                              ⚠️ You are on a yearly plan. In the Stripe portal, you can 
+                              only upgrade to a higher tier. Downgrades will be available 
+                              when your yearly subscription ends.
+                            </p>
+                          </div>
+                        )}
+                        
                         <button
                           onClick={handleManageSubscription}
                           disabled={loading}
@@ -958,7 +1001,10 @@ const handleUpgrade = async (
                           {loading ? "Loading..." : "Manage Subscription"}
                         </button>
                         <p className="text-xs text-gray-400 mt-2 text-center">
-                          Upgrade, downgrade, or cancel your subscription
+                          {user.client?.subscriptionInterval === 'year' 
+                            ? "Upgrade to a higher tier or cancel at period end"
+                            : "Upgrade, downgrade, or cancel your subscription"
+                          }
                         </p>
                       </div>
                     )}
