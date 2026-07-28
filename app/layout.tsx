@@ -19,7 +19,7 @@ const mainMetadata = pagesMetaData.main;
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.meetingmaker.tech"),
   title: mainMetadata.title || "Astrolab Meeting Maker",
-  description: mainMetadata.description || "AI-powered LinkedIn outreach automation",
+  description: mainMetadata.description || "AI-powered Revenue automation",
   icons: mainMetadata.icons,
   openGraph: mainMetadata.openGraph,
   robots: {
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: mainMetadata.title || "Astrolab Meeting Maker",
-    description: mainMetadata.description || "AI-powered LinkedIn outreach automation",
+    description: mainMetadata.description || "AI-powered Revenue outreach automation",
     images: mainMetadata.openGraph?.images,
   },
 };

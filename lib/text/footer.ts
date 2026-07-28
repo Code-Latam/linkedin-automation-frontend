@@ -1,7 +1,7 @@
 export const footerText = {
     brand: {
         name: "Astro Lab Meeting Maker",
-        description: "AI-powered LinkedIn automation platform to find leads, send personalized outreach, and grow your business automatically."
+        description: "AI-powered Revenue automation platform to find leads, send personalized outreach, and grow your business automatically."
     },
     sections: {
         quickLinks: {

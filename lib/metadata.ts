@@ -26,7 +26,7 @@ export const pagesMetaData = {
     openGraph: {
       title: `${name} | AI-Powered LinkedIn Outreach`,
       description:
-        "AI-powered LinkedIn automation that finds leads, starts conversations, and books meetings automatically. Scale your outreach with intelligent agents.",
+        "AI-powered Revenue automation that finds leads, starts conversations, and books meetings automatically. Scale your outreach with intelligent agents.",
       url: baseUrl,
       siteName: name,
       images: [
@@ -45,7 +45,7 @@ export const pagesMetaData = {
       card: "summary_large_image",
       title: `${name} | AI-Powered LinkedIn Outreach`,
       description:
-        "AI-powered LinkedIn automation that finds leads, starts conversations, and books meetings automatically.",
+        "AI-powered Revenue automation that finds leads, starts conversations, and books meetings automatically.",
       images: [fullOgImageUrl],
       site: "@meetingmaker",
       creator: "@meetingmaker",
@@ -77,7 +77,7 @@ export const pagesMetaData = {
     openGraph: {
       title: `${name} | AI-Powered LinkedIn Outreach`,
       description:
-        "AI-powered LinkedIn automation that finds leads, starts conversations, and books meetings automatically.",
+        "AI-powered Revenue automation that finds leads, starts conversations, and books meetings automatically.",
       url: baseUrl,
       siteName: name,
       images: [
@@ -96,7 +96,7 @@ export const pagesMetaData = {
       card: "summary_large_image",
       title: `${name} | AI-Powered LinkedIn Outreach`,
       description:
-        "AI-powered LinkedIn automation that finds leads, starts conversations, and books meetings automatically.",
+        "AI-powered Revenue automation that finds leads, starts conversations, and books meetings automatically.",
       images: [fullOgImageUrl],
       site: "@meetingmaker",
       creator: "@meetingmaker",

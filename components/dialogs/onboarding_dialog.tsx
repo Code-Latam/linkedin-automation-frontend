@@ -361,7 +361,7 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                         <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
                             <Sparkles className="h-4 w-4 text-blue-600" />
                             <AlertDescription className="text-blue-600 dark:text-blue-400">
-                                🎉 You&#39;re All Set! Click finish to start your AI-powered LinkedIn automation journey
+                                🎉 You&#39;re All Set! Click finish to start your AI-powered Revenue automation journey
                             </AlertDescription>
                         </Alert>
 

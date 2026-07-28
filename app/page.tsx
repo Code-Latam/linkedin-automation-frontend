@@ -21,7 +21,7 @@ export default function Home() {
     "name": "Astrolab Meeting Maker",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web, Chrome Extension",
-    "description": "AI-powered LinkedIn outreach automation that finds leads, starts conversations, and books meetings automatically.",
+    "description": "AI-powered Revenue automation that finds leads, starts conversations, and books meetings automatically.",
     "offers": {
       "@type": "Offer",
       "price": "150",
