@@ -12,7 +12,7 @@ export const pricingText = {
             description: "Boost your LinkedIn posts through our network",
             features: [
                 "Boost one LinkedIn post per day",
-                "Get a minimum of 30 Likes and comments per boost. Usually more",
+                "Get a minimum of 20 Likes and comments per boost. Usually more",
                 "Network of engaged accounts",
                 "AI-powered engagement",
                 "Post status tracking"
