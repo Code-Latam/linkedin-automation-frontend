@@ -35,7 +35,7 @@ export default function Pricing() {
 
     const getPrice = (plan: Plan, interval: Interval) => {
         switch(plan) {
-            case "postboost": return POSTBOOST_PRICE;
+            case "postboost": return POSTBOOST_PRICE; // Always returns $49
             case "marketing": return interval === "month" ? MARKETING_PRICE : MARKETING_YEARLY;
             case "premium": return interval === "month" ? PREMIUM_PRICE : PREMIUM_YEARLY;
             case "enterprise": return interval === "month" ? ENTERPRISE_PRICE : ENTERPRISE_YEARLY;
@@ -44,6 +44,12 @@ export default function Pricing() {
 
     const getPriceDisplay = (plan: Plan, interval: Interval) => {
         const price = getPrice(plan, interval);
+        
+        // 🔥 FIX: Post Boost always shows monthly
+        if (plan === "postboost") {
+            return `$${price}/mo`;
+        }
+        
         if (interval === "year") {
             return `$${price}/yr`;
         }
@@ -87,7 +93,8 @@ export default function Pricing() {
                     body: JSON.stringify({
                         plan,
                         includeOnboarding: (plan === "premium" || plan === "enterprise") ? includeOnboarding : false,
-                        interval: selectedInterval,
+                        // 🔥 FIX: Post Boost always uses "month" interval
+                        interval: plan === "postboost" ? "month" : selectedInterval,
                         endorsely_referral:
                             typeof window !== "undefined"
                                 ? (window as any).endorsely_referral
@@ -128,6 +135,9 @@ export default function Pricing() {
         if (plan === "enterprise") return "ENTERPRISE";
         return null;
     };
+
+    // 🔥 FIX: Helper to check if plan is Post Boost
+    const isPostBoost = (plan: Plan) => plan === "postboost";
 
     return (
         <section className="relative py-16" id="pricing">
@@ -177,6 +187,7 @@ export default function Pricing() {
                         const isYearly = selectedInterval === "year";
                         const badge = getPlanBadge(plan.key);
                         const monthlyEq = getMonthlyEquivalent(plan.key);
+                        const isPostBoostPlan = isPostBoost(plan.key);
                         
                         return (
                             <div
@@ -209,14 +220,22 @@ export default function Pricing() {
                                         <span className="text-4xl font-bold text-white">
                                             {getPriceDisplay(plan.key, selectedInterval)}
                                         </span>
-                                        {isYearly && monthlyEq && (
+                                        {/* 🔥 FIX: Show monthly equivalent ONLY for non-PostBoost plans on yearly */}
+                                        {isYearly && monthlyEq && !isPostBoostPlan && (
                                             <span className="text-sm text-gray-400 ml-2">
                                                 (${monthlyEq}/mo)
                                             </span>
                                         )}
-                                        {isYearly && (
+                                        {/* 🔥 FIX: Show "Save 20%" ONLY for non-PostBoost plans on yearly */}
+                                        {isYearly && !isPostBoostPlan && (
                                             <div className="text-sm text-green-400 mt-1">
                                                 Save 20% vs monthly
+                                            </div>
+                                        )}
+                                        {/* 🔥 FIX: Show message for Post Boost on yearly */}
+                                        {isYearly && isPostBoostPlan && (
+                                            <div className="text-sm text-gray-400 mt-1">
+                                                Monthly only
                                             </div>
                                         )}
                                         {showOnboarding(plan.key) && includeOnboarding && isSelected && (
