@@ -16,7 +16,7 @@ const fullLogoUrl = `${baseUrl}${logoPath}`;
 export const pagesMetaData = {
   // Main layout metadata (fallback for pages without specific metadata)
   main: {
-    title: `${name} | AI-Powered LinkedIn Outreach & Meeting Automation`,
+    title: `${name} | AI-Powered Revenue & Meeting Automation`,
     description:
       "Automate your LinkedIn outreach with AI agents. Find leads, start real conversations, and book meetings automatically. Get 3x more meetings with smart lead selection and personalized messaging.",
     icons: {
@@ -24,7 +24,7 @@ export const pagesMetaData = {
       apple: appleIconPath,
     },
     openGraph: {
-      title: `${name} | AI-Powered LinkedIn Outreach`,
+      title: `${name} | AI-Powered Revenue Outreach`,
       description:
         "AI-powered Revenue automation that finds leads, starts conversations, and books meetings automatically. Scale your outreach with intelligent agents.",
       url: baseUrl,
@@ -34,7 +34,7 @@ export const pagesMetaData = {
           url: fullOgImageUrl,
           width: 1200,
           height: 630,
-          alt: `${name} - AI-Powered LinkedIn Outreach Automation`,
+          alt: `${name} - AI-Powered Revenue Automation`,
           type: "image/png",
         },
       ],
@@ -43,7 +43,7 @@ export const pagesMetaData = {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${name} | AI-Powered LinkedIn Outreach`,
+      title: `${name} | AI-Powered Revenue Automation`,
       description:
         "AI-powered Revenue automation that finds leads, starts conversations, and books meetings automatically.",
       images: [fullOgImageUrl],
@@ -75,7 +75,7 @@ export const pagesMetaData = {
       apple: appleIconPath,
     },
     openGraph: {
-      title: `${name} | AI-Powered LinkedIn Outreach`,
+      title: `${name} | AI-Powered Revenue Automation`,
       description:
         "AI-powered Revenue automation that finds leads, starts conversations, and books meetings automatically.",
       url: baseUrl,
@@ -85,7 +85,7 @@ export const pagesMetaData = {
           url: fullOgImageUrl,
           width: 1200,
           height: 630,
-          alt: `${name} - AI-Powered LinkedIn Outreach`,
+          alt: `${name} - AI-Powered Revenue Automation`,
           type: "image/png",
         },
       ],
@@ -94,7 +94,7 @@ export const pagesMetaData = {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${name} | AI-Powered LinkedIn Outreach`,
+      title: `${name} | AI-Powered Revenue Automation`,
       description:
         "AI-powered Revenue automation that finds leads, starts conversations, and books meetings automatically.",
       images: [fullOgImageUrl],
