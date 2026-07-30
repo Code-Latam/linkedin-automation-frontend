@@ -328,13 +328,13 @@ export default function ClientsPage() {
                           {isCommission ? 'Commission' : 'Subscription'}
                         </span>
                         {isCommission && client.fixedSuccessFee && (
-                          <span className="text-xs text-gray-500 block mt-1">
+                          <span className="text-xs text-gray-700 dark:text-gray-300 font-medium block mt-1">
                             Fee: ${client.fixedSuccessFee.toLocaleString()}
                           </span>
                         )}
                         {isCommission && client.billingPreference && (
-                          <span className="text-xs text-gray-400 block">
-                            {client.billingPreference === 'per_deal' ? 'Per-deal' : 'Monthly'}
+                          <span className="text-xs text-gray-600 dark:text-gray-400 block">
+                            {client.billingPreference === 'per_deal' ? 'Per-deal invoicing' : 'Monthly consolidated'}
                           </span>
                         )}
                       </div>
