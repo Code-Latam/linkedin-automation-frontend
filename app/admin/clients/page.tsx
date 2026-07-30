@@ -429,7 +429,7 @@ export default function ClientsPage() {
               </button>
             </div>
 
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-900 mb-4">
               {selectedClient.billingModel === 'commission'
                 ? `Update the commission settings for "${selectedClient.name}".`
                 : `"${selectedClient.name}" will be moved from subscription to commission-based billing.`}
