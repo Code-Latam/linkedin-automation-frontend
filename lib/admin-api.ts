@@ -190,4 +190,13 @@ export const adminApi = {
    * Check if current API key is valid
    */
   checkApiKeyStatus: () => adminApiClient.get('/api-key/status'),
+
+  getCommissionsList: (params?: { 
+    status?: string; 
+    clientId?: string; 
+    from?: string; 
+    to?: string; 
+    limit?: number; 
+    offset?: number 
+  }) => adminApiClient.get('/commissions', { params }),
 };

@@ -15,11 +15,13 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
 } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Clients', href: '/admin/clients', icon: Users },
+  { name: 'Commissions', href: '/admin/commissions', icon: DollarSign },
   { name: 'Agents', href: '/admin/agents', icon: Bot },
   { name: 'Pipeline', href: '/admin/pipeline', icon: TrendingUp },
   { name: 'System Health', href: '/admin/system', icon: Activity },
