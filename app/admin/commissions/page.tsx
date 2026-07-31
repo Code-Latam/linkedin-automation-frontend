@@ -12,10 +12,8 @@ import {
   Eye,
   Check,
   X,
-  Filter,
   Download,
   Search,
-  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   Loader2
@@ -55,19 +53,10 @@ interface CommissionSummary {
   paidCount: number;
 }
 
-interface ByClient {
-  clientName: string;
-  clientEmail: string;
-  total: number;
-  pending: number;
-  paid: number;
-  count: number;
-}
-
 interface DashboardData {
   commissions: Commission[];
   summary: CommissionSummary;
-  byClient: ByClient[];
+  byClient: any[];
   pagination: {
     total: number;
     limit: number;
@@ -80,13 +69,11 @@ export default function AdminCommissionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter state
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [limit, setLimit] = useState(50);
   const [offset, setOffset] = useState(0);
 
-  // Action states
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedCommission, setSelectedCommission] = useState<Commission | null>(null);
   const [showActionModal, setShowActionModal] = useState(false);
@@ -96,7 +83,6 @@ export default function AdminCommissionsPage() {
     setLoading(true);
     setError(null);
     try {
-      // Fetch overview and filtered list
       const [overviewRes, listRes] = await Promise.all([
         adminApi.getCommissionsOverview(),
         adminApi.getCommissionsList({
@@ -125,7 +111,6 @@ export default function AdminCommissionsPage() {
     fetchData();
   }, [statusFilter, limit, offset]);
 
-  // Handle status update (mark as paid or void)
   const handleStatusUpdate = async (commissionId: string, newStatus: string) => {
     setActionLoading(commissionId);
     try {
@@ -144,37 +129,34 @@ export default function AdminCommissionsPage() {
     }
   };
 
-  // Open action modal
   const openActionModal = (commission: Commission, type: 'markPaid' | 'void') => {
     setSelectedCommission(commission);
     setActionType(type);
     setShowActionModal(true);
   };
 
-  // Get status badge styles
   const getStatusBadge = (status: string) => {
-    const styles = {
+    const styles: Record<string, string> = {
       pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
       in_transit: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
       paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
       voided: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400',
       refunded: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
     };
-    return styles[status as keyof typeof styles] || styles.pending;
+    return styles[status] || styles.pending;
   };
 
   const getStatusLabel = (status: string) => {
-    const labels = {
+    const labels: Record<string, string> = {
       pending: 'Pending',
       in_transit: 'In Transit',
       paid: 'Paid',
       voided: 'Voided',
       refunded: 'Refunded',
     };
-    return labels[status as keyof typeof labels] || status;
+    return labels[status] || status;
   };
 
-  // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -183,7 +165,6 @@ export default function AdminCommissionsPage() {
     }).format(amount);
   };
 
-  // Format date
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -193,7 +174,6 @@ export default function AdminCommissionsPage() {
     });
   };
 
-  // Calculate days overdue
   const getDaysOverdue = (closedAt: string, status: string) => {
     if (status === 'paid' || status === 'voided' || status === 'refunded') return 0;
     const dueDate = new Date(closedAt);
@@ -203,7 +183,6 @@ export default function AdminCommissionsPage() {
     return Math.max(0, diff);
   };
 
-  // Export to CSV
   const exportToCSV = () => {
     if (!data || !data.commissions.length) return;
 
@@ -232,13 +211,23 @@ export default function AdminCommissionsPage() {
     window.URL.revokeObjectURL(url);
   };
 
-  // Pagination controls
   const totalPages = data ? Math.ceil(data.pagination.total / limit) : 0;
   const currentPage = Math.floor(offset / limit) + 1;
 
   const goToPage = (page: number) => {
     setOffset((page - 1) * limit);
   };
+
+  // Filter commissions by search term
+  const filteredCommissions = data?.commissions?.filter(c => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      c.clientId?.name?.toLowerCase().includes(searchLower) ||
+      c.clientId?.email?.toLowerCase().includes(searchLower) ||
+      c.dealId?.name?.toLowerCase().includes(searchLower)
+    );
+  }) || [];
 
   if (loading) {
     return <CommissionsSkeleton />;
@@ -379,26 +368,16 @@ export default function AdminCommissionsPage() {
               </tr>
             </thead>
             <tbody>
-              {data?.commissions?.length === 0 ? (
+              {filteredCommissions.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                    No commissions found
+                    {searchTerm ? 'No commissions match your search' : 'No commissions found'}
                   </td>
                 </tr>
               ) : (
-                data?.commissions?.map((commission: Commission) => {
-                  const isOverdue = getDaysOverdue(commission.closedAt, commission.status) > 30;
-                  const filteredCommissions = searchTerm
-                    ? data.commissions.filter(c =>
-                        c.clientId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        c.dealId?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-                      )
-                    : data.commissions;
-
-                  // Use filtered list if search term exists
-                  const displayCommissions = searchTerm ? filteredCommissions : data.commissions;
-
-                  return displayCommissions.map((c: Commission) => (
+                filteredCommissions.map((c: Commission) => {
+                  const isOverdue = getDaysOverdue(c.closedAt, c.status) > 30;
+                  return (
                     <tr key={c._id} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-4 py-3">
                         <p className="font-semibold text-gray-800 dark:text-gray-200">{c.clientId?.name || 'Unknown'}</p>
@@ -428,14 +407,18 @@ export default function AdminCommissionsPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-2">
                           <button
-                            onClick={() => window.open(`/admin/invoices/${c.invoiceId}`, '_blank')}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition"
+                            onClick={() => {
+                              if (c.invoiceId) {
+                                window.open(`/admin/invoices/${c.invoiceId}`, '_blank');
+                              }
+                            }}
+                            className={`p-1.5 rounded transition ${c.invoiceId ? 'text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-gray-300 cursor-not-allowed'}`}
                             title="View Invoice"
                             disabled={!c.invoiceId}
                           >
                             <Eye size={16} />
                           </button>
-                          {c.status === 'pending' || c.status === 'in_transit' ? (
+                          {(c.status === 'pending' || c.status === 'in_transit') && (
                             <>
                               <button
                                 onClick={() => openActionModal(c, 'markPaid')}
@@ -458,11 +441,11 @@ export default function AdminCommissionsPage() {
                                 <X size={16} />
                               </button>
                             </>
-                          ) : null}
+                          )}
                         </div>
                       </td>
                     </tr>
-                  ));
+                  );
                 })
               )}
             </tbody>
