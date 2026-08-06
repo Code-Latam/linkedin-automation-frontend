@@ -1,20 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { Chrome, CheckCircle, Download } from "lucide-react";
+import { CheckCircle, Download, ExternalLink, Chrome } from "lucide-react";
+import { useState } from "react";
 
 export default function InstallExtensionPage() {
-  const extensionId = process.env.NEXT_PUBLIC_CHROME_EXTENSION_ID;
-  const isConfigured = !!extensionId;
+  const [showInstructions, setShowInstructions] = useState(false);
 
-  // Path to your hosted .crx file
-  const downloadUrl = "/extensions/meeting-maker-extension.crx";
+  // The zip file location on your backend
+  const downloadUrl = "https://api.meetingmaker.tech/meetingmaker.zip";
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-24 overflow-hidden">
-      <div className="w-full max-w-3xl bg-white/5 backdrop-blur-2xl border border-cyan-500/20 rounded-3xl p-10 shadow-2xl">
+      <div className="w-full max-w-4xl bg-white/5 backdrop-blur-2xl border border-cyan-500/20 rounded-3xl p-10 shadow-2xl">
 
-        {/* Header */}
         <div className="text-center mb-10">
           <div className="flex justify-center mb-4">
             <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20">
@@ -23,102 +22,89 @@ export default function InstallExtensionPage() {
           </div>
 
           <h1 className="text-4xl font-bold text-white mb-4">
-            Install the Chrome Extension
+            Install the Meeting Maker Extension
           </h1>
 
           <p className="text-gray-400 max-w-xl mx-auto">
-            Once you've subscribed to your plan, your account will be activated immediately. Install our Chrome extension to activate
-            your workspace and start using the platform.
+            Download and install our Chrome extension to activate your workspace and start using the platform.
           </p>
         </div>
 
-        {/* Installation Methods */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-          
-          {/* Method 1: Chrome Web Store */}
-          <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-            <h3 className="text-lg font-semibold text-white mb-3">📦 From Chrome Web Store</h3>
-            <p className="text-gray-400 text-sm mb-4">
-              Install directly from the Chrome Web Store (recommended for automatic updates).
-            </p>
-            <a
-              href={extensionId ? `https://chrome.google.com/webstore/detail/${extensionId}` : "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 ${
-                isConfigured
-                  ? "hover:shadow-lg hover:scale-105"
-                  : "opacity-50 pointer-events-none"
-              }`}
-            >
-              <Chrome className="w-5 h-5" />
-              Install from Web Store
-            </a>
-          </div>
-
-          {/* Method 2: Direct Download */}
-          <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-            <h3 className="text-lg font-semibold text-white mb-3">📥 Direct Download</h3>
-            <p className="text-gray-400 text-sm mb-4">
-              Download the .crx file and install manually (good for testing or if Web Store is blocked).
+        {/* Download Button */}
+        <div className="bg-white/5 rounded-xl p-8 border border-white/10 hover:border-cyan-500/50 transition-all mb-8">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-white mb-4">📦 Download Extension</h3>
+            <p className="text-gray-400 text-sm mb-6">
+              Download the extension package and follow the installation steps below.
             </p>
             <a
               href={downloadUrl}
-              download="meeting-maker-extension.crx"
-              className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all duration-300 border border-white/20"
+              download="meetingmaker.zip"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 transition-all duration-300 hover:shadow-cyan-500/50 hover:scale-105"
             >
               <Download className="w-5 h-5" />
-              Download Extension (.crx)
+              Download meetingmaker.zip
             </a>
           </div>
-
         </div>
 
         {/* Installation Instructions */}
-        <div className="bg-white/5 rounded-xl p-6 border border-white/10 mb-8">
-          <h3 className="text-lg font-semibold text-white mb-4">📖 How to Install from .crx</h3>
-          <div className="space-y-3">
+        <div className="bg-white/5 rounded-xl p-6 border border-cyan-500/30 mb-8">
+          <h3 className="text-lg font-semibold text-white mb-4">📖 Installation Instructions</h3>
+          <div className="space-y-4">
             <div className="flex items-start gap-3">
               <span className="text-cyan-400 font-bold">1.</span>
-              <p className="text-gray-300 text-sm">
-                Download the .crx file using the button above
+              <p className="text-gray-300">
+                Download the <span className="text-white font-medium">meetingmaker.zip</span> file using the button above
               </p>
             </div>
             <div className="flex items-start gap-3">
               <span className="text-cyan-400 font-bold">2.</span>
-              <p className="text-gray-300 text-sm">
-                Open Chrome and go to <span className="text-white">chrome://extensions/</span>
+              <p className="text-gray-300">
+                Extract the ZIP file to a folder on your computer
               </p>
             </div>
             <div className="flex items-start gap-3">
               <span className="text-cyan-400 font-bold">3.</span>
-              <p className="text-gray-300 text-sm">
-                Turn on <span className="text-white">"Developer mode"</span> (top-right)
+              <p className="text-gray-300">
+                Open Chrome and go to <span className="text-white font-medium">chrome://extensions/</span>
               </p>
             </div>
             <div className="flex items-start gap-3">
               <span className="text-cyan-400 font-bold">4.</span>
-              <p className="text-gray-300 text-sm">
-                Drag and drop the downloaded <span className="text-white">.crx</span> file onto the extensions page
+              <p className="text-gray-300">
+                Turn on <span className="text-white font-medium">"Developer mode"</span> (toggle in the top-right corner)
               </p>
             </div>
             <div className="flex items-start gap-3">
               <span className="text-cyan-400 font-bold">5.</span>
-              <p className="text-gray-300 text-sm">
-                Click <span className="text-white">"Add extension"</span> when prompted
+              <p className="text-gray-300">
+                Click <span className="text-white font-medium">"Load unpacked"</span>
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-cyan-400 font-bold">6.</span>
+              <p className="text-gray-300">
+                Select the extracted folder (the one containing <span className="text-white font-medium">manifest.json</span>)
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-cyan-400 font-bold">7.</span>
+              <p className="text-gray-300">
+                The extension is now installed! 🎉
               </p>
             </div>
           </div>
         </div>
 
-        {/* Quick Steps */}
-        <div className="space-y-6 mb-10">
+        {/* After Installation */}
+        <div className="space-y-4 mb-8">
           <h3 className="text-lg font-semibold text-white">After Installation:</h3>
           
           <div className="flex items-start gap-4">
             <CheckCircle className="w-6 h-6 text-cyan-400 mt-1" />
             <p className="text-gray-300">
-              Pin the extension to your toolbar by clicking the puzzle piece icon and selecting the pin icon.
+              Pin the extension to your toolbar (click the puzzle icon, then the pin icon).
             </p>
           </div>
 
@@ -130,19 +116,10 @@ export default function InstallExtensionPage() {
           </div>
         </div>
 
-        {!isConfigured && (
-          <p className="text-center text-sm text-red-400">
-            Chrome extension ID is not configured.
-          </p>
-        )}
-
-        {/* Footer note */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          After installation, the extension will automatically detect your
-          account if you're logged in.
+        <p className="text-center text-sm text-gray-500">
+          💡 You'll only need to do this once. After installation, the extension will work automatically.
         </p>
 
-        {/* Optional dashboard link */}
         <div className="mt-8 text-center">
           <Link
             href="/dashboard"
