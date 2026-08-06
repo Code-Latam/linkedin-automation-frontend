@@ -1,16 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Chrome, CheckCircle } from "lucide-react";
+import { Chrome, CheckCircle, Download } from "lucide-react";
 
 export default function InstallExtensionPage() {
   const extensionId = process.env.NEXT_PUBLIC_CHROME_EXTENSION_ID;
-
-  const extensionUrl = extensionId
-    ? `https://chrome.google.com/webstore/detail/${extensionId}`
-    : "#";
-
   const isConfigured = !!extensionId;
+
+  // Path to your hosted .crx file
+  const downloadUrl = "/extensions/meeting-maker-extension.crx";
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-24 overflow-hidden">
@@ -34,27 +32,93 @@ export default function InstallExtensionPage() {
           </p>
         </div>
 
-        {/* Steps */}
+        {/* Installation Methods */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+          
+          {/* Method 1: Chrome Web Store */}
+          <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+            <h3 className="text-lg font-semibold text-white mb-3">📦 From Chrome Web Store</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Install directly from the Chrome Web Store (recommended for automatic updates).
+            </p>
+            <a
+              href={extensionId ? `https://chrome.google.com/webstore/detail/${extensionId}` : "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 ${
+                isConfigured
+                  ? "hover:shadow-lg hover:scale-105"
+                  : "opacity-50 pointer-events-none"
+              }`}
+            >
+              <Chrome className="w-5 h-5" />
+              Install from Web Store
+            </a>
+          </div>
+
+          {/* Method 2: Direct Download */}
+          <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+            <h3 className="text-lg font-semibold text-white mb-3">📥 Direct Download</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Download the .crx file and install manually (good for testing or if Web Store is blocked).
+            </p>
+            <a
+              href={downloadUrl}
+              download="meeting-maker-extension.crx"
+              className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all duration-300 border border-white/20"
+            >
+              <Download className="w-5 h-5" />
+              Download Extension (.crx)
+            </a>
+          </div>
+
+        </div>
+
+        {/* Installation Instructions */}
+        <div className="bg-white/5 rounded-xl p-6 border border-white/10 mb-8">
+          <h3 className="text-lg font-semibold text-white mb-4">📖 How to Install from .crx</h3>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <span className="text-cyan-400 font-bold">1.</span>
+              <p className="text-gray-300 text-sm">
+                Download the .crx file using the button above
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-cyan-400 font-bold">2.</span>
+              <p className="text-gray-300 text-sm">
+                Open Chrome and go to <span className="text-white">chrome://extensions/</span>
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-cyan-400 font-bold">3.</span>
+              <p className="text-gray-300 text-sm">
+                Turn on <span className="text-white">"Developer mode"</span> (top-right)
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-cyan-400 font-bold">4.</span>
+              <p className="text-gray-300 text-sm">
+                Drag and drop the downloaded <span className="text-white">.crx</span> file onto the extensions page
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-cyan-400 font-bold">5.</span>
+              <p className="text-gray-300 text-sm">
+                Click <span className="text-white">"Add extension"</span> when prompted
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Steps */}
         <div className="space-y-6 mb-10">
-
+          <h3 className="text-lg font-semibold text-white">After Installation:</h3>
+          
           <div className="flex items-start gap-4">
             <CheckCircle className="w-6 h-6 text-cyan-400 mt-1" />
             <p className="text-gray-300">
-              Click the button below to open the Chrome Web Store.
-            </p>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <CheckCircle className="w-6 h-6 text-cyan-400 mt-1" />
-            <p className="text-gray-300">
-              Click <span className="text-white font-medium">"Add to Chrome"</span>.
-            </p>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <CheckCircle className="w-6 h-6 text-cyan-400 mt-1" />
-            <p className="text-gray-300">
-              Pin the extension to your toolbar.
+              Pin the extension to your toolbar by clicking the puzzle piece icon and selecting the pin icon.
             </p>
           </div>
 
@@ -64,24 +128,6 @@ export default function InstallExtensionPage() {
               Open the extension and log in to connect your account.
             </p>
           </div>
-
-        </div>
-
-        {/* Install Button */}
-        <div className="flex justify-center mb-8">
-          <a
-            href={extensionUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 transition-all duration-300 ${
-              isConfigured
-                ? "hover:shadow-cyan-500/50 hover:scale-105"
-                : "opacity-50 pointer-events-none"
-            }`}
-          >
-            <Chrome className="w-5 h-5" />
-            Install from Chrome Web Store
-          </a>
         </div>
 
         {!isConfigured && (
