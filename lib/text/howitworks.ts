@@ -16,7 +16,7 @@ export const howItWorksText = {
         },
         {
             id: 3,
-            title: "Add leads from LinkedIn to your pipeline without leaving LinkedIn and watch the conversions start. With the Premium version, leads are automatically found for you through campaigns.",
+            title: "Add leads from to your pipeline and watch the conversions start. With the Premium version, leads are automatically found for you through campaigns.",
             image: "/images/how-it-works/assign-to-meeting-maker1.png"
         }
     ]

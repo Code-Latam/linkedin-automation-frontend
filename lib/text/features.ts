@@ -17,7 +17,7 @@ export const featuresText = {
         {
             slug: "autonomous-ai-outreach",
             title: "Sales and Customer services teams that work 24/7",
-            description: "Your AI outbound team—SDRs and BDRs—prospects and engages leads across LinkedIn and email. Your AI inbound team handles questions and books meetings with your ideal buyers. Both run 24/7. Neither needs a CRM.",
+            description: "Your AI outbound team—SDRs and BDRs—prospects and engages leads across business, social networks and email. Your AI inbound team handles questions and books meetings with your ideal buyers. Both run 24/7. Neither needs a CRM.",
             image: "/images/features/assign-to-meeting-maker1.png",
 
         },
@@ -25,7 +25,7 @@ export const featuresText = {
         {
             slug: "deep-lead-research",
             title: "Every prospect is researched before the first message is sent.",
-            description: "Before the first message, the Meeting Maker analyzes company data, recent news, funding events, leadership changes, and LinkedIn activity to build a complete picture of each prospect. Every outreach or inbound handling, and subsequent conversation is then personalized based on what matters to them right now - not a template or sequence",
+            description: "Before the first message, the Meeting Maker analyzes company data, recent news, funding events, leadership changes, and digital activity to build a complete picture of each prospect. Every outreach or inbound handling, and subsequent conversation is then personalized based on what matters to them right now - not a template or sequence",
             image: "/images/features/deep-research3.png",
 
         },
@@ -37,8 +37,8 @@ export const featuresText = {
 
         },
         {
-            slug: "improve-your-linkedin-authority-and-boost-your-presence",
-            title: "Improve your LinkedIn Authority Ranking and boost your presence",
+            slug: "improve-your-authority-and-boost-your-presence",
+            title: "Improve your Authority Ranking and boost your presence",
             description: "Our Authority Ranking tool measures your profile against peers in your role continously while the Meeting Maker improves it. - Then, take it further: the Meeting Maker community automatically likes and comments on your posts, increasing virality. One post boosted per day, included in the subscription.",
             image: "/images/features/Authority.png",
 

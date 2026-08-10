@@ -4,7 +4,7 @@ export const heroText = {
     features: [
         {
             icon: "Users",
-            text: "Build on top of LinkedIn and Email"
+            text: "Build on top of your Business and Social Networks and Email"
         },
         {
             icon: "Calendar",

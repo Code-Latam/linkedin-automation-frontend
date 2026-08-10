@@ -25,7 +25,6 @@ export default function Privacy() {
         <h2 className="text-2xl font-semibold mt-8 mb-4">Information We Collect</h2>
         <ul className="list-disc pl-6 space-y-2">
           <li>User account information such as email address.</li>
-          <li>LinkedIn profile information necessary to export leads.</li>
           <li>Authentication tokens required to maintain login sessions.</li>
         </ul>
 

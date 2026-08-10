@@ -9,12 +9,12 @@ export const faqsText = {
             answer: "You can sign up directly from the link above. Once submitted, your application will be automatically approved and you can start promoting right away.\n\nPlease note: Saasential LLC reserves the right to remove affiliates at its sole discretion if necessary."
         },
         {
-            question: "How many LinkedIn connections will one agent add daily?",
-            answer:'This is configurable but we recommend to keep it around 25 so LinkedIn will not pause connection requests.'
+            question: "How many connections will one agent add daily?",
+            answer:'This is configurable but we recommend to keep it around 25 so there will be no pause in connection requests.'
         },
         {
             question: "How many messages will the agent send daily?",
-            answer:'This is configurable but we recommend to keep it around 80 so LinkedIn will not pause message requests.'
+            answer:'This is configurable but we recommend to keep it around 80 so there will be no pause in message requests.'
         }
 
     ]

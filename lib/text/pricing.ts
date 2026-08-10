@@ -9,9 +9,9 @@ export const pricingText = {
         postboost: {
             name: "Post Boost",
             price: 49,
-            description: "Boost your LinkedIn posts through our network",
+            description: "Boost your posts through our network",
             features: [
-                "Boost one LinkedIn post per day",
+                "Boost one post per day",
                 "Get a minimum of 20 Likes and comments per boost. Usually more",
                 "Network of engaged accounts",
                 "AI-powered engagement",
@@ -29,11 +29,11 @@ export const pricingText = {
                 "Everything in Post Boost",
                 "AI marketing team",
                 "Follow hundreds of influencers, competitors, prospects, clients and friends",
-                "Like and comment automatically on each of their LinkedIn post",
-                "Like and comment automatically on every LinkedIn post that has selected keywords",
+                "Like and comment automatically on each of their post",
+                "Like and comment automatically on every post that has selected keywords",
                 "Like and Answer any comment on you own post automatically",
-                "SEO AI Employee handles articles on website and linkedIn posting",
-                "Unlimited AI marketing team members per LinkedIn account"
+                "SEO AI Employee handles articles on website and posting",
+                "Unlimited AI marketing team members per account"
             ],
             cta: "Get Started",
             badge: "BEST VALUE",
@@ -63,10 +63,10 @@ export const pricingText = {
         enterprise: {
             name: "Enterprise Edition",
             price: 799,
-            description: "Full platform with 5 LinkedIn accounts",
+            description: "Full platform with 5 accounts",
             features: [
                 "Everything in Marketing + Sales Teams",
-                "5 LinkedIn accounts included",
+                "5 accounts included",
                 "Run campaigns across multiple accounts",
                 "Scale your outreach 5x",
                 "Dedicated account manager",
@@ -84,5 +84,5 @@ export const pricingText = {
         "Regular feature updates",
         "24/7 support"
     ],
-    disclaimer: "*Respects LinkedIn's daily limits and terms of service. Yearly plans include 20% discount."
+    disclaimer: "*Respects Your Business or Social network daily limits and terms of service. Yearly plans include 20% discount."
 } as const;

@@ -11,13 +11,13 @@ import {
 } from "lucide-react"
 export const moreFeaturesText = {
     header: {
-        title: "Automate AI agents that run and scale your LinkedIn Sales outreach",
-        subtitle: "Your all-in-one AI companion for smarter, faster LinkedIn growth from first touch to booked meeting.",
+        title: "Automate AI agents that run and scale your Sales outreach",
+        subtitle: "Your all-in-one AI companion for smarter, faster growth from first touch to booked meeting.",
         sidebarBadge: "Avg. users book meetings in week one",
         ctaText: "Book a discovery call",
         meetingLink: "https://www.saasential.tech/book-meeting",
         calloutTime: "20–30 minutes",
-        calloutDescription: "Live walkthrough of your LinkedIn workflow"
+        calloutDescription: "Live walkthrough of your workflow"
     },
     footer: {
         description: "These features snap together into one coherent system so every invite, reply and follow-up moves prospects toward a meeting instead of getting lost."
@@ -35,17 +35,17 @@ export const moreFeaturesText = {
          {
             id: "outbound-interactions",
             icon: Filter,
-            title: "AI Automated LinkedIn Outbound-Interactions",
+            title: "AI Automated Outbound-Interactions",
             description:
-                "Depending on your selected outbound channel, LinkedIn or Email, the Meeting Maker will reach our automatically through the assigned AI agent, connecting holding conversations and achieving your goal.  ",
+                "Depending on your selected outbound channel, Business Network or Email, the Meeting Maker will reach our automatically through the assigned AI agent, connecting holding conversations and achieving your goal.  ",
             badge: "Outbound",
         },
         {
             id: "inbound-interactions",
             icon: Filter,
-            title: "AI Automated LinkedIn Inbound Interactions",
+            title: "AI Automated Inbound Interactions",
             description:
-                "Automatically handles invites on LinkedIn and inbound email, turning interest into qualified conversations and meetings.",
+                "Automatically handles invites on Business Networks and inbound email, turning interest into qualified conversations and meetings.",
             badge: "Inbound",
         },
         {
@@ -89,7 +89,7 @@ export const moreFeaturesText = {
         {
             id: "DEAL-Tracking",
             icon: Target,
-            title: "LinkedIn Deals Tracking",
+            title: "Deals Tracking",
             description:
                 "Track your potential deals through all relevant stages righ here in the Meeting Maker. Optionally Integrate into Hubspot, Zoho or Salesforce",
             badge: "CRM",
