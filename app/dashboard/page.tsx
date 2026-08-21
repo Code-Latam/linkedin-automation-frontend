@@ -1478,10 +1478,10 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                {/* LinkedIn Auto-Posting */}
+                {/* LinkedIn Posting */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
                   <div className="flex justify-between items-start mb-4 flex-wrap gap-4">
-                    <h2 className="text-xl">LinkedIn Auto-Posting</h2>
+                    <h2 className="text-xl">Enable LinkedIn Posting</h2>
                     <div className="flex items-center gap-3">
                       <span className={`text-sm ${postLinkedIn ? 'text-green-400' : 'text-gray-500'}`}>
                         {postLinkedIn ? '● Enabled' : '○ Disabled'}
@@ -1504,8 +1504,8 @@ export default function DashboardPage() {
                   </div>
                   
                   <p className="text-gray-400 mb-4">
-                    Automatically share your blog articles as LinkedIn posts. When enabled, each new article
-                    will be posted to your LinkedIn profile (or company page if configured).
+                    Enable LinkedIn posts. When enabled it will create daily LinkedIn posts.
+                    If you have auto posting on it will be posted immediately to your LinkedIn profile. If auto is not on it will make a draft pending your approval.
                   </p>
 
                   {postLinkedIn && (
