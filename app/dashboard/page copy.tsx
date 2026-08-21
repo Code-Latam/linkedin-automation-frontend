@@ -58,7 +58,6 @@ export default function DashboardPage() {
   const [postLinkedIn, setPostLinkedIn] = useState(false);
   const [linkedinTemplate, setLinkedinTemplate] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [linkedinPublishingWorkflow, setLinkedinPublishingWorkflow] = useState('auto');
   
   // Local title state for debouncing
   const [tempTitle, setTempTitle] = useState("Blog");
@@ -100,19 +99,6 @@ export default function DashboardPage() {
     featuredImage: ''
   });
   const [savingArticle, setSavingArticle] = useState(false);
-
-  // LinkedIn Posts state
-  const [linkedinPosts, setLinkedinPosts] = useState([]);
-  const [linkedinPostsLoading, setLinkedinPostsLoading] = useState(false);
-  const [linkedinStatusFilter, setLinkedinStatusFilter] = useState('all');
-  const [linkedinPostsPage, setLinkedinPostsPage] = useState(1);
-  const [linkedinPostsTotal, setLinkedinPostsTotal] = useState(0);
-  const [linkedinPostsTotalPages, setLinkedinPostsTotalPages] = useState(0);
-
-  // LinkedIn Edit Modal state
-  const [showLinkedInEditModal, setShowLinkedInEditModal] = useState(false);
-  const [editingLinkedInPost, setEditingLinkedInPost] = useState<any>(null);
-  const [savingLinkedInPost, setSavingLinkedInPost] = useState(false);
 
   // TipTap editor instance
   const editor = useEditor({
@@ -196,7 +182,6 @@ export default function DashboardPage() {
       fetchPublishingWorkflow();
       fetchArticles(1, 'all');
       fetchLinkedInSettings();
-      fetchLinkedInPosts(1, 'all');
     }
     if (activeTab === "widgets") {
       fetchBlogSettings();
@@ -237,10 +222,6 @@ export default function DashboardPage() {
         });
         setTempTitle(data.title || "Blog");
         setTempCustomDomain(data.customDomain || "");
-        // Set LinkedIn workflow if available
-        if (data.linkedinPublishingWorkflow !== undefined) {
-          setLinkedinPublishingWorkflow(data.linkedinPublishingWorkflow);
-        }
         return;
       }
     } catch (err) {
@@ -393,114 +374,6 @@ export default function DashboardPage() {
     }
   }
 
-  // ========== LINKEDIN POST FUNCTIONS ==========
-
-  async function fetchLinkedInPosts(page: number = 1, status: string = 'all') {
-    const token = localStorage.getItem("token");
-    setLinkedinPostsLoading(true);
-    try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/linkedin-posts?page=${page}&limit=10&status=${status}`;
-      const res = await fetch(url, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setLinkedinPosts(data.posts || []);
-      setLinkedinPostsTotal(data.total || 0);
-      setLinkedinPostsPage(data.page || 1);
-      setLinkedinPostsTotalPages(data.totalPages || 0);
-    } catch (err) {
-      console.error("Failed to fetch LinkedIn posts:", err);
-    } finally {
-      setLinkedinPostsLoading(false);
-    }
-  }
-
-  async function updateLinkedInPost(postId: string, text: string) {
-    const token = localStorage.getItem("token");
-    setSavingLinkedInPost(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/linkedin-posts/${postId}`, {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ text })
-      });
-      if (res.ok) {
-        await fetchLinkedInPosts(linkedinPostsPage, linkedinStatusFilter);
-        setShowLinkedInEditModal(false);
-        setEditingLinkedInPost(null);
-        alert("LinkedIn post updated successfully!");
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to update LinkedIn post");
-      }
-    } catch (err) {
-      console.error("Failed to update LinkedIn post:", err);
-      alert("Failed to update LinkedIn post");
-    } finally {
-      setSavingLinkedInPost(false);
-    }
-  }
-
-  async function submitLinkedInPost(postId: string) {
-    const token = localStorage.getItem("token");
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/linkedin-posts/${postId}/submit`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-      if (res.ok) {
-        await fetchLinkedInPosts(linkedinPostsPage, linkedinStatusFilter);
-        alert("LinkedIn post submitted for publishing!");
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to submit LinkedIn post");
-      }
-    } catch (err) {
-      console.error("Failed to submit LinkedIn post:", err);
-      alert("Failed to submit LinkedIn post");
-    }
-  }
-
-  async function publishLinkedInPost(postId: string) {
-    const token = localStorage.getItem("token");
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/dashboard/linkedin-posts/${postId}/publish`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-      if (res.ok) {
-        await fetchLinkedInPosts(linkedinPostsPage, linkedinStatusFilter);
-        alert("LinkedIn post published successfully!");
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to publish LinkedIn post");
-      }
-    } catch (err) {
-      console.error("Failed to publish LinkedIn post:", err);
-      alert("Failed to publish LinkedIn post");
-    }
-  }
-
-  function openLinkedInEditModal(post: any) {
-    setEditingLinkedInPost({ ...post });
-    setShowLinkedInEditModal(true);
-  }
-
-  async function updateLinkedInWorkflow(workflow: string) {
-    setLinkedinPublishingWorkflow(workflow);
-    await updateBlogSettings({ linkedinPublishingWorkflow: workflow });
-    alert(`LinkedIn publishing workflow set to ${workflow === 'auto' ? 'Auto-publish' : 'Manual approval'}`);
-  }
-
   async function enableBlog() {
     const token = localStorage.getItem("token");
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/enable`, {
@@ -551,11 +424,6 @@ export default function DashboardPage() {
     if (updates.ssrSubdomain !== undefined) payload.ssrSubdomain = updates.ssrSubdomain;
     if (updates.ssrCustomDomain !== undefined) payload.ssrCustomDomain = updates.ssrCustomDomain;
     
-    // LinkedIn workflow
-    if (updates.linkedinPublishingWorkflow !== undefined) {
-      payload.linkedinPublishingWorkflow = updates.linkedinPublishingWorkflow;
-    }
-    
     // Handle legacy field name
     if (updates.subdomain !== undefined && updates.ssrSubdomain === undefined) {
       payload.ssrSubdomain = updates.subdomain;
@@ -578,9 +446,6 @@ export default function DashboardPage() {
       if (data.type !== undefined) setBlogType(data.type);
       if (data.ssrSubdomain !== undefined) setSsrSubdomain(data.ssrSubdomain);
       if (data.ssrCustomDomain !== undefined) setSsrCustomDomain(data.ssrCustomDomain);
-      if (data.linkedinPublishingWorkflow !== undefined) {
-        setLinkedinPublishingWorkflow(data.linkedinPublishingWorkflow);
-      }
       setBlogSettings({
         title: data.title || blogSettings.title,
         layout: data.layout || blogSettings.layout,
@@ -1317,47 +1182,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* LinkedIn Publishing Workflow Setting */}
-                <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <h2 className="text-xl mb-4">LinkedIn Publishing Workflow</h2>
-                  <p className="text-gray-400 text-sm mb-4">
-                    Control how LinkedIn posts are published. Auto-publish sends them immediately, 
-                    while manual approval lets you review and edit before posting.
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition">
-                      <input
-                        type="radio"
-                        name="linkedinPublishingWorkflow"
-                        value="auto"
-                        checked={linkedinPublishingWorkflow === 'auto'}
-                        onChange={() => updateLinkedInWorkflow('auto')}
-                        className="mt-1"
-                      />
-                      <div>
-                        <div className="font-medium text-white">Auto-publish</div>
-                        <p className="text-gray-400 text-sm">LinkedIn posts go live immediately when generated. No review needed.</p>
-                      </div>
-                    </label>
-                    
-                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition">
-                      <input
-                        type="radio"
-                        name="linkedinPublishingWorkflow"
-                        value="manual"
-                        checked={linkedinPublishingWorkflow === 'manual'}
-                        onChange={() => updateLinkedInWorkflow('manual')}
-                        className="mt-1"
-                      />
-                      <div>
-                        <div className="font-medium text-white">Manual approval</div>
-                        <p className="text-gray-400 text-sm">LinkedIn posts are saved as drafts. You review, edit, and submit for publishing.</p>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-
                 {/* Blog Delivery Method - SSR Section */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-6">
                   <h2 className="text-xl mb-4">Blog Delivery Method</h2>
@@ -1766,207 +1590,6 @@ export default function DashboardPage() {
                     </>
                   )}
                 </div>
-
-                {/* LinkedIn Posts Section */}
-                <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-                    <h2 className="text-xl">LinkedIn Posts</h2>
-                    <div className="flex gap-2 flex-wrap">
-                      <button
-                        onClick={() => {
-                          setLinkedinStatusFilter('all');
-                          fetchLinkedInPosts(1, 'all');
-                        }}
-                        className={`px-3 py-1 rounded-lg text-sm transition ${
-                          linkedinStatusFilter === 'all' ? 'bg-cyan-500 text-white' : 'bg-white/10 text-gray-400 hover:text-white'
-                        }`}
-                      >
-                        All
-                      </button>
-                      <button
-                        onClick={() => {
-                          setLinkedinStatusFilter('draft');
-                          fetchLinkedInPosts(1, 'draft');
-                        }}
-                        className={`px-3 py-1 rounded-lg text-sm transition ${
-                          linkedinStatusFilter === 'draft' ? 'bg-yellow-500 text-white' : 'bg-white/10 text-gray-400 hover:text-white'
-                        }`}
-                      >
-                        Draft
-                      </button>
-                      <button
-                        onClick={() => {
-                          setLinkedinStatusFilter('submitted');
-                          fetchLinkedInPosts(1, 'submitted');
-                        }}
-                        className={`px-3 py-1 rounded-lg text-sm transition ${
-                          linkedinStatusFilter === 'submitted' ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-400 hover:text-white'
-                        }`}
-                      >
-                        Pending
-                      </button>
-                      <button
-                        onClick={() => {
-                          setLinkedinStatusFilter('posted');
-                          fetchLinkedInPosts(1, 'posted');
-                        }}
-                        className={`px-3 py-1 rounded-lg text-sm transition ${
-                          linkedinStatusFilter === 'posted' ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400 hover:text-white'
-                        }`}
-                      >
-                        Posted
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {linkedinPostsLoading ? (
-                    <p className="text-gray-400">Loading LinkedIn posts...</p>
-                  ) : linkedinPosts.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400 mb-2">No LinkedIn posts found.</p>
-                      <p className="text-gray-500 text-sm">
-                        {linkedinStatusFilter === 'draft' && 'No draft LinkedIn posts waiting for review.'}
-                        {linkedinStatusFilter === 'submitted' && 'No LinkedIn posts pending publishing.'}
-                        {linkedinStatusFilter === 'posted' && 'No published LinkedIn posts yet.'}
-                        {linkedinStatusFilter === 'all' && 'LinkedIn posts will appear here once generated.'}
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="space-y-3 max-h-96 overflow-y-auto">
-                        {linkedinPosts.map((post: any) => (
-                          <div key={post._id} className="border border-white/10 rounded-lg p-4 hover:bg-white/5 transition">
-                            <div className="flex justify-between items-start flex-wrap gap-4">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap mb-2">
-                                  <h3 className="font-semibold text-white break-words">
-                                    {post.text.substring(0, 100)}...
-                                  </h3>
-                                  {post.status === 'draft' && (
-                                    <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">Draft</span>
-                                  )}
-                                  {post.status === 'submitted' && (
-                                    <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">Pending</span>
-                                  )}
-                                  {post.status === 'posted' && (
-                                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">Posted</span>
-                                  )}
-                                  {post.status === 'failed' && (
-                                    <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">Failed</span>
-                                  )}
-                                </div>
-                                <p className="text-gray-400 text-sm mt-1 line-clamp-3">{post.text}</p>
-                                <div className="flex gap-4 mt-2 flex-wrap">
-                                  <span className="text-xs text-gray-500">
-                                    📅 Created: {new Date(post.createdAt).toLocaleDateString()}
-                                  </span>
-                                  {post.postedAt && (
-                                    <span className="text-xs text-green-400">
-                                      📤 Posted: {new Date(post.postedAt).toLocaleDateString()}
-                                    </span>
-                                  )}
-                                  {post.error && (
-                                    <span className="text-xs text-red-400">
-                                      ❌ Error: {post.error}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex gap-2 shrink-0">
-                                {post.status === 'draft' && (
-                                  <>
-                                    <button
-                                      onClick={() => openLinkedInEditModal(post)}
-                                      className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
-                                    >
-                                      ✏️ Edit
-                                    </button>
-                                    <button
-                                      onClick={() => submitLinkedInPost(post._id)}
-                                      className="text-green-400 hover:text-green-300 text-sm px-3 py-1 rounded border border-green-400/30 hover:bg-green-400/10 transition"
-                                    >
-                                      📤 Submit
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        if (confirm("Publish this post immediately?")) {
-                                          publishLinkedInPost(post._id);
-                                        }
-                                      }}
-                                      className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
-                                    >
-                                      🚀 Publish Now
-                                    </button>
-                                  </>
-                                )}
-                                {post.status === 'submitted' && (
-                                  <>
-                                    <span className="text-gray-500 text-sm px-3 py-1">⏳ Pending...</span>
-                                    <button
-                                      onClick={() => {
-                                        if (confirm("Publish this post now?")) {
-                                          publishLinkedInPost(post._id);
-                                        }
-                                      }}
-                                      className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 rounded border border-blue-400/30 hover:bg-blue-400/10 transition"
-                                    >
-                                      🚀 Publish Now
-                                    </button>
-                                  </>
-                                )}
-                                {post.status === 'posted' && post.postUrl && (
-                                  <a
-                                    href={post.postUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-cyan-400 hover:text-cyan-300 text-sm px-3 py-1 rounded border border-cyan-400/30 hover:bg-cyan-400/10 transition"
-                                  >
-                                    👁️ View
-                                  </a>
-                                )}
-                                {post.status === 'failed' && (
-                                  <button
-                                    onClick={() => {
-                                      if (confirm("Retry publishing this post?")) {
-                                        publishLinkedInPost(post._id);
-                                      }
-                                    }}
-                                    className="text-red-400 hover:text-red-300 text-sm px-3 py-1 rounded border border-red-400/30 hover:bg-red-400/10 transition"
-                                  >
-                                    🔄 Retry
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Pagination */}
-                      {linkedinPostsTotalPages > 1 && (
-                        <div className="flex justify-center items-center gap-4 mt-6">
-                          <button
-                            onClick={() => fetchLinkedInPosts(linkedinPostsPage - 1, linkedinStatusFilter)}
-                            disabled={linkedinPostsPage === 1}
-                            className="px-4 py-2 rounded-lg bg-white/10 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
-                          >
-                            ← Previous
-                          </button>
-                          <span className="text-gray-400">
-                            Page {linkedinPostsPage} of {linkedinPostsTotalPages}
-                          </span>
-                          <button
-                            onClick={() => fetchLinkedInPosts(linkedinPostsPage + 1, linkedinStatusFilter)}
-                            disabled={linkedinPostsPage === linkedinPostsTotalPages}
-                            className="px-4 py-2 rounded-lg bg-white/10 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
-                          >
-                            Next →
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
               </>
             )}
           </>
@@ -2215,82 +1838,6 @@ export default function DashboardPage() {
                 onClick={() => {
                   setShowEditModal(false);
                   setEditingArticle(null);
-                }}
-                className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* LinkedIn Edit Modal */}
-      {showLinkedInEditModal && editingLinkedInPost && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">Edit LinkedIn Post</h2>
-              <button
-                onClick={() => {
-                  setShowLinkedInEditModal(false);
-                  setEditingLinkedInPost(null);
-                }}
-                className="text-gray-400 hover:text-white text-2xl"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Post Text <span className="text-gray-500">({editingLinkedInPost.text?.length || 0}/3000)</span>
-                </label>
-                <textarea
-                  value={editingLinkedInPost.text || ''}
-                  onChange={(e) => setEditingLinkedInPost({ 
-                    ...editingLinkedInPost, 
-                    text: e.target.value 
-                  })}
-                  rows={10}
-                  maxLength={3000}
-                  className="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                  placeholder="Write your LinkedIn post..."
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  {editingLinkedInPost.text?.length || 0} / 3000 characters
-                </p>
-              </div>
-              
-              {editingLinkedInPost.imageUrl && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Image Preview</label>
-                  <img
-                    src={editingLinkedInPost.imageUrl}
-                    alt="LinkedIn post image"
-                    className="rounded-lg max-h-48 w-auto object-contain"
-                    onError={(e) => (e.currentTarget.style.display = 'none')}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Image cannot be changed</p>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex gap-3 pt-6 mt-4 border-t border-gray-700">
-              <button
-                onClick={() => {
-                  updateLinkedInPost(editingLinkedInPost._id, editingLinkedInPost.text);
-                }}
-                disabled={savingLinkedInPost}
-                className="flex-1 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 rounded-lg text-white font-semibold transition disabled:opacity-50"
-              >
-                {savingLinkedInPost ? "Saving..." : "Save Changes"}
-              </button>
-              <button
-                onClick={() => {
-                  setShowLinkedInEditModal(false);
-                  setEditingLinkedInPost(null);
                 }}
                 className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition"
               >
