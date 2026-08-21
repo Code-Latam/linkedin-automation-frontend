@@ -536,62 +536,63 @@ export default function DashboardPage() {
     }
   }
 
-  async function updateBlogSettings(updates: any) {
-    const token = localStorage.getItem("token");
-    
-    const payload: any = {};
-    
-    // Widget fields
-    if (updates.title !== undefined) payload.title = updates.title;
-    if (updates.layout !== undefined) payload.layout = updates.layout;
-    if (updates.customDomain !== undefined) payload.customDomain = updates.customDomain;
-    
-    // SSR fields
-    if (updates.type !== undefined) payload.type = updates.type;
-    if (updates.ssrSubdomain !== undefined) payload.ssrSubdomain = updates.ssrSubdomain;
-    if (updates.ssrCustomDomain !== undefined) payload.ssrCustomDomain = updates.ssrCustomDomain;
-    
-    // LinkedIn workflow
-    if (updates.linkedinPublishingWorkflow !== undefined) {
-      payload.linkedinPublishingWorkflow = updates.linkedinPublishingWorkflow;
-    }
-    
-    // Handle legacy field name
-    if (updates.subdomain !== undefined && updates.ssrSubdomain === undefined) {
-      payload.ssrSubdomain = updates.subdomain;
-    }
-    
-    console.log("Saving settings:", payload);
-    
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/ssr/dashboard/settings`, {
-      method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-    
-    if (res.ok) {
-      const data = await res.json();
-      console.log("Settings saved response:", data);
-      if (data.type !== undefined) setBlogType(data.type);
-      if (data.ssrSubdomain !== undefined) setSsrSubdomain(data.ssrSubdomain);
-      if (data.ssrCustomDomain !== undefined) setSsrCustomDomain(data.ssrCustomDomain);
-      if (data.linkedinPublishingWorkflow !== undefined) {
-        setLinkedinPublishingWorkflow(data.linkedinPublishingWorkflow);
-      }
-      setBlogSettings({
-        title: data.title || blogSettings.title,
-        layout: data.layout || blogSettings.layout,
-        customDomain: data.customDomain || blogSettings.customDomain
-      });
-    } else {
-      const error = await res.json();
-      console.error("Failed to save settings:", error);
-      alert(error.error || "Failed to save settings");
-    }
+ async function updateBlogSettings(updates: any) {
+  const token = localStorage.getItem("token");
+  
+  const payload: any = {};
+  
+  // Widget fields
+  if (updates.title !== undefined) payload.title = updates.title;
+  if (updates.layout !== undefined) payload.layout = updates.layout;
+  if (updates.customDomain !== undefined) payload.customDomain = updates.customDomain;
+  
+  // SSR fields
+  if (updates.type !== undefined) payload.type = updates.type;
+  if (updates.ssrSubdomain !== undefined) payload.ssrSubdomain = updates.ssrSubdomain;
+  if (updates.ssrCustomDomain !== undefined) payload.ssrCustomDomain = updates.ssrCustomDomain;
+  
+  // ✅ ADD THIS - LinkedIn workflow
+  if (updates.linkedinPublishingWorkflow !== undefined) {
+    payload.linkedinPublishingWorkflow = updates.linkedinPublishingWorkflow;
   }
+  
+  // Handle legacy field name
+  if (updates.subdomain !== undefined && updates.ssrSubdomain === undefined) {
+    payload.ssrSubdomain = updates.subdomain;
+  }
+  
+  console.log("Saving settings:", payload);
+  
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/ssr/dashboard/settings`, {
+    method: "PUT",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+  
+  if (res.ok) {
+    const data = await res.json();
+    console.log("Settings saved response:", data);
+    if (data.type !== undefined) setBlogType(data.type);
+    if (data.ssrSubdomain !== undefined) setSsrSubdomain(data.ssrSubdomain);
+    if (data.ssrCustomDomain !== undefined) setSsrCustomDomain(data.ssrCustomDomain);
+    // ✅ ADD THIS - update the state with the returned value
+    if (data.linkedinPublishingWorkflow !== undefined) {
+      setLinkedinPublishingWorkflow(data.linkedinPublishingWorkflow);
+    }
+    setBlogSettings({
+      title: data.title || blogSettings.title,
+      layout: data.layout || blogSettings.layout,
+      customDomain: data.customDomain || blogSettings.customDomain
+    });
+  } else {
+    const error = await res.json();
+    console.error("Failed to save settings:", error);
+    alert(error.error || "Failed to save settings");
+  }
+}
 
   async function updatePostLinkedIn(enabled: boolean) {
     const token = localStorage.getItem("token");
