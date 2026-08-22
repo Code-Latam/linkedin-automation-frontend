@@ -41,7 +41,8 @@ export default function Onboarding() {
       // OPTIONAL: store token
       // localStorage.setItem("mm_token", data.token);
 
-      router.push("/install-extension");
+      // ✅ Updated: Redirect to web app instead of install-extension
+      window.location.href = "https://app.meetingmaker.tech";
     } catch (err) {
       setError("Something went wrong.");
     }

@@ -52,6 +52,17 @@ export default function DashboardPage() {
 
   if (!user) return null; // Should never happen now
 
+  const getPlanDisplay = (plan: string) => {
+    switch (plan) {
+      case "free": return "No Plan";
+      case "postboost": return "🚀 Post Boost";
+      case "marketing": return "📊 Marketing";
+      case "premium": return "💎 Premium";
+      case "enterprise": return "🏢 Enterprise";
+      default: return plan || "No Plan";
+    }
+  };
+
   return (
     <div className="min-h-screen px-6 pt-24 pb-24">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -71,86 +82,28 @@ export default function DashboardPage() {
               <strong>Company:</strong> {user.client?.name}
             </p>
             <p>
-              <strong>Plan:</strong> {user.client?.plan}
+              <strong>Plan:</strong> {getPlanDisplay(user.client?.plan)}
             </p>
-
-            {/* Upgrade to Pro button */}
-            {user.client?.plan === "free" && (
-              <button
-                onClick={async () => {
-                  const token = localStorage.getItem("token");
-
-                  const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/billing/create-checkout-session`,
-                    {
-                      method: "POST",
-                      headers: {
-                        Authorization: `Bearer ${token}`,
-                      },
-                    }
-                  );
-
-                  const result = await res.json();
-
-                  if (result.url) {
-                    window.location.href = result.url;
-                  }
-                }}
-                className="px-6 py-3 bg-cyan-500 rounded-xl mt-4"
-              >
-                Upgrade to Pro
-              </button>
-            )}
-
-            {/* Cancel Subscription button */}
-            {user.client?.plan === "pro" && (
-              <button
-                onClick={async () => {
-                  const token = localStorage.getItem("token");
-
-                  const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/billing/cancel-subscription`,
-                    {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                      },
-                    }
-                  );
-
-                  const result = await res.json();
-                  if (result.success) {
-                    alert(
-                      "Subscription canceled. You will keep access until the period ends."
-                    );
-                  } else {
-                    alert("Failed to cancel subscription.");
-                  }
-                }}
-                className="px-6 py-3 bg-red-500 rounded-xl mt-4"
-              >
-                Cancel Subscription
-              </button>
-            )}
           </div>
         </div>
 
-        {/* Extension Info */}
+        {/* Web App Access - Updated */}
         <div className="bg-white/5 border border-cyan-500/20 rounded-2xl p-6">
           <h2 className="text-xl font-semibold text-white mb-4">
-            Chrome Extension
+            Web App Access
           </h2>
 
           <p className="text-gray-300 mb-4">
-            Make sure the extension is installed and you're logged in.
+            Log in to the Meeting Maker web app to manage your blog, LinkedIn posts, and more.
           </p>
 
           <a
-            href="/install-extension"
-            className="text-cyan-400 hover:text-cyan-300"
+            href="https://app.meetingmaker.tech"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-2"
           >
-            Install / View Instructions →
+            Go to Web App →
           </a>
         </div>
 
