@@ -34,12 +34,14 @@ export const pricingText = {
             price: 799,
             description: "Manage unlimited sales reps, fractional team members, and client accounts at scale",
             features: [
-                "Everything in Marketing + Sales Teams",
-                "5 Meeting Maker Premium accounts included",
-                "Manage unlimited Meeting Maker Premium Accounts",
+                "White Labeling",
+                "Manage unlimited Meeting Maker accounts",
+                "Switch seamlessly between accounts",  
                 "Scale your outreach to any volume",
+                "One Premium Meeting Maker Account included",
                 "Dedicated account manager",
-                "Priority support (12 hours max SLA)"
+                "Priority support (12 hours max SLA)",
+                "Client management and App provisioning"
             ],
             cta: "Contact Sales",
             badge: "ENTERPRISE",
