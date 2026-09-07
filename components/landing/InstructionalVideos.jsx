@@ -20,7 +20,7 @@ export default function InstructionalVideos() {
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                             <iframe
                                 className="w-full h-full"
-                                src="https://www.youtube.com/embed/zuiiqMlNEEE"
+                                src="https://www.youtube.com/embed/uu9_BWFRmwc"
                                 title="General Overview of The Meeting Maker"
                                 frameBorder="0"
                                 allowFullScreen
@@ -36,14 +36,14 @@ export default function InstructionalVideos() {
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                             <iframe
                                 className="w-full h-full"
-                                src="https://www.youtube.com/embed/YR6TLKzCZgc"
-                                title="How to create your own SDR or BDR agent"
+                                src="https://www.youtube.com/embed/I_hL50OgPt8"
+                                title="How to setup your Meeting Maker agents for success"
                                 frameBorder="0"
                                 allowFullScreen
                             />
                         </div>
                         <h3 className="text-lg font-semibold text-white">
-                            How to Create Your Own SDR or BDR Agent
+                            How to setup your Meeting Maker agents for success
                         </h3>
                     </div>
 
@@ -52,14 +52,14 @@ export default function InstructionalVideos() {
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                             <iframe
                                 className="w-full h-full"
-                                src="https://www.youtube.com/embed/gR5IiO2gMEo"
-                                title="How to create your own Marketing Manager Agent"
+                                src="https://www.youtube.com/embed/rbLqj2U-3Gg"
+                                title="How to setup Meeting Maker campaigns for marketing"
                                 frameBorder="0"
                                 allowFullScreen
                             />
                         </div>
                         <h3 className="text-lg font-semibold text-white">
-                            How to Create Your Own Marketing Manager Agent and Run Organic Marketing Campaigns
+                            How to setup Meeting Maker campaigns for marketing
                         </h3>
                     </div>
 
@@ -68,14 +68,14 @@ export default function InstructionalVideos() {
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                             <iframe
                                 className="w-full h-full"
-                                src="https://www.youtube.com/embed/L6PLGWzFmWI"
-                                title="How to Assign Prospects to Your Agents"
+                                src="https://www.youtube.com/embed/XrD2feppuzw"
+                                title="How to setup Meeting Maker Campaigns for outreach"
                                 frameBorder="0"
                                 allowFullScreen
                             />
                         </div>
                         <h3 className="text-lg font-semibold text-white">
-                            How to Assign People to Your Agents
+                            How to setup Meeting Maker Campaigns for outreach
                         </h3>
                     </div>
 
@@ -84,48 +84,17 @@ export default function InstructionalVideos() {
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                             <iframe
                                 className="w-full h-full"
-                                src="https://www.youtube.com/embed/xTToS5xjUEg"
-                                title="How to Track Your AI Outreach Performance"
+                                src="https://www.youtube.com/embed/gr1KXkcBHKQ"
+                                title="How to read your Meeting Maker dashboard"
                                 frameBorder="0"
                                 allowFullScreen
                             />
                         </div>
                         <h3 className="text-lg font-semibold text-white">
-                            Agents, People List and Dashboard
+                            How to read your Meeting Maker dashboard
                         </h3>
                     </div>
-
-                    {/* Video 6 */}
-                    <div className="space-y-4">
-                        <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-                            <iframe
-                                className="w-full h-full"
-                                src="https://www.youtube.com/embed/oFPYGzWrwtM"
-                                title="How to Setup an SEO AI Manager Agent"
-                                frameBorder="0"
-                                allowFullScreen
-                            />
-                        </div>
-                        <h3 className="text-lg font-semibold text-white">
-                            How to Setup an SEO Manager Agent
-                        </h3>
-                    </div>
-
-                    {/* Video 7 */}
-                    <div className="space-y-4">
-                        <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-                            <iframe
-                                className="w-full h-full"
-                                src="https://www.youtube.com/embed/DArEDeVQp5E"
-                                title="How to Set Up Your Astrolab Meeting Maker Account"
-                                frameBorder="0"
-                                allowFullScreen
-                            />
-                        </div>
-                        <h3 className="text-lg font-semibold text-white">
-                            How to Set Up Your Astrolab Meeting Maker Account
-                        </h3>
-                    </div>
+                
 
                 </div>
 
