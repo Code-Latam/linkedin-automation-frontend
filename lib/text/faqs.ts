@@ -5,16 +5,25 @@ export const faqsText = {
     },
     items: [
         {
-            question: "How can I sign up?",
-            answer: "You can sign up directly from the link above. Once submitted, your application will be automatically approved and you can start promoting right away.\n\nPlease note: Saasential LLC reserves the right to remove affiliates at its sole discretion if necessary."
+            question: "How can I subscribe?",
+            answer: "You can sign up directly from this page using the pricing section. "
         },
         {
             question: "How many connections will one agent add daily?",
-            answer:'This is configurable but we recommend to keep it around 25 so there will be no pause in connection requests.'
+            answer:'This is configurable but we recommend to keep it around 20 so there will be no pause in connection requests.'
         },
         {
             question: "How many messages will the agent send daily?",
-            answer:'This is configurable but we recommend to keep it around 80 so there will be no pause in message requests.'
+            answer:'This is configurable but we recommend to keep it around 100 so there will be no pause in message requests.'
+        },
+        {
+            question: "Do you use first message templates?",
+            answer:'Conversations are led end to end by AI agents so no templates are used. The agents are trained to handle openings and all known sales objections.'
+        },
+        ,
+        {
+            question: "Can I take over the conversation from an AI agent?",
+            answer:'Yes you can take over at any time'
         }
 
     ]
