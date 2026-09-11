@@ -20,7 +20,6 @@ export const faqsText = {
             question: "Do you use first message templates?",
             answer:'Conversations are led end to end by AI agents so no templates are used. The agents are trained to handle openings and all known sales objections.'
         },
-        ,
         {
             question: "Can I take over the conversation from an AI agent?",
             answer:'Yes you can take over at any time'
