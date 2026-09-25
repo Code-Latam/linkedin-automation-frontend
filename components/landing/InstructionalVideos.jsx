@@ -36,7 +36,7 @@ export default function InstructionalVideos() {
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                             <iframe
                                 className="w-full h-full"
-                                src="https://www.youtube.com/embed/I_hL50OgPt8"
+                                src="https://www.youtube.com/embed/_DDo2W2iTto&t=20s"
                                 title="How to setup your Meeting Maker agents for success"
                                 frameBorder="0"
                                 allowFullScreen
