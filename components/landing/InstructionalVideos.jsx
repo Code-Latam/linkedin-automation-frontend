@@ -68,7 +68,7 @@ export default function InstructionalVideos() {
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
                             <iframe
                                 className="w-full h-full"
-                                src="https://www.youtube.com/embed/XrD2feppuzw"
+                                src="https://www.youtube.com/embed/ZWfAKzQZNXU"
                                 title="How to setup Meeting Maker Campaigns for outreach"
                                 frameBorder="0"
                                 allowFullScreen
