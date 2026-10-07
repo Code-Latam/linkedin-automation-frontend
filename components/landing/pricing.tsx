@@ -7,20 +7,33 @@ import { useRouter } from 'next/navigation';
 
 // Price constants
 const PREMIUM_PRICE = 199;
-const ENTERPRISE_PRICE = 799;
+const AGENCY_PRICE = 799;
 
 // Yearly prices (20% discount - ROUNDED)
 const PREMIUM_YEARLY = 1910;
-const ENTERPRISE_YEARLY = 7670;
+const AGENCY_YEARLY = 7670;
 
 type Plan = "premium" | "agency";
 type Interval = "month" | "year";
+
+// ─────────────────────────────────────────────────────────────
+// Whop checkout URLs (public links — safe to expose)
+// ─────────────────────────────────────────────────────────────
+const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
+    premium: {
+        month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MONTHLY,
+        year:  process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
+    },
+    agency: {
+        month: process.env.NEXT_PUBLIC_WHOP_AGENCY_MONTHLY,
+        year:  process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
+    },
+};
 
 export default function Pricing() {
     const [selectedPlan, setSelectedPlan] = useState<Plan>("premium");
     const [selectedInterval, setSelectedInterval] = useState<Interval>("month");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -29,15 +42,15 @@ export default function Pricing() {
     }, []);
 
     const getPrice = (plan: Plan, interval: Interval) => {
-        switch(plan) {
+        switch (plan) {
             case "premium": return interval === "month" ? PREMIUM_PRICE : PREMIUM_YEARLY;
-            case "enterprise": return interval === "month" ? ENTERPRISE_PRICE : ENTERPRISE_YEARLY;
+            case "agency":  return interval === "month" ? AGENCY_PRICE  : AGENCY_YEARLY;
         }
     };
 
     const getPriceDisplay = (plan: Plan, interval: Interval) => {
         const price = getPrice(plan, interval);
-        
+
         if (interval === "year") {
             return `$${price}/yr`;
         }
@@ -45,51 +58,40 @@ export default function Pricing() {
     };
 
     const getMonthlyEquivalent = (plan: Plan) => {
-        switch(plan) {
+        switch (plan) {
             case "premium": return (PREMIUM_YEARLY / 12).toFixed(2);
-            case "enterprise": return (ENTERPRISE_YEARLY / 12).toFixed(2);
+            case "agency":  return (AGENCY_YEARLY / 12).toFixed(2);
             default: return null;
         }
     };
 
+    const handleUpgrade = (plan: Plan) => {
+        const token = localStorage.getItem("token");
 
-    const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
-  premium: {
-    month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MONTHLY,
-    year:  process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
-  },
-  agency: {
-    month: process.env.NEXT_PUBLIC_WHOP_AGENCY_MONTHLY,
-    year:  process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
-  },
-};
+        // Not logged in → send to onboarding (signup first)
+        if (!token) {
+            router.push(`/onboarding?plan=${plan}&interval=${selectedInterval}`);
+            return;
+        }
 
-const handleUpgrade = (plan: Plan) => {
-  const token = localStorage.getItem("token");
+        // Logged in → go straight to Whop checkout
+        const checkoutBase = WHOP_URLS[plan]?.[selectedInterval];
+        if (!checkoutBase) {
+            alert("Checkout is not configured for this plan yet.");
+            console.error(`Missing Whop URL for plan=${plan}, interval=${selectedInterval}`);
+            return;
+        }
 
-  // Not logged in → signup first
-  if (!token) {
-    router.push(`/onboarding?plan=${plan}&interval=${selectedInterval}`);
-    return;
-  }
+        const url = new URL(checkoutBase);
+        const email = localStorage.getItem("email");
+        if (email) url.searchParams.set("email", email);
 
-  // Logged in → go straight to Whop checkout
-  const checkoutBase = WHOP_URLS[plan]?.[selectedInterval];
-  if (!checkoutBase) {
-    alert("Checkout is not configured for this plan yet.");
-    return;
-  }
-
-  const url = new URL(checkoutBase);
-  const email = localStorage.getItem("email");
-  if (email) url.searchParams.set("email", email);
-
-  window.location.href = url.toString();
-};
+        window.location.href = url.toString();
+    };
 
     const plans = [
         { key: "premium" as Plan, ...pricingText.plans.premium },
-        { key: "agency" as Plan, ...pricingText.plans.agency }
+        { key: "agency" as Plan,  ...pricingText.plans.agency },
     ];
 
     const getPlanBadge = (plan: Plan) => {
@@ -146,13 +148,13 @@ const handleUpgrade = (plan: Plan) => {
                         const isYearly = selectedInterval === "year";
                         const badge = getPlanBadge(plan.key);
                         const monthlyEq = getMonthlyEquivalent(plan.key);
-                        
+
                         return (
                             <div
                                 key={plan.key}
                                 className={`relative rounded-3xl border transition-all duration-300 cursor-pointer ${
-                                    isSelected 
-                                        ? 'border-cyan-500/30 bg-gradient-to-br from-white/[0.07] via-white/[0.03] to-transparent shadow-2xl scale-105 z-10' 
+                                    isSelected
+                                        ? 'border-cyan-500/30 bg-gradient-to-br from-white/[0.07] via-white/[0.03] to-transparent shadow-2xl scale-105 z-10'
                                         : 'border-gray-800 bg-white/[0.03] backdrop-blur-sm opacity-75 hover:opacity-100 hover:scale-102'
                                 }`}
                                 onClick={() => setSelectedPlan(plan.key)}
@@ -172,7 +174,7 @@ const handleUpgrade = (plan: Plan) => {
                                         {plan.name}
                                     </h3>
                                     <p className="text-gray-400 text-sm mb-4">{plan.description}</p>
-                                    
+
                                     <div className="mb-4">
                                         <span className="text-4xl font-bold text-white">
                                             {getPriceDisplay(plan.key, selectedInterval)}
@@ -205,16 +207,15 @@ const handleUpgrade = (plan: Plan) => {
                                             e.stopPropagation();
                                             handleUpgrade(plan.key);
                                         }}
-                                        disabled={isLoading}
                                         className={`w-full inline-flex items-center justify-center text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 ${
                                             isSelected
                                                 ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 shadow-lg shadow-cyan-500/25'
                                                 : 'bg-white/10 hover:bg-white/20'
-                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        }`}
                                     >
-                                        {isLoading ? "Processing..." : "Get Started"}
+                                        Get Started
                                     </button>
-                                    
+
                                     {!isLoggedIn && isSelected && (
                                         <p className="text-xs text-gray-400 text-center mt-2">
                                             You'll be prompted to sign up first

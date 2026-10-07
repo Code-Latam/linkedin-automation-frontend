@@ -29,7 +29,7 @@ export const pricingText = {
             badge: "MOST POPULAR",
             popular: true
         },
-        enterprise: {
+        agency: {
             name: "Agency & Enterprise Edition",
             price: 799,
             description: "Manage unlimited sales reps, fractional team members, and client accounts at scale",
