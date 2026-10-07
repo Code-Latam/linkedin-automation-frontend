@@ -13,7 +13,7 @@ const ENTERPRISE_PRICE = 799;
 const PREMIUM_YEARLY = 1910;
 const ENTERPRISE_YEARLY = 7670;
 
-type Plan = "premium" | "enterprise";
+type Plan = "premium" | "agency";
 type Interval = "month" | "year";
 
 export default function Pricing() {
@@ -52,60 +52,49 @@ export default function Pricing() {
         }
     };
 
-    const handleUpgrade = async (plan: Plan) => {
-        setIsLoading(true);
-        
-        const token = localStorage.getItem("token");
-        
-        if (!token) {
-            router.push(`/onboarding?plan=${plan}&interval=${selectedInterval}`);
-            return;
-        }
 
-        try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/billing/create-checkout-session`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        plan,
-                        includeOnboarding: false,
-                        interval: selectedInterval,
-                        endorsely_referral:
-                            typeof window !== "undefined"
-                                ? (window as any).endorsely_referral
-                                : undefined,
-                    }),
-                }
-            );
+    const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
+  premium: {
+    month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MONTHLY,
+    year:  process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
+  },
+  agency: {
+    month: process.env.NEXT_PUBLIC_WHOP_AGENCY_MONTHLY,
+    year:  process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
+  },
+};
 
-            const data = await res.json();
+const handleUpgrade = (plan: Plan) => {
+  const token = localStorage.getItem("token");
 
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                alert("Failed to start upgrade process. Please try again.");
-                setIsLoading(false);
-            }
-        } catch (error) {
-            console.error("Upgrade error:", error);
-            alert("Something went wrong. Please try again.");
-            setIsLoading(false);
-        }
-    };
+  // Not logged in → signup first
+  if (!token) {
+    router.push(`/onboarding?plan=${plan}&interval=${selectedInterval}`);
+    return;
+  }
+
+  // Logged in → go straight to Whop checkout
+  const checkoutBase = WHOP_URLS[plan]?.[selectedInterval];
+  if (!checkoutBase) {
+    alert("Checkout is not configured for this plan yet.");
+    return;
+  }
+
+  const url = new URL(checkoutBase);
+  const email = localStorage.getItem("email");
+  if (email) url.searchParams.set("email", email);
+
+  window.location.href = url.toString();
+};
 
     const plans = [
         { key: "premium" as Plan, ...pricingText.plans.premium },
-        { key: "enterprise" as Plan, ...pricingText.plans.enterprise }
+        { key: "agency" as Plan, ...pricingText.plans.agency }
     ];
 
     const getPlanBadge = (plan: Plan) => {
         if (plan === "premium") return "MOST POPULAR";
-        if (plan === "enterprise") return "ENTERPRISE";
+        if (plan === "agency") return "ENTERPRISE";
         return null;
     };
 

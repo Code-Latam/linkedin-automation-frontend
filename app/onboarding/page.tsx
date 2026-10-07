@@ -1,10 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function OnboardingPage() {
+// Map plan + interval to Whop checkout URLs
+const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
+  premium: {
+    month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MONTHLY,
+    year:  process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
+  },
+  agency: {
+    month: process.env.NEXT_PUBLIC_WHOP_AGENCY_MONTHLY,
+    year:  process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
+  },
+};
+
+function OnboardingForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const plan = (searchParams.get("plan") || "premium") as "premium" | "agency";
+  const interval = (searchParams.get("interval") || "month") as "month" | "year";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,34 +34,34 @@ export default function OnboardingPage() {
     setLoading(true);
 
     try {
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-            name: companyName,
-            timezone
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, name: companyName, timezone }),
         }
       );
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Registration failed");
 
-      if (!res.ok) {
-        throw new Error(data.error || "Registration failed");
+      // Save JWT + email for later use
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("email", email);
+
+      // Redirect to Whop checkout
+      const checkoutBase = WHOP_URLS[plan]?.[interval];
+      if (checkoutBase) {
+        const url = new URL(checkoutBase);
+        url.searchParams.set("email", email); // prefill email on Whop
+        window.location.href = url.toString();
+        return;
       }
 
-      // Save JWT
-      localStorage.setItem("token", data.token);
-
-      // Redirect to install extension page
+      // Fallback (should not happen if env vars are set)
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message);
@@ -62,9 +78,7 @@ export default function OnboardingPage() {
         </h1>
 
         {error && (
-          <div className="mb-4 text-sm text-red-400 text-center">
-            {error}
-          </div>
+          <div className="mb-4 text-sm text-red-400 text-center">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -76,7 +90,6 @@ export default function OnboardingPage() {
             required
             className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
-
           <input
             type="email"
             placeholder="Email address"
@@ -85,7 +98,6 @@ export default function OnboardingPage() {
             required
             className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
-
           <input
             type="password"
             placeholder="Password"
@@ -94,7 +106,6 @@ export default function OnboardingPage() {
             required
             className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
-
           <button
             type="submit"
             disabled={loading}
@@ -103,14 +114,23 @@ export default function OnboardingPage() {
             {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
+
         <p className="text-gray-400 text-sm mt-6 text-center">
-            Already have an account?{" "}
-            <a href="/login" className="text-cyan-400 hover:underline">
-                Log in here
-            </a>
-            </p>
+          Already have an account?{" "}
+          <a href="/login" className="text-cyan-400 hover:underline">
+            Log in here
+          </a>
+        </p>
       </div>
     </div>
-    
+  );
+}
+
+// Wrap in Suspense because useSearchParams requires it in App Router
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-black text-white">Loading...</div>}>
+      <OnboardingForm />
+    </Suspense>
   );
 }
