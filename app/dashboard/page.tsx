@@ -9,11 +9,25 @@ declare global {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Whop checkout URLs (public links — safe to expose)
+// ─────────────────────────────────────────────────────────────
+const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
+  premium: {
+    month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MONTHLY,
+    year:  process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
+  },
+  agency: {
+    month: process.env.NEXT_PUBLIC_WHOP_AGENCY_MONTHLY,
+    year:  process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
+  },
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  
+
   const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
 
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -49,20 +63,20 @@ export default function DashboardPage() {
 
   const handleChangePassword = async () => {
     setPasswordError("");
-    
+
     if (newPassword !== confirmPassword) {
       setPasswordError("New passwords do not match");
       return;
     }
-    
+
     if (newPassword.length < 6) {
       setPasswordError("Password must be at least 6 characters");
       return;
     }
-    
+
     setChangePasswordLoading(true);
     const token = localStorage.getItem("token");
-    
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/change-password`, {
         method: "POST",
@@ -75,9 +89,9 @@ export default function DashboardPage() {
           newPassword
         }),
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         if (data.error === "current_password_incorrect") {
           setPasswordError("Current password is incorrect");
@@ -88,17 +102,17 @@ export default function DashboardPage() {
         }
         return;
       }
-      
+
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
-      
+
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setShowChangePasswordModal(false);
       alert("Password changed successfully!");
-      
+
     } catch (err) {
       setPasswordError("Something went wrong. Please try again.");
     } finally {
@@ -106,73 +120,44 @@ export default function DashboardPage() {
     }
   };
 
-  const handleManageSubscription = async () => {
-    setLoading(true);
-    const token = localStorage.getItem("token");
+  // ─────────────────────────────────────────────────────────────
+  // Manage subscription → open Whop's member portal, or show a
+  // support message if the user needs to cancel/change.
+  // ─────────────────────────────────────────────────────────────
+  const handleManageSubscription = () => {
+    // Whop does not offer a Stripe-style self-serve portal.
+    // Show the user how to manage their subscription.
+    const email = localStorage.getItem("email") || user?.user?.email || "";
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/billing/create-portal-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const result = await res.json();
-
-      if (result.url) {
-        window.location.href = result.url;
-      } else {
-        alert("Failed to open subscription management.");
-      }
-    } catch (error) {
-      alert("Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
+    alert(
+      "To manage or cancel your subscription, please contact support at:\n\n" +
+      "support@meetingmaker.tech\n\n" +
+      "Include the email you subscribed with: " + email
+    );
   };
 
-  const handleUpgrade = async (
-    plan: "premium" | "enterprise",
+  // ─────────────────────────────────────────────────────────────
+  // Upgrade → send the user directly to the Whop checkout page
+  // ─────────────────────────────────────────────────────────────
+  const handleUpgrade = (
+    plan: "premium" | "agency",
     interval: "month" | "year" = "month"
   ) => {
     setLoading(true);
-    const token = localStorage.getItem("token");
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/billing/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            plan,
-            includeOnboarding: false,
-            interval,
-            endorsely_referral: window.endorsely_referral,
-          }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert("Failed to start upgrade process.");
-      }
-    } catch (error) {
-      alert("Something went wrong.");
-    } finally {
+    const checkoutBase = WHOP_URLS[plan]?.[interval];
+    if (!checkoutBase) {
+      alert("Checkout is not configured for this plan yet.");
+      console.error(`Missing Whop URL for plan=${plan}, interval=${interval}`);
       setLoading(false);
+      return;
     }
+
+    const url = new URL(checkoutBase);
+    const email = localStorage.getItem("email") || user?.user?.email;
+    if (email) url.searchParams.set("email", email);
+
+    window.location.href = url.toString();
   };
 
   const handleLogout = () => {
@@ -194,14 +179,20 @@ export default function DashboardPage() {
       case "postboost": return "🚀 Post Boost";
       case "marketing": return "📊 Marketing";
       case "premium": return "💎 Premium";
-      case "enterprise": return "🏢 Enterprise";
+      case "agency": return "🏢 Agency & Enterprise";
+      case "enterprise": return "🏢 Enterprise"; // legacy — kept for old records
       default: return plan || "No Plan";
     }
   };
 
-  const hasStripeCustomer = !!user.client?.stripeCustomerId;
-  const isPaidPlan = ["postboost", "marketing", "premium", "enterprise"].includes(user.client?.plan);
-  const hasValidSubscription = hasStripeCustomer && isPaidPlan;
+  // ─────────────────────────────────────────────────────────────
+  // Subscription detection now uses Whop fields instead of Stripe
+  // ─────────────────────────────────────────────────────────────
+  const hasWhopMembership = !!user.client?.whopMembershipId;
+  const isPaidPlan = ["postboost", "marketing", "premium", "agency", "enterprise"].includes(
+    user.client?.plan
+  );
+  const hasValidSubscription = hasWhopMembership && isPaidPlan;
 
   return (
     <div className="min-h-screen px-6 pt-24 pb-24">
@@ -222,6 +213,7 @@ export default function DashboardPage() {
                 ${user.client?.plan === "postboost" ? "bg-purple-600 text-white" : ""}
                 ${user.client?.plan === "marketing" ? "bg-cyan-600 text-white" : ""}
                 ${user.client?.plan === "premium" ? "bg-amber-600 text-white" : ""}
+                ${user.client?.plan === "agency" ? "bg-purple-600 text-white" : ""}
                 ${user.client?.plan === "enterprise" ? "bg-purple-600 text-white" : ""}
               `}>
                 {getPlanDisplay(user.client?.plan)}
@@ -236,7 +228,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-400">
                   {user.client?.plan === "free" ? "Choose your plan:" : "You need to subscribe to a plan:"}
                 </p>
-                
+
                 <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-1 w-fit">
                   <button
                     onClick={() => setBillingInterval("month")}
@@ -260,12 +252,12 @@ export default function DashboardPage() {
                     <span className="ml-1 text-xs text-green-400">Save 20%</span>
                   </button>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
                     <div>
                       <h4 className="font-semibold text-white">💎 Premium</h4>
-                      <p className="text-sm text-gray-400">Full platform accessFull platform access with AI Sales and Marketing Team. Great for Founders, Solopreneurs and Fractional Leaders with CRM</p>
+                      <p className="text-sm text-gray-400">Full platform access with AI Sales and Marketing Team. Great for Founders, Solopreneurs and Fractional Leaders with CRM</p>
                       <span className="text-xs text-amber-400">Most Popular</span>
                     </div>
                     <button
@@ -284,7 +276,7 @@ export default function DashboardPage() {
                       <span className="text-xs text-purple-400">For Enterprises and Agencies</span>
                     </div>
                     <button
-                      onClick={() => handleUpgrade("enterprise", billingInterval)}
+                      onClick={() => handleUpgrade("agency", billingInterval)}
                       disabled={loading}
                       className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
                     >
@@ -297,44 +289,33 @@ export default function DashboardPage() {
 
             {hasValidSubscription && (
               <div className="mt-6">
-                {!hasStripeCustomer ? (
-                  <p className="text-yellow-400 text-sm">
-                    Subscription issue detected. Please contact support.
-                  </p>
-                ) : (
-                  <div className="p-4 bg-white/5 rounded-lg border border-gray-700">
-                    <p className="text-sm text-gray-400 mb-3">
-                      You are currently on the <strong className="text-white">{getPlanDisplay(user.client?.plan)}</strong> plan.
-                      {user.client?.subscriptionInterval === 'year' && (
-                        <span className="ml-2 text-green-400">(Yearly)</span>
-                      )}
-                    </p>
-                    
+                <div className="p-4 bg-white/5 rounded-lg border border-gray-700">
+                  <p className="text-sm text-gray-400 mb-3">
+                    You are currently on the <strong className="text-white">{getPlanDisplay(user.client?.plan)}</strong> plan.
                     {user.client?.subscriptionInterval === 'year' && (
-                      <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                        <p className="text-yellow-400 text-sm">
-                          ⚠️ You are on a yearly plan. In the Stripe portal, you can 
-                          only upgrade to a higher tier. Downgrades will be available 
-                          when your yearly subscription ends.
-                        </p>
-                      </div>
+                      <span className="ml-2 text-green-400">(Yearly)</span>
                     )}
-                    
-                    <button
-                      onClick={handleManageSubscription}
-                      disabled={loading}
-                      className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 rounded-xl text-white font-semibold transition disabled:opacity-50"
-                    >
-                      {loading ? "Loading..." : "Manage Subscription"}
-                    </button>
-                    <p className="text-xs text-gray-400 mt-2 text-center">
-                      {user.client?.subscriptionInterval === 'year' 
-                        ? "Upgrade to a higher tier or cancel at period end"
-                        : "Upgrade, downgrade, or cancel your subscription"
-                      }
-                    </p>
-                  </div>
-                )}
+                  </p>
+
+                  {user.client?.cancelAtPeriodEnd && (
+                    <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                      <p className="text-yellow-400 text-sm">
+                        ⚠️ Your subscription is set to cancel at the end of the current billing period.
+                      </p>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleManageSubscription}
+                    disabled={loading}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 rounded-xl text-white font-semibold transition disabled:opacity-50"
+                  >
+                    Manage Subscription
+                  </button>
+                  <p className="text-xs text-gray-400 mt-2 text-center">
+                    Contact support to upgrade, downgrade, or cancel
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -399,7 +380,7 @@ export default function DashboardPage() {
                 ×
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Current Password</label>
@@ -411,7 +392,7 @@ export default function DashboardPage() {
                   placeholder="Enter your current password"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">New Password</label>
                 <input
@@ -422,7 +403,7 @@ export default function DashboardPage() {
                   placeholder="At least 6 characters"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Confirm New Password</label>
                 <input
@@ -433,13 +414,13 @@ export default function DashboardPage() {
                   placeholder="Re-enter your new password"
                 />
               </div>
-              
+
               {passwordError && (
                 <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
                   <p className="text-red-400 text-sm">{passwordError}</p>
                 </div>
               )}
-              
+
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={handleChangePassword}
