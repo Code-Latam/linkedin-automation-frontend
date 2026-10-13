@@ -7,12 +7,12 @@ export const pricingText = {
         premium: {
             name: "Performance Plan",
             price: 1500,
-            description: "Pay only when we deliver. $1,500 setup + $300/mo billed at end of month — only if we deliver 2 qualified meetings. Otherwise that month is free.",
+            description: "$1,500 setup + $300/mo billed at end of month — only if we deliver at least 4 qualified meetings. Otherwise that month is free. The 4-meeting minimum is a floor, not a cap — most clients receive 17 meetings or more",
             features: [
-                "$1,500 one-time setup & onboarding",
+                "$1,500 one-time setup & onboarding billed upfront",
                 "$300/month, billed at end of month — only if we deliver",
-                "Guarantee: 2 qualified meetings per month or that month is free",
-                "$150 per extra qualified meeting beyond the 2 included",
+                "Minimum : 4 qualified meetings per month or that month is free",
+                "$150 per extra qualified meeting beyond the 4 included",
                 "AI Marketing Team - handles social engagement",
                 "AI Sales Team - handles outreach",
                 "AI Customer Service Team - handles inbound",
