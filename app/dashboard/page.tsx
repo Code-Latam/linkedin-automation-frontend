@@ -11,12 +11,10 @@ declare global {
 
 // ─────────────────────────────────────────────────────────────
 // Whop checkout URLs (public links — safe to expose)
+// Premium is no longer sold via Whop — it is billed separately
+// after a discovery call.
 // ─────────────────────────────────────────────────────────────
 const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
-  premium: {
-    month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MONTHLY,
-    year:  process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
-  },
   agency: {
     month: process.env.NEXT_PUBLIC_WHOP_AGENCY_MONTHLY,
     year:  process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
@@ -137,12 +135,19 @@ export default function DashboardPage() {
   };
 
   // ─────────────────────────────────────────────────────────────
-  // Upgrade → send the user directly to the Whop checkout page
+  // Upgrade → Agency goes to Whop checkout.
+  // Premium is no longer self-serve — route to book a meeting.
   // ─────────────────────────────────────────────────────────────
   const handleUpgrade = (
     plan: "premium" | "agency",
     interval: "month" | "year" = "month"
   ) => {
+    // Premium → book a meeting
+    if (plan === "premium") {
+      router.push("/book-meeting?plan=performance");
+      return;
+    }
+
     setLoading(true);
 
     const checkoutBase = WHOP_URLS[plan]?.[interval];
@@ -178,7 +183,7 @@ export default function DashboardPage() {
       case "free": return "No Plan";
       case "postboost": return "🚀 Post Boost";
       case "marketing": return "📊 Marketing";
-      case "premium": return "💎 Premium";
+      case "premium": return "💎 Performance Plan";
       case "agency": return "🏢 Agency & Enterprise";
       case "enterprise": return "🏢 Enterprise"; // legacy — kept for old records
       default: return plan || "No Plan";
@@ -256,16 +261,16 @@ export default function DashboardPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
                     <div>
-                      <h4 className="font-semibold text-white">💎 Premium</h4>
-                      <p className="text-sm text-gray-400">Full platform access with AI Sales and Marketing Team. Great for Founders, Solopreneurs and Fractional Leaders with CRM</p>
-                      <span className="text-xs text-amber-400">Most Popular</span>
+                      <h4 className="font-semibold text-white">💎 Performance Plan</h4>
+                      <p className="text-sm text-gray-400">Pay only when we deliver. $1,500 setup + $300/mo billed at end of month — only if we deliver 2 qualified meetings. Otherwise that month is free.</p>
+                      <span className="text-xs text-amber-400">Pay Only When We Deliver</span>
                     </div>
                     <button
                       onClick={() => handleUpgrade("premium", billingInterval)}
                       disabled={loading}
                       className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm"
                     >
-                      {billingInterval === "month" ? "$199/mo" : "$1,910/yr"}
+                      Book a Meeting
                     </button>
                   </div>
 
@@ -321,7 +326,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ✅ Updated: Web App Access */}
+        {/* ✅ Web App Access */}
         <div className="bg-white/5 border border-cyan-500/20 rounded-2xl p-6">
           <h2 className="text-xl font-semibold text-white mb-4">
             Access the Meeting Maker:

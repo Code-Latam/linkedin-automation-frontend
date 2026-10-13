@@ -6,11 +6,9 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 
 // Price constants
-const PREMIUM_PRICE = 199;
 const AGENCY_PRICE = 799;
 
 // Yearly prices (20% discount - ROUNDED)
-const PREMIUM_YEARLY = 1910;
 const AGENCY_YEARLY = 7670;
 
 type Plan = "premium" | "agency";
@@ -18,12 +16,10 @@ type Interval = "month" | "year";
 
 // ─────────────────────────────────────────────────────────────
 // Whop checkout URLs (public links — safe to expose)
+// Premium is no longer sold via Whop — it is billed separately
+// after a discovery call.
 // ─────────────────────────────────────────────────────────────
 const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
-    premium: {
-        month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MONTHLY,
-        year:  process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
-    },
     agency: {
         month: process.env.NEXT_PUBLIC_WHOP_AGENCY_MONTHLY,
         year:  process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
@@ -43,29 +39,33 @@ export default function Pricing() {
 
     const getPrice = (plan: Plan, interval: Interval) => {
         switch (plan) {
-            case "premium": return interval === "month" ? PREMIUM_PRICE : PREMIUM_YEARLY;
-            case "agency":  return interval === "month" ? AGENCY_PRICE  : AGENCY_YEARLY;
+            case "premium": return null; // Custom — book a meeting
+            case "agency":  return interval === "month" ? AGENCY_PRICE : AGENCY_YEARLY;
         }
     };
 
     const getPriceDisplay = (plan: Plan, interval: Interval) => {
+        if (plan === "premium") return "Custom";
         const price = getPrice(plan, interval);
-
-        if (interval === "year") {
-            return `$${price}/yr`;
-        }
+        if (interval === "year") return `$${price}/yr`;
         return `$${price}/mo`;
     };
 
     const getMonthlyEquivalent = (plan: Plan) => {
         switch (plan) {
-            case "premium": return (PREMIUM_YEARLY / 12).toFixed(2);
+            case "premium": return null;
             case "agency":  return (AGENCY_YEARLY / 12).toFixed(2);
             default: return null;
         }
     };
 
     const handleUpgrade = (plan: Plan) => {
+        // Premium is no longer self-serve — route to book a meeting
+        if (plan === "premium") {
+            router.push("/book-meeting?plan=performance");
+            return;
+        }
+
         const token = localStorage.getItem("token");
 
         // Not logged in → send to onboarding (signup first)
@@ -95,7 +95,7 @@ export default function Pricing() {
     ];
 
     const getPlanBadge = (plan: Plan) => {
-        if (plan === "premium") return "MOST POPULAR";
+        if (plan === "premium") return "PAY ONLY WHEN WE DELIVER";
         if (plan === "agency") return "ENTERPRISE";
         return null;
     };
@@ -113,7 +113,7 @@ export default function Pricing() {
                     </p>
                 </div>
 
-                {/* Interval Toggle */}
+                {/* Interval Toggle — only affects Agency now */}
                 <div className="flex justify-center mb-8">
                     <div className="bg-white/5 border border-gray-800 rounded-xl p-1 flex gap-1">
                         <button
@@ -145,7 +145,7 @@ export default function Pricing() {
                     {plans.map((plan) => {
                         const isSelected = selectedPlan === plan.key;
                         const price = getPrice(plan.key, selectedInterval);
-                        const isYearly = selectedInterval === "year";
+                        const isYearly = selectedInterval === "year" && plan.key === "agency";
                         const badge = getPlanBadge(plan.key);
                         const monthlyEq = getMonthlyEquivalent(plan.key);
 
@@ -162,7 +162,7 @@ export default function Pricing() {
                                 {badge && isSelected && (
                                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                                         <div className={`text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg whitespace-nowrap ${
-                                            badge === "MOST POPULAR" ? "bg-gradient-to-r from-cyan-500 to-blue-500" :
+                                            badge === "PAY ONLY WHEN WE DELIVER" ? "bg-gradient-to-r from-cyan-500 to-blue-500" :
                                             "bg-gradient-to-r from-purple-500 to-pink-500"
                                         }`}>
                                             {badge}
@@ -189,6 +189,11 @@ export default function Pricing() {
                                                 Save 20% vs monthly
                                             </div>
                                         )}
+                                        {plan.key === "premium" && (
+                                            <div className="text-sm text-cyan-400 mt-1">
+                                                Billed after a discovery call
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="space-y-3 mb-6">
@@ -213,10 +218,16 @@ export default function Pricing() {
                                                 : 'bg-white/10 hover:bg-white/20'
                                         }`}
                                     >
-                                        Get Started
+                                        {plan.cta}
                                     </button>
 
-                                    {!isLoggedIn && isSelected && (
+                                    {plan.key === "premium" && isSelected && (
+                                        <p className="text-xs text-gray-400 text-center mt-2">
+                                            Book a short call — we'll walk you through the model
+                                        </p>
+                                    )}
+
+                                    {plan.key === "agency" && !isLoggedIn && isSelected && (
                                         <p className="text-xs text-gray-400 text-center mt-2">
                                             You'll be prompted to sign up first
                                         </p>

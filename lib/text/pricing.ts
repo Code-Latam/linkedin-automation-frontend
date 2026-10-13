@@ -5,12 +5,16 @@ export const pricingText = {
     },
     plans: {
         premium: {
-            name: "Premium",
-            price: 199,
-            description: "Full platform access with AI Sales and Marketing Team. Great for Founders, Solopreneurs and Fractional Leaders",
+            name: "Performance Plan",
+            price: 1500,
+            description: "Pay only when we deliver. $1,500 setup + $300/mo billed at end of month — only if we deliver 2 qualified meetings. Otherwise that month is free.",
             features: [
+                "$1,500 one-time setup & onboarding",
+                "$300/month, billed at end of month — only if we deliver",
+                "Guarantee: 2 qualified meetings per month or that month is free",
+                "$150 per extra qualified meeting beyond the 2 included",
                 "AI Marketing Team - handles social engagement",
-                "AI Sales Team - Handles outreach",
+                "AI Sales Team - handles outreach",
                 "AI Customer Service Team - handles inbound",
                 "Full CRM access",
                 "Deals board & pipeline management",
@@ -25,8 +29,8 @@ export const pricingText = {
                 "Unlimited AI marketing team members per account",
                 "Priority 24 hours max SLA through email"
             ],
-            cta: "Get Started",
-            badge: "MOST POPULAR",
+            cta: "Book a Meeting",
+            badge: "PAY ONLY WHEN WE DELIVER",
             popular: true
         },
         agency: {
@@ -36,7 +40,7 @@ export const pricingText = {
             features: [
                 "White Labeling",
                 "Manage unlimited Meeting Maker accounts",
-                "Switch seamlessly between accounts",  
+                "Switch seamlessly between accounts",
                 "Scale your outreach to any volume",
                 "One Premium Meeting Maker Account included",
                 "Dedicated account manager",
@@ -54,5 +58,5 @@ export const pricingText = {
         "Regular feature updates",
         "24/7 support"
     ],
-    disclaimer: "*Respects Your Business or Social network daily limits and terms of service. Yearly plans include 20% discount."
+    disclaimer: "*Respects Your Business or Social network daily limits and terms of service. Agency yearly plans include 20% discount. Performance Plan billed separately after a discovery call."
 } as const;
