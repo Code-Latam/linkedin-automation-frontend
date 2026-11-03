@@ -4,18 +4,33 @@ export const pricingText = {
         subtitle: "One account. Unlimited potential. Choose the plan that fits your needs."
     },
     plans: {
-        premium: {
-            name: "Performance Plan",
-            price: 1500,
-            description: "$1,500 setup + $300/mo billed at end of month — only if we deliver at least 4 qualified meetings. Otherwise that month is free. The 4-meeting minimum is a floor, not a cap — most clients receive 17 meetings or more",
+        intentRadar: {
+            name: "Intent Radar",
+            price: 99,
+            yearlyPrice: 950,
+            description: "Find high-intent leads from across the web before your competitors do.",
             features: [
-                "$1,500 one-time setup & onboarding billed upfront",
-                "$300/month, billed at end of month — only if we deliver",
-                "Minimum : 4 qualified meetings per month or that month is free",
-                "$150 per extra qualified meeting beyond the 4 included",
-                "AI Marketing Team - handles social engagement",
-                "AI Sales Team - handles outreach",
-                "AI Customer Service Team - handles inbound",
+                "Every search surfaces people actively posting buying intent across the web — hiring, switching tools, or asking for recommendations",
+                "Unlimited qualified leads per search — no per-lead pricing. Includes linkedIn profile URL",
+                "Excel and CSV export",
+                "Scheduled searches — set it and forget it",
+                "Send leads directly to your Meeting Maker BDR agents (requires a Meeting Maker plan)",
+                "No setup fee, no contract, cancel anytime"
+            ],
+            cta: "Subscribe",
+            badge: null,
+            popular: false
+        },
+        meetingMaker: {
+            name: "Meeting Maker",
+            price: 199,
+            yearlyPrice: 1910,
+            description: "The full AI sales platform — outreach, marketing, and customer service agents.",
+            features: [
+                "✅ Includes full Intent Radar access",
+                "AI Marketing Team — handles social engagement",
+                "AI Sales Team — handles outreach",
+                "AI Customer Service Team — handles inbound",
                 "Full CRM access",
                 "Deals board & pipeline management",
                 "Important contacts management",
@@ -29,13 +44,14 @@ export const pricingText = {
                 "Unlimited AI marketing team members per account",
                 "Priority 24 hours max SLA through email"
             ],
-            cta: "Book a Meeting",
-            badge: "PAY ONLY WHEN WE DELIVER",
+            cta: "Subscribe",
+            badge: "BEST VALUE",
             popular: true
         },
         agency: {
             name: "Agency & Enterprise Edition",
             price: 799,
+            yearlyPrice: 7670,
             description: "Manage unlimited sales reps, fractional team members, and client accounts at scale",
             features: [
                 "White Labeling",
@@ -58,5 +74,5 @@ export const pricingText = {
         "Regular feature updates",
         "24/7 support"
     ],
-    disclaimer: "*Respects Your Business or Social network daily limits and terms of service. Agency yearly plans include 20% discount. Performance Plan billed separately after a discovery call."
+    disclaimer: "*Respects Your Business or Social network daily limits and terms of service. Yearly plans include a 20% discount."
 } as const;

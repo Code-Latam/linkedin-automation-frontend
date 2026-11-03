@@ -11,22 +11,33 @@ declare global {
 
 // ─────────────────────────────────────────────────────────────
 // Whop checkout URLs (public links — safe to expose)
-// Premium is no longer sold via Whop — it is billed separately
-// after a discovery call.
 // ─────────────────────────────────────────────────────────────
 const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
+  intentRadar: {
+    month: process.env.NEXT_PUBLIC_WHOP_LEADGEN_MONTHLY,
+    year: process.env.NEXT_PUBLIC_WHOP_LEADGEN_YEARLY,
+  },
+  meetingMaker: {
+    month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MONTHLY,
+    year: process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
+  },
   agency: {
     month: process.env.NEXT_PUBLIC_WHOP_AGENCY_MONTHLY,
-    year:  process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
+    year: process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
   },
 };
+
+type Plan = "intentRadar" | "meetingMaker" | "agency";
+type Interval = "month" | "year";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
+  const [billingInterval, setBillingInterval] = useState<"month" | "year">(
+    "month"
+  );
 
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -76,17 +87,20 @@ export default function DashboardPage() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword
-        }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/change-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            currentPassword,
+            newPassword,
+          }),
+        }
+      );
 
       const data = await res.json();
 
@@ -110,7 +124,6 @@ export default function DashboardPage() {
       setConfirmPassword("");
       setShowChangePasswordModal(false);
       alert("Password changed successfully!");
-
     } catch (err) {
       setPasswordError("Something went wrong. Please try again.");
     } finally {
@@ -118,36 +131,22 @@ export default function DashboardPage() {
     }
   };
 
-  // ─────────────────────────────────────────────────────────────
-  // Manage subscription → open Whop's member portal, or show a
-  // support message if the user needs to cancel/change.
-  // ─────────────────────────────────────────────────────────────
   const handleManageSubscription = () => {
     // Whop does not offer a Stripe-style self-serve portal.
-    // Show the user how to manage their subscription.
     const email = localStorage.getItem("email") || user?.user?.email || "";
 
     alert(
       "To manage or cancel your subscription, please contact support at:\n\n" +
-      "support@meetingmaker.tech\n\n" +
-      "Include the email you subscribed with: " + email
+        "support@meetingmaker.tech\n\n" +
+        "Include the email you subscribed with: " +
+        email
     );
   };
 
   // ─────────────────────────────────────────────────────────────
-  // Upgrade → Agency goes to Whop checkout.
-  // Premium is no longer self-serve — route to book a meeting.
+  // Subscribe → every plan goes to Whop checkout.
   // ─────────────────────────────────────────────────────────────
-  const handleUpgrade = (
-    plan: "premium" | "agency",
-    interval: "month" | "year" = "month"
-  ) => {
-    // Premium → book a meeting
-    if (plan === "premium") {
-      router.push("/book-meeting?plan=performance");
-      return;
-    }
-
+  const handleUpgrade = (plan: Plan, interval: Interval = "month") => {
     setLoading(true);
 
     const checkoutBase = WHOP_URLS[plan]?.[interval];
@@ -180,24 +179,39 @@ export default function DashboardPage() {
 
   const getPlanDisplay = (plan: string) => {
     switch (plan) {
-      case "free": return "No Plan";
-      case "postboost": return "🚀 Post Boost";
-      case "marketing": return "📊 Marketing";
-      case "premium": return "💎 Performance Plan";
-      case "agency": return "🏢 Agency & Enterprise";
-      case "enterprise": return "🏢 Enterprise"; // legacy — kept for old records
-      default: return plan || "No Plan";
+      case "free":
+        return "No Plan";
+      case "postboost":
+        return "🚀 Post Boost";
+      case "marketing":
+        return "📊 Marketing";
+      case "premium":
+        return "🎯 Meeting Maker";
+      case "agency":
+        return "🏢 Agency & Enterprise";
+      case "enterprise":
+        return "🏢 Enterprise"; // legacy — kept for old records
+      default:
+        return plan || "No Plan";
     }
   };
 
   // ─────────────────────────────────────────────────────────────
-  // Subscription detection now uses Whop fields instead of Stripe
+  // Subscription detection — client has a plan AND (Whop or
+  // legacy Stripe) subscription ID. If they only have lead-gen,
+  // they'll be shown the upgrade options for Meeting Maker.
   // ─────────────────────────────────────────────────────────────
   const hasWhopMembership = !!user.client?.whopMembershipId;
-  const isPaidPlan = ["postboost", "marketing", "premium", "agency", "enterprise"].includes(
-    user.client?.plan
-  );
+  const isPaidPlan = [
+    "postboost",
+    "marketing",
+    "premium",
+    "agency",
+    "enterprise",
+  ].includes(user.client?.plan);
   const hasValidSubscription = hasWhopMembership && isPaidPlan;
+
+  const hasIntentRadar = user.client?.leadGenSubscribed === true;
 
   return (
     <div className="min-h-screen px-6 pt-24 pb-24">
@@ -205,14 +219,21 @@ export default function DashboardPage() {
         <h1 className="text-4xl font-bold text-white">Dashboard</h1>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Account Information</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Account Information
+          </h2>
 
           <div className="space-y-2 text-gray-300">
-            <p><strong>Email:</strong> {user.user.email}</p>
-            <p><strong>Company:</strong> {user.client?.name || "—"}</p>
+            <p>
+              <strong>Email:</strong> {user.user.email}
+            </p>
+            <p>
+              <strong>Company:</strong> {user.client?.name || "—"}
+            </p>
             <p>
               <strong>Plan:</strong>{" "}
-              <span className={`
+              <span
+                className={`
                 px-2 py-1 rounded-full text-xs font-medium ml-2
                 ${user.client?.plan === "free" ? "bg-gray-600 text-gray-200" : ""}
                 ${user.client?.plan === "postboost" ? "bg-purple-600 text-white" : ""}
@@ -220,18 +241,29 @@ export default function DashboardPage() {
                 ${user.client?.plan === "premium" ? "bg-amber-600 text-white" : ""}
                 ${user.client?.plan === "agency" ? "bg-purple-600 text-white" : ""}
                 ${user.client?.plan === "enterprise" ? "bg-purple-600 text-white" : ""}
-              `}>
+              `}
+              >
                 {getPlanDisplay(user.client?.plan)}
               </span>
-              {user.client?.subscriptionInterval === 'year' && (
+              {user.client?.subscriptionInterval === "year" && (
                 <span className="ml-2 text-xs text-green-400">(Yearly)</span>
               )}
             </p>
+            {hasIntentRadar && (
+              <p>
+                <strong>Intent Radar:</strong>{" "}
+                <span className="px-2 py-1 rounded-full text-xs font-medium ml-2 bg-cyan-600 text-white">
+                  Active
+                </span>
+              </p>
+            )}
 
             {!hasValidSubscription && (
               <div className="mt-6 space-y-4">
                 <p className="text-sm text-gray-400">
-                  {user.client?.plan === "free" ? "Choose your plan:" : "You need to subscribe to a plan:"}
+                  {user.client?.plan === "free"
+                    ? "Choose your plan:"
+                    : "You need to subscribe to a plan:"}
                 </p>
 
                 <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-1 w-fit">
@@ -259,31 +291,71 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
+                  {/* Intent Radar */}
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-cyan-500/30">
                     <div>
-                      <h4 className="font-semibold text-white">💎 Performance Plan</h4>
-                      <p className="text-sm text-gray-400">Pay only when we deliver. $1,500 setup + $300/mo billed at end of month — only if we deliver 2 qualified meetings. Otherwise that month is free.</p>
-                      <span className="text-xs text-amber-400">Pay Only When We Deliver</span>
+                      <h4 className="font-semibold text-white">
+                        🎯 Intent Radar
+                      </h4>
+                      <p className="text-sm text-gray-400">
+                        Find high-intent leads from across the web. Unlimited
+                        qualified leads per search, Excel/CSV export, and
+                        scheduled searches.
+                      </p>
+                      <span className="text-xs text-cyan-400">
+                        $99/mo or $950/yr
+                      </span>
                     </div>
                     <button
-                      onClick={() => handleUpgrade("premium", billingInterval)}
+                      onClick={() => handleUpgrade("intentRadar", billingInterval)}
                       disabled={loading}
-                      className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm"
+                      className="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-lg text-cyan-400 font-semibold transition disabled:opacity-50 text-sm whitespace-nowrap ml-4"
                     >
-                      Book a Meeting
+                      {billingInterval === "month" ? "$99/mo" : "$950/yr"}
                     </button>
                   </div>
 
+                  {/* Meeting Maker */}
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
+                    <div>
+                      <h4 className="font-semibold text-white">
+                        🎯 Meeting Maker
+                      </h4>
+                      <p className="text-sm text-gray-400">
+                        The full AI sales platform — outreach, marketing, and
+                        customer service agents. Includes Intent Radar.
+                      </p>
+                      <span className="text-xs text-amber-400">
+                        $199/mo or $1,910/yr · Includes Intent Radar
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleUpgrade("meetingMaker", billingInterval)}
+                      disabled={loading}
+                      className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm whitespace-nowrap ml-4"
+                    >
+                      {billingInterval === "month" ? "$199/mo" : "$1,910/yr"}
+                    </button>
+                  </div>
+
+                  {/* Agency */}
                   <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-purple-500/30">
                     <div>
-                      <h4 className="font-semibold text-white">🏢 Agency & Enterprise Edition</h4>
-                      <p className="text-sm text-gray-400">Manage unlimited sales reps, fractional team members, and client accounts at scale</p>
-                      <span className="text-xs text-purple-400">For Enterprises and Agencies</span>
+                      <h4 className="font-semibold text-white">
+                        🏢 Agency & Enterprise Edition
+                      </h4>
+                      <p className="text-sm text-gray-400">
+                        Manage unlimited sales reps, fractional team members,
+                        and client accounts at scale.
+                      </p>
+                      <span className="text-xs text-purple-400">
+                        $799/mo or $7,670/yr
+                      </span>
                     </div>
                     <button
                       onClick={() => handleUpgrade("agency", billingInterval)}
                       disabled={loading}
-                      className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm"
+                      className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 rounded-lg text-purple-400 font-semibold transition disabled:opacity-50 text-sm whitespace-nowrap ml-4"
                     >
                       {billingInterval === "month" ? "$799/mo" : "$7,670/yr"}
                     </button>
@@ -296,8 +368,12 @@ export default function DashboardPage() {
               <div className="mt-6">
                 <div className="p-4 bg-white/5 rounded-lg border border-gray-700">
                   <p className="text-sm text-gray-400 mb-3">
-                    You are currently on the <strong className="text-white">{getPlanDisplay(user.client?.plan)}</strong> plan.
-                    {user.client?.subscriptionInterval === 'year' && (
+                    You are currently on the{" "}
+                    <strong className="text-white">
+                      {getPlanDisplay(user.client?.plan)}
+                    </strong>{" "}
+                    plan.
+                    {user.client?.subscriptionInterval === "year" && (
                       <span className="ml-2 text-green-400">(Yearly)</span>
                     )}
                   </p>
@@ -305,7 +381,8 @@ export default function DashboardPage() {
                   {user.client?.cancelAtPeriodEnd && (
                     <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                       <p className="text-yellow-400 text-sm">
-                        ⚠️ Your subscription is set to cancel at the end of the current billing period.
+                        ⚠️ Your subscription is set to cancel at the end of the
+                        current billing period.
                       </p>
                     </div>
                   )}
@@ -326,13 +403,14 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ✅ Web App Access */}
+        {/* Web App Access */}
         <div className="bg-white/5 border border-cyan-500/20 rounded-2xl p-6">
           <h2 className="text-xl font-semibold text-white mb-4">
             Access the Meeting Maker:
           </h2>
           <p className="text-gray-300 mb-4">
-            Once you are subscribed login to the Meeting Maker using your credentials.
+            Once you are subscribed login to the Meeting Maker using your
+            credentials.
           </p>
           <a
             href="https://app.meetingmaker.tech"
@@ -388,7 +466,9 @@ export default function DashboardPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Current Password</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Current Password
+                </label>
                 <input
                   type="password"
                   value={currentPassword}
@@ -399,7 +479,9 @@ export default function DashboardPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">New Password</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  New Password
+                </label>
                 <input
                   type="password"
                   value={newPassword}
@@ -410,7 +492,9 @@ export default function DashboardPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Confirm New Password</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Confirm New Password
+                </label>
                 <input
                   type="password"
                   value={confirmPassword}

@@ -5,22 +5,29 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 // Map plan + interval to Whop checkout URLs
 const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
-  premium: {
+  intentRadar: {
+    month: process.env.NEXT_PUBLIC_WHOP_LEADGEN_MONTHLY,
+    year: process.env.NEXT_PUBLIC_WHOP_LEADGEN_YEARLY,
+  },
+  meetingMaker: {
     month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MONTHLY,
-    year:  process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
+    year: process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
   },
   agency: {
     month: process.env.NEXT_PUBLIC_WHOP_AGENCY_MONTHLY,
-    year:  process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
+    year: process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
   },
 };
+
+type Plan = "intentRadar" | "meetingMaker" | "agency";
+type Interval = "month" | "year";
 
 function OnboardingForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const plan = (searchParams.get("plan") || "premium") as "premium" | "agency";
-  const interval = (searchParams.get("interval") || "month") as "month" | "year";
+  const plan = (searchParams.get("plan") || "meetingMaker") as Plan;
+  const interval = (searchParams.get("interval") || "month") as Interval;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,12 +63,14 @@ function OnboardingForm() {
       const checkoutBase = WHOP_URLS[plan]?.[interval];
       if (checkoutBase) {
         const url = new URL(checkoutBase);
-        url.searchParams.set("email", email); // prefill email on Whop
+        url.searchParams.set("email", email);
         window.location.href = url.toString();
         return;
       }
 
-      // Fallback (should not happen if env vars are set)
+      // Fallback: no Whop URL configured (e.g. placeholder env var).
+      // Account was created; send them to the dashboard so they can
+      // start a paid plan whenever checkout becomes available.
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message);
@@ -129,7 +138,13 @@ function OnboardingForm() {
 // Wrap in Suspense because useSearchParams requires it in App Router
 export default function OnboardingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-black text-white">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-black text-white">
+          Loading...
+        </div>
+      }
+    >
       <OnboardingForm />
     </Suspense>
   );
