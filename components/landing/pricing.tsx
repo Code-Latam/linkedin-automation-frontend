@@ -89,7 +89,7 @@ export default function Pricing() {
           </p>
         </div>
 
-        {/* Interval Toggle */}
+        {/* Interval Toggle 1 */}
         <div className="flex justify-center mb-8">
           <div className="bg-white/5 border border-gray-800 rounded-xl p-1 flex gap-1">
             <button
