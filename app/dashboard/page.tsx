@@ -422,6 +422,25 @@ export default function DashboardPage() {
           </a>
         </div>
 
+        {/* Intent Radar Access */}
+      <div className="bg-white/5 border border-purple-500/20 rounded-2xl p-6">
+        <h2 className="text-xl font-semibold text-white mb-4">
+          Access Intent Radar:
+        </h2>
+        <p className="text-gray-300 mb-4">
+          Once you are subscribed to Intent Radar (or Meeting Maker, which
+          includes it) login to Intent Radar using your credentials.
+        </p>
+        <a
+          href="https://intentradar.meetingmaker.tech"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-2"
+        >
+          Go to Intent Radar →
+        </a>
+      </div>
+
         <div className="flex gap-4 flex-wrap">
           <button
             onClick={() => setShowChangePasswordModal(true)}
