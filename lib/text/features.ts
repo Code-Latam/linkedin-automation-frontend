@@ -2,11 +2,17 @@
 export const featuresText = {
     header: {
         title: "Replace an entire sales and marketing department with one AI platform.",
-        subtitle: "Marketing, sales, prospect research, CRM, and customer engagement work together automatically while your team focuses only on closing deals."
+        subtitle: "High intent leads, Marketing, sales, prospect research, CRM, and customer engagement work together automatically while your team focuses only on closing deals."
     },
 
     
     items: [
+        {
+    slug: "Intent-Radar-Find-high-intent-buyers-before-your-competitors-do",
+    title: "Intent Radar. Find high-intent buyers before your competitors do",
+    description: "Scan the web for people actively showing buying intent - hiring for the role you sell to, complaining about a competitor, or asking for tool recommendations. Every lead is scored for intent and fit, so you only see the leads worth acting on. LinkedIn URL included",
+    image: "/images/features/highintent.png",
+        },
         {
             slug: "The-Meeting-Maker-Marketing-Team-use-it-to-warmup-your-prospects-and-drive-inbound",
             title: "Marketing Team. Use it to warmup your prospects and drive inbound",

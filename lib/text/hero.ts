@@ -4,7 +4,7 @@ export const heroText = {
     features: [
         {
             icon: "Users",
-            text: "Build on top of your Business and Social Networks and Email"
+            text: "High Intend Lead Generation"
         },
         {
             icon: "Calendar",
