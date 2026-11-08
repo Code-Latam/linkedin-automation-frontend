@@ -137,8 +137,6 @@ export default function Pricing() {
             const isYearly = selectedInterval === "year";
             const isMeetingMaker = planKey === "meetingMaker";
 
-            // Effective prices — for meetingMaker with checkbox, use the
-            // managed totals from pricingText.plans.meetingMaker directly.
             const effectiveMonthly =
               isMeetingMaker && managedCheckbox
                 ? pricingText.plans.meetingMaker.managedPrice ?? plan.price
@@ -235,23 +233,25 @@ export default function Pricing() {
                             /yr)
                           </span>
                         )}
+                        <span className="block mt-1.5 text-[11px] text-gray-400 leading-relaxed">
+                          Our team checks your campaigns, monitors replies,
+                          tunes agent settings, and adjusts your outreach
+                          strategy — typically a couple of hours of hands-on
+                          work per month.
+                        </span>
                       </span>
                     </label>
                   )}
 
                   <div className="space-y-3 mb-6">
-                    {plan.features.map(
-                      (feature: string, index: number) => (
-                        <div key={index} className="flex items-start gap-3">
-                          <div className="flex-shrink-0 rounded-full bg-cyan-500/20 p-1 mt-0.5">
-                            <Check className="h-3 w-3 text-cyan-400" />
-                          </div>
-                          <span className="text-gray-300 text-sm">
-                            {feature}
-                          </span>
+                    {plan.features.map((feature: string, index: number) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="flex-shrink-0 rounded-full bg-cyan-500/20 p-1 mt-0.5">
+                          <Check className="h-3 w-3 text-cyan-400" />
                         </div>
-                      )
-                    )}
+                        <span className="text-gray-300 text-sm">{feature}</span>
+                      </div>
+                    ))}
                   </div>
 
                   <button

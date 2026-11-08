@@ -1,3 +1,5 @@
+// app/dashboard/page.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -166,7 +168,9 @@ export default function DashboardPage() {
     const checkoutBase = WHOP_URLS[finalPlan]?.[interval];
     if (!checkoutBase) {
       alert("Checkout is not configured for this plan yet.");
-      console.error(`Missing Whop URL for plan=${finalPlan}, interval=${interval}`);
+      console.error(
+        `Missing Whop URL for plan=${finalPlan}, interval=${interval}`
+      );
       setLoading(false);
       return;
     }
@@ -338,7 +342,9 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <button
-                      onClick={() => handleUpgrade("intentRadar", billingInterval)}
+                      onClick={() =>
+                        handleUpgrade("intentRadar", billingInterval)
+                      }
                       disabled={loading}
                       className="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30 rounded-lg text-cyan-400 font-semibold transition disabled:opacity-50 text-sm whitespace-nowrap ml-4"
                     >
@@ -384,6 +390,12 @@ export default function DashboardPage() {
                                 (+$1,920/yr)
                               </span>
                             )}
+                            <span className="block mt-1.5 text-[11px] text-gray-400 leading-relaxed">
+                              Our team checks your campaigns, monitors replies,
+                              tunes agent settings, and adjusts your outreach
+                              strategy — typically a couple of hours of
+                              hands-on work per month.
+                            </span>
                           </span>
                         </label>
                       </div>
