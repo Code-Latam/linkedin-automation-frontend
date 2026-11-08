@@ -1,9 +1,10 @@
+// app/onboarding/page.tsx
+
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-// Map plan + interval to Whop checkout URLs
 const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
   intentRadar: {
     month: process.env.NEXT_PUBLIC_WHOP_LEADGEN_MONTHLY,
@@ -22,6 +23,44 @@ const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
 type Plan = "intentRadar" | "meetingMaker" | "agency";
 type Interval = "month" | "year";
 
+type GoalType =
+  | "book_meeting"
+  | "email_reply"
+  | "subscription"
+  | "follow_me"
+  | "send_dm";
+
+const GOAL_OPTIONS: { value: GoalType; label: string }[] = [
+  { value: "book_meeting", label: "Book a meeting / demo" },
+  { value: "email_reply", label: "Get an email reply" },
+  { value: "subscription", label: "Subscription signup" },
+  { value: "follow_me", label: "LinkedIn follow" },
+  { value: "send_dm", label: "Send a DM" },
+];
+
+const LINK_FIELDS: Record<
+  GoalType,
+  { show: boolean; label: string; placeholder: string }
+> = {
+  book_meeting: {
+    show: true,
+    label: "Booking link",
+    placeholder: "https://cal.com/you/intro",
+  },
+  subscription: {
+    show: true,
+    label: "Checkout link",
+    placeholder: "https://buy.stripe.com/...",
+  },
+  follow_me: {
+    show: true,
+    label: "LinkedIn profile",
+    placeholder: "https://linkedin.com/in/you",
+  },
+  email_reply: { show: false, label: "", placeholder: "" },
+  send_dm: { show: false, label: "", placeholder: "" },
+};
+
 function OnboardingForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -32,8 +71,20 @@ function OnboardingForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [website, setWebsite] = useState("");
+  const [goalType, setGoalType] = useState<GoalType>("book_meeting");
+  const [fulfillmentLink, setFulfillmentLink] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // intentRadar = no agents -> hide goal fields
+  const supportsAgents = plan !== "intentRadar";
+  const linkField = LINK_FIELDS[goalType];
+
+  // Clear the link when switching to a goal that doesn't use it
+  useEffect(() => {
+    if (!linkField.show) setFulfillmentLink("");
+  }, [goalType, linkField.show]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,23 +94,37 @@ function OnboardingForm() {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+      const body: Record<string, unknown> = {
+        email,
+        password,
+        name: companyName,
+        timezone,
+      };
+
+      if (website.trim()) body.website = website.trim();
+
+      if (supportsAgents) {
+        body.goalType = goalType;
+        if (linkField.show && fulfillmentLink.trim()) {
+          body.fulfillmentLink = fulfillmentLink.trim();
+        }
+      }
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name: companyName, timezone }),
+          body: JSON.stringify(body),
         }
       );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Registration failed");
 
-      // Save JWT + email for later use
       localStorage.setItem("token", data.token);
       localStorage.setItem("email", email);
 
-      // Redirect to Whop checkout
       const checkoutBase = WHOP_URLS[plan]?.[interval];
       if (checkoutBase) {
         const url = new URL(checkoutBase);
@@ -68,16 +133,17 @@ function OnboardingForm() {
         return;
       }
 
-      // Fallback: no Whop URL configured (e.g. placeholder env var).
-      // Account was created; send them to the dashboard so they can
-      // start a paid plan whenever checkout becomes available.
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
+
+  const inputClass =
+    "w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black px-6 py-24">
@@ -97,7 +163,7 @@ function OnboardingForm() {
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
             required
-            className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className={inputClass}
           />
           <input
             type="email"
@@ -105,7 +171,7 @@ function OnboardingForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className={inputClass}
           />
           <input
             type="password"
@@ -113,8 +179,62 @@ function OnboardingForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-3 rounded-lg bg-black/50 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className={inputClass}
           />
+
+          <div>
+            <input
+              type="url"
+              placeholder="Website URL (recommended)"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              className={inputClass}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              We&apos;ll scan your site to auto-fill your company profile and agents.
+              Highly recommended.
+            </p>
+          </div>
+
+          {supportsAgents && (
+            <>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">
+                  What should your agents aim for?
+                </label>
+                <select
+                  value={goalType}
+                  onChange={(e) => setGoalType(e.target.value as GoalType)}
+                  className={inputClass}
+                >
+                  {GOAL_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {linkField.show && (
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">
+                    {linkField.label}
+                  </label>
+                  <input
+                    type="url"
+                    placeholder={linkField.placeholder}
+                    value={fulfillmentLink}
+                    onChange={(e) => setFulfillmentLink(e.target.value)}
+                    className={inputClass}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Optional now — you can add it later in your agent settings.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
           <button
             type="submit"
             disabled={loading}
@@ -135,7 +255,6 @@ function OnboardingForm() {
   );
 }
 
-// Wrap in Suspense because useSearchParams requires it in App Router
 export default function OnboardingPage() {
   return (
     <Suspense

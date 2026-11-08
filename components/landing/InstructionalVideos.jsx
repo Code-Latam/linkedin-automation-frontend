@@ -31,6 +31,22 @@ export default function InstructionalVideos() {
                         </h3>
                     </div>
 
+                    {/* Video 1.2 */}
+                    <div className="space-y-4">
+                        <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
+                            <iframe
+                                className="w-full h-full"
+                                src="https://www.youtube.com/embed/sEJG-_6C0c4"
+                                title="How to Find High-Intent Buyers Automatically (Intent Radar Tutorial)"
+                                frameBorder="0"
+                                allowFullScreen
+                            />
+                        </div>
+                        <h3 className="text-lg font-semibold text-white">
+                            How to Find High-Intent Buyers Automatically (Intent Radar Tutorial)
+                        </h3>
+                    </div>
+
                     {/* Video 2 */}
                     <div className="space-y-4">
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">

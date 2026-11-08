@@ -71,6 +71,7 @@ export const pricingText = {
     sharedFeatures: [
         "No contracts, cancel anytime",
         "Secure and private",
+        "No subscriptions to LLMs required",
         "Regular feature updates",
         "24/7 support"
     ],
