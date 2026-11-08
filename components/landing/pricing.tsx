@@ -27,8 +27,6 @@ const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
   },
 };
 
-// "Plan" = the real pricing-card keys (matches pricingText.plans keys).
-// "UrlPlanKey" = every WHOP_URLS key, including the managed variant.
 type Plan = "intentRadar" | "meetingMaker" | "agency";
 type UrlPlanKey = Plan | "meetingMakerManaged";
 type Interval = "month" | "year";
@@ -58,19 +56,16 @@ export default function Pricing() {
   const handleUpgrade = (plan: Plan) => {
     const token = localStorage.getItem("token");
 
-    // Resolve final URL key — managed only applies to meetingMaker
     const finalPlan: UrlPlanKey =
       plan === "meetingMaker" && managedCheckbox
         ? "meetingMakerManaged"
         : plan;
 
-    // Not logged in → signup first, then Whop checkout on return
     if (!token) {
       router.push(`/onboarding?plan=${finalPlan}&interval=${selectedInterval}`);
       return;
     }
 
-    // Logged in → go straight to Whop checkout
     const checkoutBase = WHOP_URLS[finalPlan]?.[selectedInterval];
     if (!checkoutBase) {
       alert("Checkout is not configured for this plan yet.");
@@ -199,7 +194,18 @@ export default function Pricing() {
                     )}
                   </div>
 
-                  {/* Managed service checkbox — only on Meeting Maker card */}
+                  <div className="space-y-3 mb-6">
+                    {plan.features.map((feature: string, index: number) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="flex-shrink-0 rounded-full bg-cyan-500/20 p-1 mt-0.5">
+                          <Check className="h-3 w-3 text-cyan-400" />
+                        </div>
+                        <span className="text-gray-300 text-sm">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Managed service option — after features, before CTA */}
                   {isMeetingMaker && (
                     <label
                       className="flex items-start gap-2 mb-4 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 cursor-pointer select-none hover:bg-amber-500/10 transition"
@@ -242,17 +248,6 @@ export default function Pricing() {
                       </span>
                     </label>
                   )}
-
-                  <div className="space-y-3 mb-6">
-                    {plan.features.map((feature: string, index: number) => (
-                      <div key={index} className="flex items-start gap-3">
-                        <div className="flex-shrink-0 rounded-full bg-cyan-500/20 p-1 mt-0.5">
-                          <Check className="h-3 w-3 text-cyan-400" />
-                        </div>
-                        <span className="text-gray-300 text-sm">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
 
                   <button
                     onClick={(e) => {

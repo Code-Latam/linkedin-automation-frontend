@@ -33,8 +33,6 @@ const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
   },
 };
 
-// "Plan" = real plan keys (matches WHOP_URLS non-managed entries).
-// "UrlPlanKey" = every WHOP_URLS key, including the managed variant.
 type Plan = "intentRadar" | "meetingMaker" | "agency";
 type UrlPlanKey = Plan | "meetingMakerManaged";
 type Interval = "month" | "year";
@@ -152,11 +150,6 @@ export default function DashboardPage() {
     );
   };
 
-  // ─────────────────────────────────────────────────────────────
-  // Subscribe → every plan goes to Whop checkout.
-  // If plan is "meetingMaker" AND managedCheckbox is checked, we
-  // swap to the managed plan key before resolving the URL.
-  // ─────────────────────────────────────────────────────────────
   const handleUpgrade = (plan: Plan, interval: Interval = "month") => {
     setLoading(true);
 
@@ -208,7 +201,7 @@ export default function DashboardPage() {
       case "agency":
         return "🏢 Agency & Enterprise";
       case "enterprise":
-        return "🏢 Enterprise"; // legacy — kept for old records
+        return "🏢 Enterprise";
       default:
         return plan || "No Plan";
     }
@@ -227,7 +220,6 @@ export default function DashboardPage() {
   const hasIntentRadar = user.client?.leadGenSubscribed === true;
   const hasManagedService = user.client?.managedService === true;
 
-  // Meeting Maker price display depends on whether the checkbox is checked
   const meetingMakerMonthly = managedCheckbox ? "$399/mo" : "$199/mo";
   const meetingMakerYearly = managedCheckbox ? "$3,830/yr" : "$1,910/yr";
   const meetingMakerPriceLine = managedCheckbox
@@ -352,65 +344,62 @@ export default function DashboardPage() {
                     </button>
                   </div>
 
-                  {/* Meeting Maker */}
+                  {/* Meeting Maker — stacked: header → desc → price → checkbox → button */}
                   <div className="p-4 bg-white/5 rounded-lg border border-amber-500/30">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-white">
-                          🎯 Meeting Maker
-                        </h4>
-                        <p className="text-sm text-gray-400">
-                          The full AI sales platform — outreach, marketing, and
-                          customer service agents. Includes Intent Radar.
-                        </p>
-                        <span className="text-xs text-amber-400">
-                          {meetingMakerPriceLine}
-                        </span>
+                    <h4 className="font-semibold text-white">
+                      🎯 Meeting Maker
+                    </h4>
+                    <p className="text-sm text-gray-400">
+                      The full AI sales platform — outreach, marketing, and
+                      customer service agents. Includes Intent Radar.
+                    </p>
+                    <span className="text-xs text-amber-400">
+                      {meetingMakerPriceLine}
+                    </span>
 
-                        <label className="flex items-start gap-2 mt-3 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={managedCheckbox}
-                            onChange={(e) =>
-                              setManagedCheckbox(e.target.checked)
-                            }
-                            className="mt-1 w-4 h-4 accent-amber-500 flex-shrink-0"
-                          />
-                          <span className="text-xs text-gray-300">
-                            <strong className="text-white">
-                              Add managed service
-                            </strong>{" "}
-                            — we run the platform for you.{" "}
-                            <span className="text-amber-400 font-semibold">
-                              +$200/mo
-                            </span>
-                            {billingInterval === "year" && (
-                              <span className="text-gray-400">
-                                {" "}
-                                (+$1,920/yr)
-                              </span>
-                            )}
-                            <span className="block mt-1.5 text-[11px] text-gray-400 leading-relaxed">
-                              Our team checks your campaigns, monitors replies,
-                              tunes agent settings, and adjusts your outreach
-                              strategy — typically a couple of hours of
-                              hands-on work per month.
-                            </span>
-                          </span>
-                        </label>
-                      </div>
-                      <button
-                        onClick={() =>
-                          handleUpgrade("meetingMaker", billingInterval)
+                    <label className="flex items-start gap-2 mt-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 cursor-pointer select-none hover:bg-amber-500/10 transition">
+                      <input
+                        type="checkbox"
+                        checked={managedCheckbox}
+                        onChange={(e) =>
+                          setManagedCheckbox(e.target.checked)
                         }
-                        disabled={loading}
-                        className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm whitespace-nowrap"
-                      >
-                        {billingInterval === "month"
-                          ? meetingMakerMonthly
-                          : meetingMakerYearly}
-                      </button>
-                    </div>
+                        className="mt-1 w-4 h-4 accent-amber-500 flex-shrink-0"
+                      />
+                      <span className="text-xs text-gray-300">
+                        <strong className="text-white">
+                          Add managed service
+                        </strong>{" "}
+                        — we run the platform for you.{" "}
+                        <span className="text-amber-400 font-semibold">
+                          +$200/mo
+                        </span>
+                        {billingInterval === "year" && (
+                          <span className="text-gray-400">
+                            {" "}
+                            (+$1,920/yr)
+                          </span>
+                        )}
+                        <span className="block mt-1.5 text-[11px] text-gray-400 leading-relaxed">
+                          Our team checks your campaigns, monitors replies,
+                          tunes agent settings, and adjusts your outreach
+                          strategy — typically a couple of hours of hands-on
+                          work per month.
+                        </span>
+                      </span>
+                    </label>
+
+                    <button
+                      onClick={() =>
+                        handleUpgrade("meetingMaker", billingInterval)
+                      }
+                      disabled={loading}
+                      className="mt-3 w-full px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm"
+                    >
+                      {billingInterval === "month"
+                        ? meetingMakerMonthly
+                        : meetingMakerYearly}
+                    </button>
                   </div>
 
                   {/* Agency */}
