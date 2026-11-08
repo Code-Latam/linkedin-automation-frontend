@@ -21,13 +21,20 @@ const WHOP_URLS: Record<string, Record<string, string | undefined>> = {
     month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MONTHLY,
     year: process.env.NEXT_PUBLIC_WHOP_PREMIUM_YEARLY,
   },
+  meetingMakerManaged: {
+    month: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MANAGEMENT_MONTHLY,
+    year: process.env.NEXT_PUBLIC_WHOP_PREMIUM_MANAGEMENT_YEARLY,
+  },
   agency: {
     month: process.env.NEXT_PUBLIC_WHOP_AGENCY_MONTHLY,
     year: process.env.NEXT_PUBLIC_WHOP_AGENCY_YEARLY,
   },
 };
 
+// "Plan" = real plan keys (matches WHOP_URLS non-managed entries).
+// "UrlPlanKey" = every WHOP_URLS key, including the managed variant.
 type Plan = "intentRadar" | "meetingMaker" | "agency";
+type UrlPlanKey = Plan | "meetingMakerManaged";
 type Interval = "month" | "year";
 
 export default function DashboardPage() {
@@ -38,6 +45,7 @@ export default function DashboardPage() {
   const [billingInterval, setBillingInterval] = useState<"month" | "year">(
     "month"
   );
+  const [managedCheckbox, setManagedCheckbox] = useState(false);
 
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -132,7 +140,6 @@ export default function DashboardPage() {
   };
 
   const handleManageSubscription = () => {
-    // Whop does not offer a Stripe-style self-serve portal.
     const email = localStorage.getItem("email") || user?.user?.email || "";
 
     alert(
@@ -145,14 +152,21 @@ export default function DashboardPage() {
 
   // ─────────────────────────────────────────────────────────────
   // Subscribe → every plan goes to Whop checkout.
+  // If plan is "meetingMaker" AND managedCheckbox is checked, we
+  // swap to the managed plan key before resolving the URL.
   // ─────────────────────────────────────────────────────────────
   const handleUpgrade = (plan: Plan, interval: Interval = "month") => {
     setLoading(true);
 
-    const checkoutBase = WHOP_URLS[plan]?.[interval];
+    const finalPlan: UrlPlanKey =
+      plan === "meetingMaker" && managedCheckbox
+        ? "meetingMakerManaged"
+        : plan;
+
+    const checkoutBase = WHOP_URLS[finalPlan]?.[interval];
     if (!checkoutBase) {
       alert("Checkout is not configured for this plan yet.");
-      console.error(`Missing Whop URL for plan=${plan}, interval=${interval}`);
+      console.error(`Missing Whop URL for plan=${finalPlan}, interval=${interval}`);
       setLoading(false);
       return;
     }
@@ -196,11 +210,6 @@ export default function DashboardPage() {
     }
   };
 
-  // ─────────────────────────────────────────────────────────────
-  // Subscription detection — client has a plan AND (Whop or
-  // legacy Stripe) subscription ID. If they only have lead-gen,
-  // they'll be shown the upgrade options for Meeting Maker.
-  // ─────────────────────────────────────────────────────────────
   const hasWhopMembership = !!user.client?.whopMembershipId;
   const isPaidPlan = [
     "postboost",
@@ -212,6 +221,18 @@ export default function DashboardPage() {
   const hasValidSubscription = hasWhopMembership && isPaidPlan;
 
   const hasIntentRadar = user.client?.leadGenSubscribed === true;
+  const hasManagedService = user.client?.managedService === true;
+
+  // Meeting Maker price display depends on whether the checkbox is checked
+  const meetingMakerMonthly = managedCheckbox ? "$399/mo" : "$199/mo";
+  const meetingMakerYearly = managedCheckbox ? "$3,830/yr" : "$1,910/yr";
+  const meetingMakerPriceLine = managedCheckbox
+    ? billingInterval === "month"
+      ? "$399/mo · Includes managed service"
+      : "$3,830/yr · Includes managed service"
+    : billingInterval === "month"
+      ? "$199/mo · Includes Intent Radar"
+      : "$1,910/yr · Includes Intent Radar";
 
   return (
     <div className="min-h-screen px-6 pt-24 pb-24">
@@ -249,6 +270,16 @@ export default function DashboardPage() {
                 <span className="ml-2 text-xs text-green-400">(Yearly)</span>
               )}
             </p>
+
+            {hasManagedService && (
+              <p>
+                <strong>Managed service:</strong>{" "}
+                <span className="px-2 py-1 rounded-full text-xs font-medium ml-2 bg-amber-600 text-white">
+                  Active
+                </span>
+              </p>
+            )}
+
             {hasIntentRadar && (
               <p>
                 <strong>Intent Radar:</strong>{" "}
@@ -316,26 +347,58 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Meeting Maker */}
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-amber-500/30">
-                    <div>
-                      <h4 className="font-semibold text-white">
-                        🎯 Meeting Maker
-                      </h4>
-                      <p className="text-sm text-gray-400">
-                        The full AI sales platform — outreach, marketing, and
-                        customer service agents. Includes Intent Radar.
-                      </p>
-                      <span className="text-xs text-amber-400">
-                        $199/mo or $1,910/yr · Includes Intent Radar
-                      </span>
+                  <div className="p-4 bg-white/5 rounded-lg border border-amber-500/30">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-white">
+                          🎯 Meeting Maker
+                        </h4>
+                        <p className="text-sm text-gray-400">
+                          The full AI sales platform — outreach, marketing, and
+                          customer service agents. Includes Intent Radar.
+                        </p>
+                        <span className="text-xs text-amber-400">
+                          {meetingMakerPriceLine}
+                        </span>
+
+                        <label className="flex items-start gap-2 mt-3 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={managedCheckbox}
+                            onChange={(e) =>
+                              setManagedCheckbox(e.target.checked)
+                            }
+                            className="mt-1 w-4 h-4 accent-amber-500 flex-shrink-0"
+                          />
+                          <span className="text-xs text-gray-300">
+                            <strong className="text-white">
+                              Add managed service
+                            </strong>{" "}
+                            — we run the platform for you.{" "}
+                            <span className="text-amber-400 font-semibold">
+                              +$200/mo
+                            </span>
+                            {billingInterval === "year" && (
+                              <span className="text-gray-400">
+                                {" "}
+                                (+$1,920/yr)
+                              </span>
+                            )}
+                          </span>
+                        </label>
+                      </div>
+                      <button
+                        onClick={() =>
+                          handleUpgrade("meetingMaker", billingInterval)
+                        }
+                        disabled={loading}
+                        className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm whitespace-nowrap"
+                      >
+                        {billingInterval === "month"
+                          ? meetingMakerMonthly
+                          : meetingMakerYearly}
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleUpgrade("meetingMaker", billingInterval)}
-                      disabled={loading}
-                      className="px-4 py-2 bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 rounded-lg text-amber-400 font-semibold transition disabled:opacity-50 text-sm whitespace-nowrap ml-4"
-                    >
-                      {billingInterval === "month" ? "$199/mo" : "$1,910/yr"}
-                    </button>
                   </div>
 
                   {/* Agency */}
@@ -377,6 +440,15 @@ export default function DashboardPage() {
                       <span className="ml-2 text-green-400">(Yearly)</span>
                     )}
                   </p>
+
+                  {hasManagedService && (
+                    <div className="mb-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                      <p className="text-amber-400 text-sm">
+                        ✓ Managed service is active — our team is running your
+                        Meeting Maker platform.
+                      </p>
+                    </div>
+                  )}
 
                   {user.client?.cancelAtPeriodEnd && (
                     <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
@@ -423,23 +495,23 @@ export default function DashboardPage() {
         </div>
 
         {/* Intent Radar Access */}
-      <div className="bg-white/5 border border-purple-500/20 rounded-2xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">
-          Access Intent Radar:
-        </h2>
-        <p className="text-gray-300 mb-4">
-          Once you are subscribed to Intent Radar (or Meeting Maker, which
-          includes it) login to Intent Radar using your credentials.
-        </p>
-        <a
-          href="https://intentradar.meetingmaker.tech"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-2"
-        >
-          Go to Intent Radar →
-        </a>
-      </div>
+        <div className="bg-white/5 border border-purple-500/20 rounded-2xl p-6">
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Access Intent Radar:
+          </h2>
+          <p className="text-gray-300 mb-4">
+            Once you are subscribed to Intent Radar (or Meeting Maker, which
+            includes it) login to Intent Radar using your credentials.
+          </p>
+          <a
+            href="https://intentradar.meetingmaker.tech"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-2"
+          >
+            Go to Intent Radar →
+          </a>
+        </div>
 
         <div className="flex gap-4 flex-wrap">
           <button
