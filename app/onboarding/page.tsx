@@ -1,4 +1,4 @@
-// app/onboarding/page.tsx
+// /app/onboarding/page.tsx
 
 "use client";
 
