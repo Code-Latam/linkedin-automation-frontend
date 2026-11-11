@@ -2,9 +2,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { adminApi } from '@/lib/admin-api';
 import { useAdminRefresh } from '@/hooks/useAdminRefresh';
-import { Search, ChevronDown, ChevronUp, Users, Eye } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Users, ExternalLink, Activity } from 'lucide-react';
 
 interface Agent {
   agentId: string;
@@ -18,6 +19,19 @@ interface Agent {
     convertedCount: number;
     conversionRate: string | number;
     activeConversations: number;
+    funnel: {
+      open: number;
+      'pending-connection': number;
+      connected: number;
+      'in-conversation': number;
+      converted: number;
+    };
+    todayActions: {
+      total: number;
+      invitations: number;
+      messages: number;
+      startChats: number;
+    };
     last7Days: {
       invitations: number;
       messages: number;
@@ -270,9 +284,6 @@ export default function AgentsPage() {
               );
             })}
           </div>
-          {clientSummaries.length > 6 && (
-            <p className="text-xs text-gray-400 mt-2">+{clientSummaries.length - 6} more clients</p>
-          )}
         </div>
       )}
 
@@ -325,40 +336,47 @@ export default function AgentsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left text-gray-700 font-semibold">Agent</th>
-                <th className="px-4 py-3 text-left text-gray-700 font-semibold">Client</th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold cursor-pointer" onClick={() => handleSort('personsAssigned')}>
+                <th className="px-4 py-3 text-left text-gray-700 font-semibold whitespace-nowrap">Agent</th>
+                <th className="px-4 py-3 text-left text-gray-700 font-semibold whitespace-nowrap">Client</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold cursor-pointer whitespace-nowrap" onClick={() => handleSort('personsAssigned')}>
                   <div className="flex items-center justify-center gap-1">
-                    Leads <SortIcon field="personsAssigned" />
+                    Total Leads <SortIcon field="personsAssigned" />
                   </div>
                 </th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold cursor-pointer" onClick={() => handleSort('convertedCount')}>
+                
+                {/* Funnel Breakdown */}
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Open Leads">Open</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Pending Invites">Pending</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="In Conversation">In Convo</th>
+                
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold cursor-pointer whitespace-nowrap" onClick={() => handleSort('convertedCount')}>
                   <div className="flex items-center justify-center gap-1">
                     Converted <SortIcon field="convertedCount" />
                   </div>
                 </th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold cursor-pointer" onClick={() => handleSort('conversionRate')}>
+                
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold cursor-pointer whitespace-nowrap" onClick={() => handleSort('activeConversations')}>
                   <div className="flex items-center justify-center gap-1">
                     Conv % <SortIcon field="conversionRate" />
                   </div>
                 </th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold cursor-pointer" onClick={() => handleSort('activeConversations')}>
-                  <div className="flex items-center justify-center gap-1">
-                    Active <SortIcon field="activeConversations" />
+
+                {/* Today's Activity */}
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Total Actions Today">
+                  <div className="flex items-center justify-center gap-1 text-blue-700">
+                    <Activity size={14} /> Today
                   </div>
                 </th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold">7d Actions</th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold">7d Errors</th>
+
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap">7d Errors</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
               {sortedAgents.map((agent) => {
                 const conversionRate = formatRate(agent.metrics?.conversionRate);
-                const totalActions = (agent.metrics?.last7Days?.invitations || 0) + 
-                                     (agent.metrics?.last7Days?.messages || 0) + 
-                                     (agent.metrics?.last7Days?.startChats || 0);
                 const rateNum = parseFloat(conversionRate);
+                const funnel = agent.metrics?.funnel || { open: 0, 'pending-connection': 0, 'in-conversation': 0 };
                 
                 return (
                   <tr key={agent.agentId} className="border-t border-gray-100 hover:bg-gray-50">
@@ -369,25 +387,34 @@ export default function AgentsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div>
-                        <p className="text-gray-700">{agent.clientName || 'Unknown'}</p>
+                      <Link href={`/admin/clients/${agent.clientId}`} className="group">
+                        <p className="text-gray-700 group-hover:text-blue-600 transition-colors">{agent.clientName || 'Unknown'}</p>
                         <p className="text-xs text-gray-400">{agent.clientPlan || 'free'}</p>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-4 py-3 text-center font-medium text-gray-800">{agent.metrics?.personsAssigned || 0}</td>
+                    
+                    {/* Funnel Cells */}
+                    <td className="px-4 py-3 text-center text-gray-500 text-xs">{funnel.open || '-'}</td>
+                    <td className="px-4 py-3 text-center text-yellow-600 text-xs">{funnel['pending-connection'] || '-'}</td>
+                    <td className="px-4 py-3 text-center text-indigo-600 text-xs font-medium">{funnel['in-conversation'] || '-'}</td>
+                    
                     <td className="px-4 py-3 text-center font-medium text-green-700">{agent.metrics?.convertedCount || 0}</td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <span className={`font-semibold ${rateNum > 10 ? 'text-green-700' : 'text-gray-700'}`}>
                           {conversionRate}%
                         </span>
-                        <div className="w-12 bg-gray-200 rounded-full h-1">
-                          <div className="bg-blue-600 h-1 rounded-full" style={{ width: `${Math.min(100, rateNum)}%` }} />
-                        </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-700">{agent.metrics?.activeConversations || 0}</td>
-                    <td className="px-4 py-3 text-center text-gray-700">{totalActions}</td>
+                    
+                    {/* Today Actions */}
+                    <td className="px-4 py-3 text-center">
+                      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium text-xs">
+                        {agent.metrics?.todayActions?.total || 0} actions
+                      </span>
+                    </td>
+
                     <td className="px-4 py-3 text-center">
                       {(agent.metrics?.last7Days?.failures || 0) > 0 ? (
                         <span className="text-red-600 font-medium">{agent.metrics?.last7Days?.failures || 0}</span>
@@ -396,9 +423,9 @@ export default function AgentsPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <button className="text-blue-600 hover:text-blue-800">
-                        <Eye size={16} />
-                      </button>
+                      <Link href={`/admin/clients/${agent.clientId}`} className="text-blue-600 hover:text-blue-800" title="View Client Details">
+                        <ExternalLink size={16} />
+                      </Link>
                     </td>
                   </tr>
                 );
