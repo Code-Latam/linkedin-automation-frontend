@@ -27,6 +27,13 @@ interface Client {
     convertedCount: number;
     recentActionsLast7Days: number;
     pendingFailedActions: number;
+    // New Lifecycle Metrics
+    openCount: number;
+    pendingConnectionCount: number;
+    connectedCount: number;
+    inConversationCount: number;
+    pausedCount: number;
+    irrelevantCount: number;
   };
   createdAt: string;
   lastActive: string;
@@ -196,11 +203,12 @@ export default function ClientsPage() {
   };
 
   const filteredClients = clients.filter(client => {
+    const isActive = client.status === 'active'; 
     const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           client.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPlan = planFilter === 'all' || client.plan === planFilter;
     const matchesStatus = statusFilter === 'all' || client.linkedinStatus === statusFilter;
-    return matchesSearch && matchesPlan && matchesStatus;
+    return isActive && matchesSearch && matchesPlan && matchesStatus;
   });
 
   // Don't render on server
@@ -274,15 +282,23 @@ export default function ClientsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left text-gray-700 font-semibold">Client</th>
-                <th className="px-4 py-3 text-left text-gray-700 font-semibold">Plan</th>
-                <th className="px-4 py-3 text-left text-gray-700 font-semibold">Billing</th>
-                <th className="px-4 py-3 text-left text-gray-700 font-semibold">LinkedIn</th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold">Leads</th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold">Converted</th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold">Conv %</th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold">Active</th>
-                <th className="px-4 py-3 text-center text-gray-700 font-semibold">Errors</th>
+                <th className="px-4 py-3 text-left text-gray-700 font-semibold whitespace-nowrap">Client</th>
+                <th className="px-4 py-3 text-left text-gray-700 font-semibold whitespace-nowrap">Plan</th>
+                <th className="px-4 py-3 text-left text-gray-700 font-semibold whitespace-nowrap">Billing</th>
+                <th className="px-4 py-3 text-left text-gray-700 font-semibold whitespace-nowrap">LinkedIn</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Total Persons">Total</th>
+                
+                {/* Lifecycle Funnel Breakdown */}
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Not yet invited">Open</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Invite sent, waiting for accept">Pending</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Accepted, waiting for first message">Connected</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Actively chatting">In Convo</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Paused by human or system">Paused</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Marked irrelevant by AI/Human">Irrelevant</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap" title="Successfully converted">Converted</th>
+                
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap">Conv %</th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap">Errors</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -340,15 +356,41 @@ export default function ClientsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 whitespace-nowrap">
                         {getLinkedinStatusIcon(client.linkedinStatus)}
                         <span className="text-sm text-gray-700">
                           {getLinkedinStatusText(client.linkedinStatus)}
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center font-medium text-gray-800">{client.metrics.totalPersons}</td>
-                    <td className="px-4 py-3 text-center font-medium text-green-700">{client.metrics.convertedCount}</td>
+                    
+                    {/* New Lifecycle Metrics Columns */}
+                    <td className="px-4 py-3 text-center font-medium text-gray-800">
+                      {client.metrics.totalPersons}
+                    </td>
+                    <td className="px-4 py-3 text-center text-gray-500 text-sm">
+                      {client.metrics.openCount || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center text-gray-600 text-sm">
+                      {client.metrics.pendingConnectionCount || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center text-blue-600 text-sm">
+                      {client.metrics.connectedCount || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center text-indigo-600 text-sm font-medium">
+                      {client.metrics.inConversationCount || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center text-orange-500 text-sm">
+                      {client.metrics.pausedCount || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center text-gray-400 text-sm">
+                      {client.metrics.irrelevantCount || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center font-medium text-green-700">
+                      {client.metrics.convertedCount}
+                    </td>
+
+                    {/* Conversion Rate */}
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <span className={`font-medium ${rateNum > 10 ? 'text-green-700' : 'text-gray-800'}`}>
@@ -359,7 +401,8 @@ export default function ClientsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-700">{client.metrics.activeThreads}</td>
+
+                    {/* Errors */}
                     <td className="px-4 py-3 text-center">
                       {client.metrics.pendingFailedActions > 0 ? (
                         <span className="text-red-600 font-semibold">{client.metrics.pendingFailedActions}</span>
@@ -367,11 +410,12 @@ export default function ClientsPage() {
                         <span className="text-green-600">0</span>
                       )}
                     </td>
+                    
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 flex-wrap">
                         <Link
                           href={`/admin/clients/${client.clientId}`}
-                          className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
+                          className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm whitespace-nowrap"
                         >
                           View <ExternalLink size={12} />
                         </Link>
