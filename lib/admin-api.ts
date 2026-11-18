@@ -191,12 +191,22 @@ export const adminApi = {
    */
   checkApiKeyStatus: () => adminApiClient.get('/api-key/status'),
 
-  getCommissionsList: (params?: { 
-    status?: string; 
-    clientId?: string; 
-    from?: string; 
-    to?: string; 
-    limit?: number; 
-    offset?: number 
+  getCommissionsList: (params?: {
+    status?: string;
+    clientId?: string;
+    from?: string;
+    to?: string;
+    limit?: number;
+    offset?: number
   }) => adminApiClient.get('/commissions', { params }),
+
+  // ============================================
+  // WEBINARS
+  // ============================================
+  getWebinarEvents: () => adminApiClient.get('/webinars'),
+  getWebinarEvent: (id: string) => adminApiClient.get(`/webinars/${id}`),
+  createWebinarEvent: (data: Record<string, unknown>) => adminApiClient.post('/webinars', data),
+  updateWebinarEvent: (id: string, data: Record<string, unknown>) => adminApiClient.put(`/webinars/${id}`, data),
+  deleteWebinarEvent: (id: string) => adminApiClient.delete(`/webinars/${id}`),
+  getWebinarRegistrations: (id: string) => adminApiClient.get(`/webinars/${id}/registrations`),
 };

@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   DollarSign,
+  Calendar,
 } from 'lucide-react';
 
 const navItems = [
@@ -26,6 +27,7 @@ const navItems = [
   { name: 'Pipeline', href: '/admin/pipeline', icon: TrendingUp },
   { name: 'System Health', href: '/admin/system', icon: Activity },
   { name: 'Inbound', href: '/admin/inbound', icon: Mail },
+  { name: 'Webinars', href: '/admin/webinars', icon: Calendar },
   { name: 'Alerts', href: '/admin/alerts', icon: Bell },
 ];
 
