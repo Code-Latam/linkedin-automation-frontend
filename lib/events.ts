@@ -27,6 +27,26 @@ export async function getPublicWebinarEvent(
   }
 }
 
+/**
+ * Fetch the list of public webinar events (open + completed).
+ * Returns [] on error or when the API is unreachable, so the page degrades
+ * gracefully to an empty state.
+ */
+export async function getPublicWebinarEvents(): Promise<PublicWebinarEvent[]> {
+  const base = process.env.NEXT_PUBLIC_API_URL;
+  if (!base) return [];
+
+  try {
+    const res = await fetch(`${base}/webinars`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json?.data ?? [];
+  } catch (err) {
+    console.error("getPublicWebinarEvents error:", err);
+    return [];
+  }
+}
+
 export function formatEventDate(iso: string, timezone?: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";

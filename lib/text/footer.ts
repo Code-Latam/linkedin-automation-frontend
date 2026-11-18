@@ -10,6 +10,7 @@ export const footerText = {
                 { name: "Features", href: "/#features" },
                 { name: "How It Works", href: "/#how-it-works" },
                 { name: "Pricing", href: "/#pricing" },
+                { name: "Events", href: "/events" },
                 { name: "Contact", href: "/#contact" },
                 { name: "FAQ", href: "/#faq" }
             ]
