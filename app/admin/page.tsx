@@ -473,7 +473,7 @@ export default function AdminDashboardPage() {
                   onChange={(e) => setFixedSuccessFee(parseFloat(e.target.value) || 0)}
                   min={0}
                   step={100}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="e.g., 2500"
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -488,7 +488,7 @@ export default function AdminDashboardPage() {
                 <select
                   value={billingPreference}
                   onChange={(e) => setBillingPreference(e.target.value as 'per_deal' | 'monthly_consolidated')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="per_deal">Per-Deal Invoicing (Immediate)</option>
                   <option value="monthly_consolidated">Monthly Consolidated Invoicing</option>
@@ -614,7 +614,7 @@ export default function AdminDashboardPage() {
                   value={revertReason}
                   onChange={(e) => setRevertReason(e.target.value)}
                   placeholder="e.g., Client requested, Not enough deals, etc."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
