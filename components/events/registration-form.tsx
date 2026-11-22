@@ -5,9 +5,10 @@ import { useState } from "react";
 
 interface RegistrationFormProps {
   slug: string;
+  attendeeLabel?: string | null;
 }
 
-export default function WebinarRegistrationForm({ slug }: RegistrationFormProps) {
+export default function WebinarRegistrationForm({ slug, attendeeLabel }: RegistrationFormProps) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
@@ -80,6 +81,12 @@ export default function WebinarRegistrationForm({ slug }: RegistrationFormProps)
       className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-8 space-y-4 max-w-lg mx-auto"
     >
       <h3 className="text-2xl font-bold text-white">Register for this event</h3>
+
+      {attendeeLabel && (
+        <p className="text-sm text-gray-400">
+          {attendeeLabel} attending
+        </p>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1">Full name *</label>

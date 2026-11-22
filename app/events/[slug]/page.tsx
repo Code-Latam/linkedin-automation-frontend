@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/landing/navbar";
 import WebinarRegistrationForm from "@/components/events/registration-form";
-import { getPublicWebinarEvent, formatEventDate } from "@/lib/events";
+import { getPublicWebinarEvent, formatEventDate, formatAttendeeCount } from "@/lib/events";
 
 interface EventPageProps {
   params: Promise<{ slug: string }>;
@@ -33,6 +33,7 @@ export default async function EventPage({ params }: EventPageProps) {
   }
 
   const dateStr = formatEventDate(event.startsAt, event.timezone);
+  const attendeeLabel = formatAttendeeCount(event.registeredCount);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -57,7 +58,7 @@ export default async function EventPage({ params }: EventPageProps) {
         )}
 
         {event.status === "open" && !event.isFull && (
-          <WebinarRegistrationForm slug={event.slug} />
+          <WebinarRegistrationForm slug={event.slug} attendeeLabel={attendeeLabel} />
         )}
 
         {event.status === "completed" && (

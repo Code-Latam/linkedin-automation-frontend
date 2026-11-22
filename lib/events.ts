@@ -65,3 +65,13 @@ export function formatEventDate(iso: string, timezone?: string): string {
     return d.toLocaleString("en-US");
   }
 }
+
+/**
+ * Format a registrant count as a rounded "bucket" label ("10+", "20+", ...).
+ * Returns null when there are fewer than 10 registrants (nothing should be shown).
+ */
+export function formatAttendeeCount(count: number): string | null {
+  if (count < 10) return null;
+  const bucket = Math.floor(count / 10) * 10;
+  return `${bucket}+`;
+}
