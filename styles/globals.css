@@ -127,19 +127,6 @@
   animation: fadeIn 0.3s ease-in;
 }
 
-@keyframes flash {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.25;
-  }
-}
-
-.animate-flash {
-  animation: flash 1.2s ease-in-out infinite;
-}
-
 @layer base {
   * {
     border-color: var(--border);
