@@ -83,8 +83,8 @@ export default function WebinarRegistrationForm({ slug, attendeeLabel }: Registr
       <h3 className="text-2xl font-bold text-white">Register for this event</h3>
 
       {attendeeLabel && (
-        <p className="text-sm text-gray-400">
-          {attendeeLabel} attending
+        <p className="animate-flash text-cyan-400 font-semibold">
+          🔥 {attendeeLabel} attending
         </p>
       )}
 
