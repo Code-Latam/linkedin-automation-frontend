@@ -33,6 +33,17 @@ const STATUS_BADGES: Record<WebinarStatus, string> = {
   cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
+const INTERVAL_OPTIONS = [
+  { value: 1, label: 'Weekly' },
+  { value: 2, label: 'Every 2 weeks' },
+  { value: 3, label: 'Every 3 weeks' },
+  { value: 4, label: 'Every 4 weeks' },
+];
+
+function intervalLabel(n: number | null | undefined): string {
+  return INTERVAL_OPTIONS.find((o) => o.value === (n ?? 1))?.label ?? `Every ${n ?? 1} weeks`;
+}
+
 interface WebinarFormState {
   title: string;
   slug: string;
@@ -45,6 +56,9 @@ interface WebinarFormState {
   timezone: string;
   status: WebinarStatus;
   capacity: string;
+  repeatsWeekly: boolean;
+  recurrenceIntervalWeeks: number; // 1..4
+  recurrenceEndsAt: string; // YYYY-MM-DD, blank = no end date
 }
 
 const EMPTY_FORM: WebinarFormState = {
@@ -59,6 +73,9 @@ const EMPTY_FORM: WebinarFormState = {
   timezone: 'America/New_York',
   status: 'draft',
   capacity: '',
+  repeatsWeekly: false,
+  recurrenceIntervalWeeks: 1,
+  recurrenceEndsAt: '',
 };
 
 // Convert an ISO date to a `datetime-local` input value (local time).
@@ -133,6 +150,11 @@ export default function AdminWebinarsPage() {
       timezone: event.timezone || 'America/New_York',
       status: event.status,
       capacity: event.capacity ? String(event.capacity) : '',
+      repeatsWeekly: !!event.repeatsWeekly,
+      recurrenceIntervalWeeks: event.recurrenceIntervalWeeks || 1,
+      recurrenceEndsAt: event.recurrenceEndsAt
+        ? new Date(event.recurrenceEndsAt).toISOString().slice(0, 10)
+        : '',
     });
     setModalOpen(true);
   };
@@ -159,6 +181,12 @@ export default function AdminWebinarsPage() {
       timezone: form.timezone,
       status: form.status,
       capacity: form.capacity ? Number(form.capacity) : null,
+      repeatsWeekly: form.repeatsWeekly,
+      recurrenceIntervalWeeks: form.recurrenceIntervalWeeks,
+      recurrenceEndsAt:
+        form.repeatsWeekly && form.recurrenceEndsAt
+          ? `${form.recurrenceEndsAt}T00:00:00Z`
+          : null,
     };
 
     setSaving(true);
@@ -266,8 +294,25 @@ export default function AdminWebinarsPage() {
                 events.map((e) => (
                   <tr key={e._id} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-4 py-3">
-                      <p className="font-semibold text-gray-800 dark:text-gray-200">{e.title}</p>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">
+                        {e.title}
+                        {e.repeatsWeekly && (
+                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                            ↻ {intervalLabel(e.recurrenceIntervalWeeks)}
+                          </span>
+                        )}
+                        {e.seriesOf && (
+                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300">
+                            wk {e.occurrenceIndex ?? '?'}
+                          </span>
+                        )}
+                      </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">/events/{e.slug}</p>
+                      {e.repeatsWeekly && (
+                        <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
+                          Next: {formatDate(e.nextOccurrenceAt)}
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{formatDate(e.startsAt)}</td>
                     <td className="px-4 py-3">
@@ -391,12 +436,19 @@ export default function AdminWebinarsPage() {
                 />
               </Field>
 
-              <Field label="Starts At *">
+              <Field
+                label={
+                  editingEvent?.repeatsWeekly
+                    ? 'Starts At * (locked — defines the recurring weekday)'
+                    : 'Starts At *'
+                }
+              >
                 <input
                   type="datetime-local"
                   value={form.startsAt}
+                  disabled={!!editingEvent?.repeatsWeekly}
                   onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
-                  className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50"
                 />
               </Field>
 
@@ -440,6 +492,44 @@ export default function AdminWebinarsPage() {
                   ))}
                 </select>
               </Field>
+
+              <Field label="Repeats" span={2}>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.repeatsWeekly}
+                    onChange={(e) => setForm({ ...form, repeatsWeekly: e.target.checked })}
+                    className="mt-0.5"
+                  />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Repeat on a schedule — same weekday, same time. Weeks landing on a weekend
+                    or a US holiday are skipped, and registration links stay ~8 weeks ahead
+                    automatically.
+                  </span>
+                </label>
+                {form.repeatsWeekly && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <select
+                      value={form.recurrenceIntervalWeeks}
+                      onChange={(e) => setForm({ ...form, recurrenceIntervalWeeks: Number(e.target.value) })}
+                      className="px-3 py-2 bg-white text-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    >
+                      {INTERVAL_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="date"
+                      value={form.recurrenceEndsAt}
+                      onChange={(e) => setForm({ ...form, recurrenceEndsAt: e.target.value })}
+                      className="px-3 py-2 bg-white text-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      End date (optional — leave blank to keep repeating)
+                    </span>
+                  </div>
+                )}
+              </Field>
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -468,7 +558,21 @@ export default function AdminWebinarsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Delete Webinar?</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              This will permanently delete <strong>{deleteTarget.title}</strong> and all its registrations. This cannot be undone.
+              {deleteTarget.repeatsWeekly ? (
+                <>
+                  This will permanently delete the recurring series{' '}
+                  <strong>{deleteTarget.title}</strong> — every occurrence in the series and all
+                  of their registrations. This cannot be undone.
+                </>
+              ) : (
+                <>
+                  This will permanently delete <strong>{deleteTarget.title}</strong> and all its
+                  registrations. This cannot be undone.
+                  {deleteTarget.seriesOf
+                    ? ' This is one occurrence of a recurring series — the rest of the series is not affected.'
+                    : ''}
+                </>
+              )}
             </p>
             <div className="flex gap-3">
               <button

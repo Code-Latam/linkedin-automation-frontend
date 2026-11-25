@@ -17,6 +17,16 @@ export interface WebinarEvent {
   registeredCount?: number;
   createdAt: string;
   updatedAt: string;
+  // Recurring series (anchor = repeatsWeekly, generated occurrence = seriesOf).
+  repeatsWeekly?: boolean;
+  recurrenceIntervalWeeks?: number; // 1 = weekly, 2 = every 2 weeks, 3, 4
+  recurrenceEndsAt?: string | null;
+  maxOccurrences?: number | null;
+  lastGeneratedStartsAt?: string | null;
+  seriesOf?: string | null;
+  occurrenceIndex?: number | null;
+  // Computed by GET /admin/webinars — next upcoming occurrence of the series.
+  nextOccurrenceAt?: string | null;
 }
 
 export interface WebinarRegistration {
