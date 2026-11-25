@@ -47,7 +47,7 @@ export default async function EventPage({ params }: EventPageProps) {
         </div>
 
         {event.description && (
-          <p className="text-gray-300 leading-relaxed mb-8 text-center">{event.description}</p>
+          <p className="text-gray-300 leading-relaxed mb-8 text-center whitespace-pre-line">{event.description}</p>
         )}
 
         {event.status === "open" && event.isFull && (
