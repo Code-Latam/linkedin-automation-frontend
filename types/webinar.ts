@@ -38,6 +38,7 @@ export interface WebinarRegistration {
   jobTitle: string;
   linkedInUrl: string;
   status: "registered" | "cancelled";
+  attended: boolean;
   createdAt: string;
   updatedAt: string;
 }

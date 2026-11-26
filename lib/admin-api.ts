@@ -209,4 +209,6 @@ export const adminApi = {
   updateWebinarEvent: (id: string, data: Record<string, unknown>) => adminApiClient.put(`/webinars/${id}`, data),
   deleteWebinarEvent: (id: string) => adminApiClient.delete(`/webinars/${id}`),
   getWebinarRegistrations: (id: string) => adminApiClient.get(`/webinars/${id}/registrations`),
+  updateWebinarRegistration: (eventId: string, registrationId: string, data: Record<string, unknown>) =>
+    adminApiClient.patch(`/webinars/${eventId}/registrations/${registrationId}`, data),
 };

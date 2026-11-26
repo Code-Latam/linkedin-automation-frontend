@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 import { adminApi } from '@/lib/admin-api';
 import { useAdminRefresh } from '@/hooks/useAdminRefresh';
 import { WebinarEvent, WebinarRegistration } from '@/types/webinar';
-import { ArrowLeft, Download, RefreshCw, Users } from 'lucide-react';
+import { ArrowLeft, Download, RefreshCw, Users, Loader2 } from 'lucide-react';
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
@@ -42,6 +42,7 @@ export default function AdminWebinarDetailPage() {
   const [registrations, setRegistrations] = useState<WebinarRegistration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [attendingId, setAttendingId] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -69,7 +70,7 @@ export default function AdminWebinarDetailPage() {
   const exportToCSV = () => {
     if (!event || registrations.length === 0) return;
 
-    const headers = ['Full Name', 'Email', 'Company', 'Job Title', 'LinkedIn URL', 'Registered At'];
+    const headers = ['Full Name', 'Email', 'Company', 'Job Title', 'LinkedIn URL', 'Registered At', 'Attended'];
     const rows = registrations.map((r) => [
       r.fullName,
       r.email,
@@ -77,6 +78,7 @@ export default function AdminWebinarDetailPage() {
       r.jobTitle || '',
       r.linkedInUrl || '',
       formatDate(r.createdAt),
+      r.attended ? 'Yes' : 'No',
     ]);
 
     const csv = [headers.join(','), ...rows.map((row) => row.map(csvEscape).join(','))].join('\n');
@@ -88,6 +90,20 @@ export default function AdminWebinarDetailPage() {
     a.download = `webinar_${event.slug}_registrations.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleToggleAttended = async (reg: WebinarRegistration, attended: boolean) => {
+    setAttendingId(reg._id);
+    try {
+      await adminApi.updateWebinarRegistration(webinarId, reg._id, { attended });
+      setRegistrations((prev) =>
+        prev.map((r) => (r._id === reg._id ? { ...r, attended } : r))
+      );
+    } catch (err: any) {
+      alert('Failed to update attendance: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setAttendingId(null);
+    }
   };
 
   if (loading) {
@@ -200,12 +216,13 @@ export default function AdminWebinarDetailPage() {
                 <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-300 font-semibold">Job Title</th>
                 <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-300 font-semibold">LinkedIn</th>
                 <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-300 font-semibold">Registered</th>
+                <th className="px-4 py-3 text-center text-gray-700 dark:text-gray-300 font-semibold">Attended</th>
               </tr>
             </thead>
             <tbody>
               {registrations.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                     No registrations yet.
                   </td>
                 </tr>
@@ -224,6 +241,19 @@ export default function AdminWebinarDetailPage() {
                       ) : '-'}
                     </td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{formatDate(r.createdAt)}</td>
+                    <td className="px-4 py-3 text-center">
+                      {attendingId === r._id ? (
+                        <Loader2 size={16} className="animate-spin text-blue-600 mx-auto" />
+                      ) : (
+                        <input
+                          type="checkbox"
+                          checked={!!r.attended}
+                          disabled={attendingId === r._id}
+                          onChange={(e) => handleToggleAttended(r, e.target.checked)}
+                          className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                        />
+                      )}
+                    </td>
                   </tr>
                 ))
               )}
