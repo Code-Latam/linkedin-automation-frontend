@@ -60,7 +60,6 @@ export const pricingText: PricingText = {
       description:
         "The full AI sales platform — outreach, marketing, and customer service agents.",
       features: [
-        "✅ Includes full Intent Radar access",
         "AI Marketing Team — handles social engagement",
         "AI Sales Team — handles outreach",
         "AI Customer Service Team — handles inbound",
