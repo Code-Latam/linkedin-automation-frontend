@@ -60,7 +60,7 @@ export const pricingText: PricingText = {
       description:
         "The full AI sales platform — outreach, marketing, and customer service agents.",
       features: [
-        "AI Marketing Team — handles social engagement",
+        "AI Marketing Team — handles social engagement and authority building",
         "AI Sales Team — handles outreach",
         "AI Customer Service Team — handles inbound",
         "Full CRM access",
